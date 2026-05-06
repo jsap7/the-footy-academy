@@ -11,12 +11,7 @@ type Props = {
   onUnlist: (playerId: string) => void;
 };
 
-export default function SellingControls({
-  player,
-  onSetAvailable,
-  onList,
-  onUnlist,
-}: Props) {
+export default function SellingControls({ player, onSetAvailable, onList, onUnlist }: Props) {
   const trueValue = computeMarketValue(player);
   const [composing, setComposing] = useState(false);
   const [price, setPrice] = useState(() => Math.round(trueValue));
@@ -33,9 +28,7 @@ export default function SellingControls({
       <div className="flex items-center justify-between gap-3">
         <div>
           <span className="text-[14px] text-ink">available for sale</span>
-          <p className="text-[11px] text-ink-dim">
-            doubles offer frequency from clubs.
-          </p>
+          <p className="text-[11px] text-ink-dim">doubles offer frequency from clubs.</p>
         </div>
         <Button
           variant={player.availableForSale ? 'primary' : 'default'}

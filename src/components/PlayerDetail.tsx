@@ -43,13 +43,7 @@ function SummaryCell({
   );
 }
 
-export default function PlayerDetail({
-  player,
-  onClose,
-  onSetAvailable,
-  onList,
-  onUnlist,
-}: Props) {
+export default function PlayerDetail({ player, onClose, onSetAvailable, onList, onUnlist }: Props) {
   const avgCur = averageCurrent(player);
   const avgPot = averagePotential(player);
   const gap = avgPot - avgCur;
@@ -92,9 +86,7 @@ export default function PlayerDetail({
 
       {onSetAvailable && onList && onUnlist && (
         <section className="border-b border-hairline px-6 py-4">
-          <h3 className="mb-3 text-[10px] uppercase tracking-[0.14em] text-ink-dim">
-            ── selling
-          </h3>
+          <h3 className="mb-3 text-[10px] uppercase tracking-[0.14em] text-ink-dim">── selling</h3>
           <SellingControls
             player={player}
             onSetAvailable={onSetAvailable}

@@ -11,9 +11,7 @@ export default function EventBanner({ birthdays, releases, sales }: Props) {
   if (birthdays.length === 0 && releases.length === 0 && sales.length === 0) return null;
   return (
     <div className="border-b border-hairline bg-bg-row px-6 py-3">
-      <div className="mb-2 text-[10px] uppercase tracking-[0.14em] text-ink-dim">
-        ── this month
-      </div>
+      <div className="mb-2 text-[10px] uppercase tracking-[0.14em] text-ink-dim">── this month</div>
       <ul className="space-y-1 text-[16px] text-ink">
         {sales.map((s) => (
           <li key={`s-${s.playerId}`} className="text-good">

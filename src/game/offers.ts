@@ -1,13 +1,5 @@
 import { computeBuyerPerceivedValue } from './marketValue';
-import type {
-  Club,
-  ClubTier,
-  GameState,
-  Offer,
-  Player,
-  QualityTier,
-  SaleEvent,
-} from '../types';
+import type { Club, ClubTier, GameState, Offer, Player, QualityTier, SaleEvent } from '../types';
 
 export const OFFER_LIFESPAN_TURNS = 3;
 
@@ -199,8 +191,7 @@ export function executeAcceptedOffers(state: GameState): {
     pendingOffers = pendingOffers.map((o) =>
       o.id === offer.id
         ? o
-        : o.playerId === offer.playerId &&
-            (o.status === 'pending' || o.status === 'countered')
+        : o.playerId === offer.playerId && (o.status === 'pending' || o.status === 'countered')
           ? { ...o, status: 'walked' as const }
           : o,
     );

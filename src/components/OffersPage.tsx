@@ -14,8 +14,8 @@ export default function OffersPage({ state, onChange, onSelectPlayer }: Props) {
       <div className="flex h-full flex-col items-center justify-center px-6 py-16 text-center text-[16px] text-ink-dim">
         <p className="text-[22px] uppercase tracking-[0.04em] text-ink">no offers yet</p>
         <p className="mt-3 max-w-md">
-          sign players and clubs will start coming. better players and listed players surface
-          offers faster.
+          sign players and clubs will start coming. better players and listed players surface offers
+          faster.
         </p>
       </div>
     );

@@ -58,14 +58,16 @@ export default function OfferRow({
         className="truncate text-left text-ink hover:text-accent"
         onClick={() => player && onSelectPlayer(player.id)}
       >
-        {player ? `${player.firstName} ${player.lastName}` : <span className="text-ink-dim">(sold)</span>}
+        {player ? (
+          `${player.firstName} ${player.lastName}`
+        ) : (
+          <span className="text-ink-dim">(sold)</span>
+        )}
       </button>
       <div className="flex flex-col items-end gap-1 text-right">
         <span className="font-mono tabular-nums">{formatCash(offer.amount)}</span>
         {offer.yourCounter ? (
-          <span className="text-[12px] text-ink-dim">
-            you: {formatCash(offer.yourCounter)}
-          </span>
+          <span className="text-[12px] text-ink-dim">you: {formatCash(offer.yourCounter)}</span>
         ) : null}
       </div>
       <div className="flex flex-col gap-1">
