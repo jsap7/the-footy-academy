@@ -3,6 +3,7 @@ import EmptyState from './components/EmptyState';
 import NavStrip from './components/NavStrip';
 import PlayerDetail from './components/PlayerDetail';
 import PlayerList from './components/PlayerList';
+import ScoutsPage from './components/ScoutsPage';
 import TopBar from './components/TopBar';
 import { generatePlayer } from './game/playerGenerator';
 import Button from './ui/Button';
@@ -12,12 +13,15 @@ import { INITIAL_GAME_STATE, type GameState } from './types';
 
 const NAV_TABS = [
   { key: 'roster', label: 'academy' },
-  { key: 'scouts', label: 'scouts', hint: 'phase 2', disabled: true },
+  { key: 'scouts', label: 'scouts' },
   { key: 'transfers', label: 'transfers', hint: 'phase 3', disabled: true },
 ] as const;
 
+type TabKey = 'roster' | 'scouts';
+
 export default function App() {
   const [state, setState] = useState<GameState>(INITIAL_GAME_STATE);
+  const [activeTab, setActiveTab] = useState<TabKey>('roster');
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
 
   const selectedPlayer = useMemo(
@@ -72,29 +76,42 @@ export default function App() {
         squad={state.roster.length}
         rightSlot={generateButton}
       />
-      <NavStrip tabs={NAV_TABS} active="roster" />
+      <NavStrip
+        tabs={NAV_TABS}
+        active={activeTab}
+        onChange={(key) => setActiveTab(key as TabKey)}
+      />
       <main className="flex min-h-0 flex-1">
-        <section className="flex w-full min-w-0 flex-1 flex-col border-r border-hairline">
-          <SectionHead label="academy roster" count={state.roster.length} />
-          {state.roster.length === 0 ? (
-            <EmptyState onGenerate={handleGenerate} />
-          ) : (
-            <PlayerList
-              players={state.roster}
-              selectedPlayerId={selectedPlayerId}
-              onSelect={handleSelect}
-            />
-          )}
-        </section>
-        {selectedPlayer && (
-          <aside className="w-[480px] shrink-0">
-            <PlayerDetail player={selectedPlayer} onClose={handleClose} />
-          </aside>
+        {activeTab === 'roster' && (
+          <>
+            <section className="flex w-full min-w-0 flex-1 flex-col border-r border-hairline">
+              <SectionHead label="academy roster" count={state.roster.length} />
+              {state.roster.length === 0 ? (
+                <EmptyState onGenerate={handleGenerate} />
+              ) : (
+                <PlayerList
+                  players={state.roster}
+                  selectedPlayerId={selectedPlayerId}
+                  onSelect={handleSelect}
+                />
+              )}
+            </section>
+            {selectedPlayer && (
+              <aside className="w-[480px] shrink-0">
+                <PlayerDetail player={selectedPlayer} onClose={handleClose} />
+              </aside>
+            )}
+          </>
+        )}
+        {activeTab === 'scouts' && (
+          <section className="flex w-full min-w-0 flex-1 flex-col">
+            <ScoutsPage state={state} onChange={setState} />
+          </section>
         )}
       </main>
       <StatusBar
         hints={
-          selectedPlayer
+          selectedPlayer && activeTab === 'roster'
             ? '[G] generate · [ESC] close · [↑/↓] navigate'
             : '[G] generate · [↑/↓] navigate'
         }
