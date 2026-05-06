@@ -47,17 +47,25 @@ Open the URL printed by Vite (defaults to <http://localhost:5173>).
 | `npm run format`       | Format the codebase with Prettier         |
 | `npm run format:check` | Check formatting without writing changes  |
 
-## Phase 0 — what's here now
+## What's shipped (phases 0 + 1)
+
+**Phase 0 — engine baseline**
 
 - `Player` data model: 38 outfield stats, current and potential values
 - English name generator (193 first names + 311 last names, multicultural mix)
 - Player generator: 14-17yo English outfielders with normal-distributed stats and position-relevant bonuses
-- "Generate Player" button in the top bar adds a player to the list
-- List shows name, age, position, average potential
+- "Generate Player" button in the top bar; list shows name, age, position, trait count, avg potential
 - Click a row to open the side panel with the full stat sheet — three groups (Physical / Technical / Mental), per-stat bars showing current vs potential
 - `g` to generate, `Escape` to close detail
 
-What's intentionally **not** here yet (those land in later phases): scouts, visibility ranges, traits, money, signing, the turn loop, save/load, goalkeepers, regions other than England.
+**Phase 1 — traits**
+
+- `Trait` data model with base-stat effects and dev-rate effects (dev-rate hooks defined now, fired in a later phase when the turn loop exists)
+- 12 traits: 5 positive, 4 negative, 3 neutral (`tall`, `workaholic`, `technically_gifted`, `natural_athlete`, `composed`, `lazy`, `fragile`, `hot_headed`, `slow_learner`, `late_bloomer`, `leader`, `physical_specimen`)
+- Generator rolls 1-5 traits per player using a weighted distribution (40 / 30 / 20 / 8 / 2) and applies their base effects to both current and potential, clamped to `[1, 100]` with `current ≤ potential` preserved
+- Detail panel shows traits as pixel-style framed pills with hover/click descriptions; positive/negative/neutral are color-coded
+
+What's intentionally **not** here yet (those land in later phases): scouts, visibility ranges on stats, money, signing, the turn loop (so dev-rate effects don't fire yet), save/load, goalkeepers, regions other than England.
 
 ## Generator tuning
 

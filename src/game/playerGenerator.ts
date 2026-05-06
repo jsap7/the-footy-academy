@@ -1,4 +1,5 @@
 import { generateEnglishName } from './nameGenerator';
+import { applyBaseEffects, getAllTraits, TRAIT_COUNT_WEIGHTS } from './traits';
 import {
   ALL_STAT_KEYS,
   OUTFIELD_POSITIONS,
@@ -6,6 +7,7 @@ import {
   type Player,
   type PlayerStats,
   type StatKey,
+  type TraitId,
 } from '../types';
 
 const POTENTIAL_MEAN = 60;
@@ -85,12 +87,50 @@ function generateCurrent(potential: PlayerStats, age: number): PlayerStats {
   });
 }
 
+function pickTraitCount(): number {
+  const r = Math.random();
+  let cumulative = 0;
+  let lastCount = 1;
+  for (const [count, weight] of Object.entries(TRAIT_COUNT_WEIGHTS)) {
+    cumulative += weight;
+    lastCount = Number(count);
+    if (r < cumulative) return lastCount;
+  }
+  // Float-epsilon fallback: r === 1 (rare). Return the last bucket.
+  return lastCount;
+}
+
+function pickTraitIds(count: number): TraitId[] {
+  const all = getAllTraits();
+  const target = Math.min(count, all.length);
+  // Fisher-Yates partial shuffle: only swap the last `target` slots.
+  const arr = all.slice();
+  for (let i = arr.length - 1; i >= arr.length - target; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr.slice(arr.length - target).map((t) => t.id);
+}
+
+function clampCurrentToPotential(current: PlayerStats, potential: PlayerStats): PlayerStats {
+  const result: PlayerStats = { ...current };
+  for (const key of ALL_STAT_KEYS) {
+    if (result[key] > potential[key]) result[key] = potential[key];
+  }
+  return result;
+}
+
 export function generatePlayer(): Player {
   const position = pickRandom(OUTFIELD_POSITIONS);
   const age = randInt(14, 17);
   const { firstName, lastName } = generateEnglishName();
-  const potential = generatePotential(position);
-  const current = generateCurrent(potential, age);
+  const rawPotential = generatePotential(position);
+  const rawCurrent = generateCurrent(rawPotential, age);
+
+  const traits = pickTraitIds(pickTraitCount());
+  const potential = applyBaseEffects(rawPotential, traits);
+  const current = clampCurrentToPotential(applyBaseEffects(rawCurrent, traits), potential);
+
   return {
     id: crypto.randomUUID(),
     firstName,
@@ -99,6 +139,7 @@ export function generatePlayer(): Player {
     nationality: 'England',
     position,
     stats: { current, potential },
+    traits,
     createdAt: Date.now(),
   };
 }
