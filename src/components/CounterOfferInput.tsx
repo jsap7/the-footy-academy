@@ -130,7 +130,10 @@ export default function CounterOfferInput({
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-2">
-          <label className="text-[10px] uppercase tracking-[0.12em] text-ink-dim" htmlFor="counter-custom">
+          <label
+            className="text-[10px] uppercase tracking-[0.12em] text-ink-dim"
+            htmlFor="counter-custom"
+          >
             custom
           </label>
           <input

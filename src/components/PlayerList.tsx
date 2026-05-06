@@ -65,7 +65,14 @@ type SortHeaderProps = {
   onToggle: (key: SortKey) => void;
 };
 
-function SortHeader({ label, sortKey, activeKey, direction, align = 'left', onToggle }: SortHeaderProps) {
+function SortHeader({
+  label,
+  sortKey,
+  activeKey,
+  direction,
+  align = 'left',
+  onToggle,
+}: SortHeaderProps) {
   const isActive = activeKey === sortKey;
   const arrow = isActive ? (direction === 'asc' ? '^' : 'v') : '·';
   const justify = align === 'right' ? 'justify-end' : 'justify-start';

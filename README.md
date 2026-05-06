@@ -47,7 +47,7 @@ Open the URL printed by Vite (defaults to <http://localhost:5173>).
 | `npm run format`       | Format the codebase with Prettier         |
 | `npm run format:check` | Check formatting without writing changes  |
 
-## What's shipped (phases 0 → 3)
+## What's shipped (phases 0 → 3.5)
 
 **Phase 0 — engine baseline.** `Player` data model (38 outfield stats × current/potential), English name generator, player generator, list + side-panel detail view.
 
@@ -66,6 +66,18 @@ Open the URL printed by Vite (defaults to <http://localhost:5173>).
 - Each turn, clubs may send unsolicited bids based on player quality, age, and selling state. Offers go into an inbox; you can accept (instant sale), counter (response next turn — accept / counter back / walk), or reject.
 - "Available for Sale" toggle (2× offer frequency) and "List with Price" (clubs respond yes / fair-value bid / pricey-stretch / skip based on asking vs perceived value).
 - Event banner shows birthdays, releases, and sales after each turn.
+
+**Phase 3.5 — rebalance + QoL.** Five-year playtest surfaced a tuning gap and a bunch of UX papercuts; this phase closes them without adding new systems.
+
+- Market value formula rebalanced: `pot^2.5 × 100`, plus a current/potential rating boost (raw kids price lower than polished ones at the same ceiling). Generational tier premium 2.0 → 4.0 — top sales now land around €37M. Elite premium 1.4 → 1.5.
+- Development base rate 0.5 → 0.7. A 14yo signed at 50/80 reaches potential by ~19, lining up with the resale curve falling off after 19.
+- Scout tier bias overhauled. L1 scouts can never surface elite/generational, L2 caps at great. L5 elite is once every ~20 months, generational once every ~17 years (`SCOUT_LEVEL_TIER_BIAS` in `src/game/scoutFind.ts`).
+- Roster: sortable headers (`age`/`cur`/`pot`/`value`/`stipend`/`offers` with `^v` indicators), Market Value column, Offers column showing count + biggest active bid plus an accent rail on rows with active offers.
+- Per-player Block Offers toggle (kill switch — clubs stop sending bids; mutually exclusive with Available/Listed; existing bids stay so you can resolve them).
+- Shortlist rows get a Reject button alongside Sign.
+- Offers page now groups by player. Group header shows player + position + age + current/potential + market value + count + status summary + best active. Expand to see per-club sub-rows; offers within a group sort by status priority then amount desc.
+- Each offer sub-row shows a `±N% vs MV` line (green / neutral / red).
+- Counter UI rework: their bid + market value at the top, presets for +10/+20/+30/+50% and Match MV, custom field with euro preview, send disabled until the counter is above their bid and below the club's wealth ceiling × 1.5.
 
 What's intentionally **not** here yet:
 
