@@ -25,6 +25,7 @@ type Props = {
   achievements?: readonly AchievementId[];
   statMilestones?: readonly StatMilestoneEvent[];
   callups?: readonly YouthCallupEvent[];
+  veterans?: readonly { playerId: string; playerName: string }[];
 };
 
 export default function EventBanner({
@@ -36,6 +37,7 @@ export default function EventBanner({
   achievements = [],
   statMilestones = [],
   callups = [],
+  veterans = [],
 }: Props) {
   const totalEvents =
     birthdays.length +
@@ -45,7 +47,8 @@ export default function EventBanner({
     forcedScoutFires.length +
     achievements.length +
     statMilestones.length +
-    callups.length;
+    callups.length +
+    veterans.length;
   if (totalEvents === 0) return null;
   return (
     <div className="border-b border-hairline bg-bg-elev">
@@ -127,6 +130,13 @@ export default function EventBanner({
               <Chip tone="accent">england {c.callupType}</Chip>
               <span className="text-ink">{c.playerName}</span>
               <span className="text-accent-bright">+{Math.round(c.bonusPct * 100)}% mv</span>
+            </span>
+          ))}
+          {veterans.map((v) => (
+            <span key={`vet-${v.playerId}`} className="flex items-center gap-2">
+              <Chip tone="accent">veteran</Chip>
+              <span className="text-ink">{v.playerName}</span>
+              <span className="text-ink-mid">24 months — dev +10%, mv +15%</span>
             </span>
           ))}
         </div>

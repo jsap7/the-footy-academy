@@ -128,9 +128,13 @@ export default function PlayerDetailDrawer({
                     {player.callups && player.callups.length > 0 ? (
                       <>
                         <span className="text-ink-faint">·</span>
-                        <Chip tone="accent">
-                          {player.callups.length}× call-up
-                        </Chip>
+                        <Chip tone="accent">{player.callups.length}× call-up</Chip>
+                      </>
+                    ) : null}
+                    {(player.monthsOnRoster ?? 0) >= 24 ? (
+                      <>
+                        <span className="text-ink-faint">·</span>
+                        <Chip tone="accent">veteran</Chip>
                       </>
                     ) : null}
                   </div>

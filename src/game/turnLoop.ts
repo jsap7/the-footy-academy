@@ -74,10 +74,29 @@ export function advanceMonth(state: GameState): GameState {
   const rosterAfterCallups = callupResult.roster;
   const recentYouthCallups: YouthCallupEvent[] = callupResult.events;
 
+  // 2e. Increment monthsOnRoster and detect veteran-threshold crossings.
+  // FOOTY-83: 24+ months unlocks the Veteran badge — applied to dev rate
+  // (development.ts) and MV (marketValue.ts). One-time crossing event
+  // surfaces in the banner.
+  const recentVeterans: { playerId: string; playerName: string }[] = [];
   const rosterAfterDevelopment = rosterAfterCallups.map((developed) => {
-    const mvEntry = { month: currentMonth, year: currentYear, mv: computeMarketValue(developed) };
-    const mvHistory = [...(developed.mvHistory ?? []), mvEntry].slice(-12);
-    return { ...developed, mvHistory };
+    const wasVeteran = (developed.monthsOnRoster ?? 0) >= 24;
+    const monthsOnRoster = (developed.monthsOnRoster ?? 0) + 1;
+    const isVeteran = monthsOnRoster >= 24;
+    if (!wasVeteran && isVeteran) {
+      recentVeterans.push({
+        playerId: developed.id,
+        playerName: `${developed.firstName} ${developed.lastName}`,
+      });
+    }
+    const withMonths = { ...developed, monthsOnRoster };
+    const mvEntry = {
+      month: currentMonth,
+      year: currentYear,
+      mv: computeMarketValue(withMonths),
+    };
+    const mvHistory = [...(withMonths.mvHistory ?? []), mvEntry].slice(-12);
+    return { ...withMonths, mvHistory };
   });
 
   // 3. Add monthly base income, deduct operating cost floor.
@@ -253,5 +272,6 @@ export function advanceMonth(state: GameState): GameState {
     recentAchievements: newlyUnlocked,
     recentStatMilestones,
     recentYouthCallups,
+    recentVeterans,
   };
 }

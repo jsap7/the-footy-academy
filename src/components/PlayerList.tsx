@@ -248,6 +248,9 @@ export default function PlayerList({
                 ) : player.blockOffers ? (
                   <Chip tone="danger">offers blocked</Chip>
                 ) : null}
+                {(player.monthsOnRoster ?? 0) >= 24 ? (
+                  <Chip tone="accent">veteran</Chip>
+                ) : null}
               </span>
               <span className="tabular-nums text-ink-mid">{player.age}</span>
               <span>

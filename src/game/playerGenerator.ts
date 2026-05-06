@@ -136,6 +136,7 @@ export function generatePlayer(opts?: { forceTier?: QualityTier; forceAge?: numb
     callupMultiplier: 1,
     monthsSinceLastCallup: 0,
     callups: [],
+    monthsOnRoster: 0,
     createdAt: Date.now(),
   };
 }

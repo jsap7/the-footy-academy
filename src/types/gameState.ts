@@ -61,6 +61,9 @@ export type GameState = {
   recentAchievements: AchievementId[];
   recentStatMilestones: StatMilestoneEvent[];
   recentYouthCallups: YouthCallupEvent[];
+  // Players that crossed the 24-month threshold this turn — drives a one-
+  // time event banner ("Cillian Kareem is now a Veteran of the academy").
+  recentVeterans: { playerId: string; playerName: string }[];
 };
 
 export const INITIAL_GAME_STATE: GameState = {
@@ -87,4 +90,5 @@ export const INITIAL_GAME_STATE: GameState = {
   recentAchievements: [],
   recentStatMilestones: [],
   recentYouthCallups: [],
+  recentVeterans: [],
 };

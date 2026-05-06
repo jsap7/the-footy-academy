@@ -111,6 +111,7 @@ export default function App() {
         achievements={state.recentAchievements}
         statMilestones={state.recentStatMilestones}
         callups={state.recentYouthCallups}
+        veterans={state.recentVeterans}
       />
       <main className="min-h-0 flex-1 overflow-y-auto">
         {activeTab === 'dashboard' && (
