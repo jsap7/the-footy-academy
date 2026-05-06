@@ -2,8 +2,6 @@
 
 A football academy management game. You scout, sign, develop, and sell young players. Always one bad transfer window from going broke.
 
-This is **Phase 0** — the smallest possible thing that proves the engine works. Generate a player object, see it on screen, click in to inspect its stats. No scouts, no money, no turn loop yet — those come in later phases.
-
 See the v1 Design Doc in Linear for the full vision.
 
 ## Stack
@@ -12,16 +10,18 @@ See the v1 Design Doc in Linear for the full vision.
 - TypeScript (strict mode)
 - [Tailwind CSS v4](https://tailwindcss.com/) (via the official Vite plugin)
 - ESLint + Prettier
+- [Departure Mono](https://departuremono.com/) (self-hosted, retro-terminal aesthetic)
 
 ## Project structure
 
 ```
 src/
-  components/   React components (player list, detail view, etc.)
-  data/         Static datasets (name lists, regional configs, ...)
-  game/         Game logic (player generator, name generator, ...)
-  types/        TypeScript types
-  ui/           Shared UI primitives (buttons, lists)
+  components/   React components (top bar, lists, detail views, scout/shortlist pages)
+  data/         Static datasets (name lists, trait library)
+  game/         Game logic (generators, finance, turn loop, actions)
+  types/        TypeScript types (Player, Scout, GameState, ...)
+  ui/           Shared UI primitives (Button, Chip, SectionHead, StatusBar)
+  util/         Small helpers (currency / date formatting)
   App.tsx
   main.tsx
   index.css
@@ -47,29 +47,34 @@ Open the URL printed by Vite (defaults to <http://localhost:5173>).
 | `npm run format`       | Format the codebase with Prettier         |
 | `npm run format:check` | Check formatting without writing changes  |
 
-## What's shipped (phases 0 + 1)
+## What's shipped (phases 0 → 2a)
 
-**Phase 0 — engine baseline**
+**Phase 0 — engine baseline.** `Player` data model (38 outfield stats × current/potential), English name generator, player generator, list + side-panel detail view.
 
-- `Player` data model: 38 outfield stats, current and potential values
-- English name generator (193 first names + 311 last names, multicultural mix)
-- Player generator: 14-17yo English outfielders with normal-distributed stats and position-relevant bonuses
-- "Generate Player" button in the top bar; list shows name, age, position, trait count, avg potential
-- Click a row to open the side panel with the full stat sheet — three groups (Physical / Technical / Mental), per-stat bars showing current vs potential
-- `g` to generate, `Escape` to close detail
+**Phase 1 — traits.** 12-trait library (5 positive, 4 negative, 3 neutral), weighted roll per player, base-stat effects applied to current and/or potential, color-coded pill UI with hover/click descriptions.
 
-**Phase 1 — traits**
+**Phase 1.5 — generator overhaul.** Hidden quality tier per player (mid / good / great / elite / generational) drives stat-band rolls and trait-count weights. Position bonuses bumped to +20 on a wider relevant-stats list. Age decoupled from potential (potential is age-independent; current scales with age via a linear factor 12 → 0.40, 19 → 0.85). `late_bloomer` patched to current-only so the kid reads as raw without losing his ceiling.
 
-- `Trait` data model with base-stat effects and dev-rate effects (dev-rate hooks defined now, fired in a later phase when the turn loop exists)
-- 12 traits: 5 positive, 4 negative, 3 neutral (`tall`, `workaholic`, `technically_gifted`, `natural_athlete`, `composed`, `lazy`, `fragile`, `hot_headed`, `slow_learner`, `late_bloomer`, `leader`, `physical_specimen`)
-- Generator rolls 1-5 traits per player using a weighted distribution (40 / 30 / 20 / 8 / 2) and applies their base effects to both current and potential, clamped to `[1, 100]` with `current ≤ potential` preserved
-- Detail panel shows traits as pixel-style framed pills with hover/click descriptions; positive/negative/neutral are color-coded
+**Phase 2a — bare bones loop.** Game state with cash + calendar. Scout market (5 hireable, refreshes monthly), hire/fire actions. Each hired scout surfaces 1 player per month into the shortlist, biased toward better tiers at higher scout levels. Shortlist entries expire after their lifespan ticks down. Sign a player → pays the (tier-based) fee, moves the player onto the permanent roster. Roster players cost monthly stipends. "Next Month" advances the calendar and runs the turn loop in a locked sequence.
 
-What's intentionally **not** here yet (those land in later phases): scouts, visibility ranges on stats, money, signing, the turn loop (so dev-rate effects don't fire yet), save/load, goalkeepers, regions other than England.
+What's intentionally **not** here yet (those land in later phases):
+
+- Multi-region scouts and players (still England only)
+- Hidden scout traits / background checks / scouting trips
+- Selling players / offers from clubs
+- Player aging across turns / development per turn
+- Bankruptcy game over (cash can go negative; just shows red)
+- Save / load
+- Scout judgment affecting stat visibility (true stats are still shown)
+
+## Keyboard shortcuts
+
+- `[N]` — next month
+- `[ESC]` — close detail panel
 
 ## Generator tuning
 
-`scripts/sample-players.ts` is a handy dev script for eyeballing the generator's spread:
+`scripts/sample-players.ts` is a dev-only script for eyeballing the player generator's spread:
 
 ```sh
 npx tsx scripts/sample-players.ts 100
