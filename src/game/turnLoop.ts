@@ -1,5 +1,6 @@
 import { processBirthdays, processReleases } from './aging';
 import { developPlayer } from './development';
+import { getCurrentFacility } from './facilities';
 import { MONTHLY_BASE_INCOME, currentOperatingCosts } from './finance';
 import {
   executeAcceptedOffers,
@@ -31,9 +32,13 @@ export function advanceMonth(state: GameState): GameState {
   const { updatedRoster: rosterAfterReleases, releaseEvents } =
     processReleases(rosterAfterBirthdays);
 
-  // 2c. Development — every roster player ticks up a little.
+  // 2c. Development — every roster player ticks up a little. Facility tier
+  // applies a flat multiplier to every gain (1.0× at Backyard Pitch up to
+  // 1.5× at World-Class).
+  const facility = getCurrentFacility(stateAfterCalendar);
   const rosterAfterDevelopment = rosterAfterReleases.map(
-    (player) => developPlayer(player, computeDevRateMultiplier).updated,
+    (player) =>
+      developPlayer(player, computeDevRateMultiplier, facility.developmentMultiplier).updated,
   );
 
   // 3. Add monthly base income, deduct operating cost floor.
@@ -69,14 +74,28 @@ export function advanceMonth(state: GameState): GameState {
   });
   const pendingOffers = [...offersAfterTick, ...newOffers];
 
-  // 7. Deduct scout salaries (everyone currently hired).
+  // 7. Deduct facility monthly cost (€0 at Backyard Pitch up to €1M at World-Class).
+  cash -= facility.monthlyCost;
+
+  // 8. Deduct scout salaries (everyone currently hired).
   for (const scout of state.scouts) cash -= scout.monthlySalary;
 
-  // 8. Deduct player stipends (post-aging, post-sale roster, with 20-21 squeeze).
+  // 9. Deduct player stipends (post-aging, post-sale roster, with 20-21 squeeze).
   for (const player of rosterAfterSales) cash -= calculateStipend(player);
 
-  // 9. Refresh scout market — anything you didn't hire is gone.
-  const scoutMarket = generateScoutMarket();
+  // 10. Grace counter for FOOTY-65's auto-downgrade. We tick up only when
+  // we're actually in the red AND have somewhere to fall to (tier > 1).
+  // Cleared whenever cash is back above zero.
+  let facilityGraceMonthsRemaining = state.facilityGraceMonthsRemaining;
+  if (cash < 0 && stateAfterCalendar.facilityTier > 1) {
+    facilityGraceMonthsRemaining += 1;
+  } else {
+    facilityGraceMonthsRemaining = 0;
+  }
+
+  // 11. Refresh scout market — anything you didn't hire is gone. New tier may
+  // open higher levels; downgrades close them.
+  const scoutMarket = generateScoutMarket(stateAfterCalendar.facilityTier);
 
   // Track end-of-month cash for the dashboard sparkline (trailing 12 months).
   const cashHistory = [...state.cashHistory, cash].slice(-12);
@@ -92,6 +111,7 @@ export function advanceMonth(state: GameState): GameState {
     pendingOffers,
     completedSales,
     cashHistory,
+    facilityGraceMonthsRemaining,
     recentBirthdays: birthdayEvents,
     recentReleases: releaseEvents,
     recentSales: saleResult.saleEvents,

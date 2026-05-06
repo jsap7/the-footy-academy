@@ -1,3 +1,4 @@
+import { getCurrentFacility } from './facilities';
 import { calculateStipend } from './stipends';
 import type { GameState } from '../types';
 
@@ -25,9 +26,14 @@ export function totalMonthlyScoutSalaries(state: GameState): number {
   return total;
 }
 
+export function totalMonthlyFacilityCost(state: GameState): number {
+  return getCurrentFacility(state).monthlyCost;
+}
+
 export function monthlyBurn(state: GameState): number {
   return (
     currentOperatingCosts(state) +
+    totalMonthlyFacilityCost(state) +
     totalMonthlyStipends(state) +
     totalMonthlyScoutSalaries(state)
   );

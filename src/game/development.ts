@@ -29,9 +29,10 @@ function computeRawGain(
   potential: number,
   age: number,
   traitMult: number,
+  facilityMult: number,
 ): number {
   if (current >= potential) return 0;
-  const rawGain = BASE_RATE * computeAgeCurve(age) * computeVariance() * traitMult;
+  const rawGain = BASE_RATE * computeAgeCurve(age) * computeVariance() * traitMult * facilityMult;
   const gap = potential - current;
   const gapBonus = Math.min(1.5, 1 + gap * 0.02);
   return rawGain * gapBonus;
@@ -43,6 +44,7 @@ type TraitMultiplierFn = (stat: StatKey, traitIds: readonly string[]) => number;
 export function developPlayer(
   player: Player,
   traitMultiplier: TraitMultiplierFn = () => 1,
+  facilityMultiplier = 1,
 ): {
   updated: Player;
   gainsByStat: Partial<Record<StatKey, number>>;
@@ -57,7 +59,7 @@ export function developPlayer(
     if (cur >= pot) continue;
 
     const traitMult = traitMultiplier(stat, player.traits);
-    const rawGain = computeRawGain(cur, pot, player.age, traitMult);
+    const rawGain = computeRawGain(cur, pot, player.age, traitMult, facilityMultiplier);
 
     // Carry sub-1.0 fractional progress between turns so trait multipliers
     // actually compound over time instead of being eaten by Math.round.

@@ -31,7 +31,10 @@ export function rollScoutLevel(): ScoutLevel {
 }
 
 export function generateScout(): Scout {
-  const level = rollScoutLevel();
+  return generateScoutAtLevel(rollScoutLevel());
+}
+
+export function generateScoutAtLevel(level: ScoutLevel): Scout {
   const { firstName, lastName } = generateEnglishName();
   return {
     id: crypto.randomUUID(),
@@ -40,4 +43,21 @@ export function generateScout(): Scout {
     level,
     monthlySalary: SCOUT_SALARIES[level],
   };
+}
+
+// Renormalize SCOUT_LEVEL_WEIGHTS over a restricted set of levels — used by
+// the facility-aware scout market so each tier's pool reflects the original
+// rarity curve within its allowed levels.
+export function rollLevelFromAllowed(allowed: readonly ScoutLevel[]): ScoutLevel {
+  if (allowed.length === 0) return 1;
+  let total = 0;
+  for (const lvl of allowed) total += SCOUT_LEVEL_WEIGHTS[lvl];
+  if (total <= 0) return allowed[0];
+  const r = Math.random() * total;
+  let cumulative = 0;
+  for (const lvl of allowed) {
+    cumulative += SCOUT_LEVEL_WEIGHTS[lvl];
+    if (r < cumulative) return lvl;
+  }
+  return allowed[allowed.length - 1];
 }
