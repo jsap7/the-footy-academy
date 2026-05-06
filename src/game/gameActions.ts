@@ -1,3 +1,4 @@
+import { canDowngradeFacility, canUpgradeFacility, getFacility, getNextFacilityTier, getPrevFacilityTier } from './facilities';
 import { executeAcceptedOffers } from './offers';
 import type { GameState } from '../types';
 
@@ -130,6 +131,34 @@ export function rejectShortlistEntry(state: GameState, entryId: string): GameSta
   return {
     ...state,
     shortlist: state.shortlist.filter((e) => e.id !== entryId),
+  };
+}
+
+export function upgradeFacility(state: GameState): GameState {
+  const gate = canUpgradeFacility(state);
+  if (!gate.ok) return state;
+  const next = getNextFacilityTier(state.facilityTier);
+  if (next == null) return state;
+  return {
+    ...state,
+    cash: state.cash - getFacility(next).upgradeCost,
+    facilityTier: next,
+    facilityGraceMonthsRemaining: 0,
+  };
+}
+
+// Manual downgrade — never refunds the upgrade cost. Auto-downgrade
+// (FOOTY-65) shares the tier shift but gets to ignore the orphan rule
+// because it fires scouts as part of the demotion.
+export function downgradeFacility(state: GameState): GameState {
+  const gate = canDowngradeFacility(state);
+  if (!gate.ok) return state;
+  const prev = getPrevFacilityTier(state.facilityTier);
+  if (prev == null) return state;
+  return {
+    ...state,
+    facilityTier: prev,
+    facilityGraceMonthsRemaining: 0,
   };
 }
 

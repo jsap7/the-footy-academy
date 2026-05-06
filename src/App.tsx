@@ -9,10 +9,12 @@ import ScoutsPage from './components/ScoutsPage';
 import ShortlistPage from './components/ShortlistPage';
 import TopBar from './components/TopBar';
 import {
+  downgradeFacility,
   listPlayer,
   setPlayerAvailable,
   setPlayerBlockOffers,
   unlistPlayer,
+  upgradeFacility,
 } from './game/gameActions';
 import { advanceMonth } from './game/turnLoop';
 import StatusBar from './ui/StatusBar';
@@ -93,6 +95,8 @@ export default function App() {
             onAdvanceMonth={handleAdvanceMonth}
             onJumpTab={(t) => setActiveTab(t as TabKey)}
             onSelectPlayer={handleSelect}
+            onUpgradeFacility={() => setState((prev) => upgradeFacility(prev))}
+            onDowngradeFacility={() => setState((prev) => downgradeFacility(prev))}
           />
         )}
         {activeTab !== 'dashboard' && (
