@@ -9,29 +9,43 @@
 }
 
 @theme {
-  --font-px: 'Departure Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  --default-font-family: var(--font-px);
+  /* Pixel font for headers, numbers, labels — anything with intent */
+  --font-pixel: 'Departure Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  /* Reading font for body copy, descriptions, tooltips — slightly easier on the eye */
+  --font-body:
+    'JetBrains Mono', 'Departure Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    monospace;
+  --default-font-family: var(--font-pixel);
 
-  --color-bg: #0b0b0f;
-  --color-bg-elev: #2a2a28;
-  --color-bg-row: #262624;
-  --color-bg-row-hi: #353330;
+  /* Surfaces — warmer near-black, layered */
+  --color-bg: #0e0f11;
+  --color-bg-elev: #16181b;
+  --color-bg-elev-2: #1b1e22;
+  --color-bg-row-hi: #20242a;
 
-  --color-ink: #f0ede4;
-  --color-ink-mid: #b8b4a6;
-  --color-ink-dim: #807c70;
-  --color-ink-faint: #4a4840;
+  /* Ink — never pure white */
+  --color-ink: #e8e9eb;
+  --color-ink-mid: #9da3ab;
+  --color-ink-dim: #6b7079;
+  --color-ink-faint: #3a3d43;
 
-  --color-hairline: #3a3833;
+  /* Hairlines — quieter than the previous system */
+  --color-hairline: #1f2228;
+  --color-hairline-bright: #2a2e35;
 
-  --color-accent: #fff8e0;
-  --color-accent-dim: #a39d8a;
-  --color-accent-faint: #3a382e;
+  /* Single accent — muted pitch green */
+  --color-accent: #7fa382;
+  --color-accent-bright: #9bc09f;
+  --color-accent-dim: #4f6852;
+  --color-accent-faint: #25322a;
 
-  --color-danger: #c44a3c;
-  --color-danger-rim: #5a2620;
-  --color-good: #7fa05a;
-  --color-good-rim: #2c4019;
+  /* The only secondary color — reserved for warnings / negative states */
+  --color-warn: #b86b6b;
+  --color-warn-faint: #2a1a1a;
+
+  /* Status mirrors */
+  --color-good: var(--color-accent);
+  --color-danger: var(--color-warn);
 }
 
 html,
@@ -44,12 +58,12 @@ body {
   margin: 0;
   background: var(--color-bg);
   color: var(--color-ink);
-  font-family: var(--font-px);
-  font-size: 18px;
+  font-family: var(--font-pixel);
+  font-size: 14px;
   line-height: 1.45;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1;
-  -webkit-font-smoothing: none;
+  -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: geometricPrecision;
 }
@@ -62,26 +76,31 @@ table {
   font-family: inherit;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1;
-  -webkit-font-smoothing: none;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Subtle CRT scanlines overlay — atmosphere only, must stay barely perceptible. */
-#root {
-  position: relative;
+/* When a block is reading-heavy (descriptions, paragraphs), opt into the
+   slightly easier body font. */
+.font-body {
+  font-family: var(--font-body);
 }
 
-#root::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: repeating-linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.012) 0,
-    rgba(255, 255, 255, 0.012) 1px,
-    transparent 1px,
-    transparent 3px
-  );
-  mix-blend-mode: overlay;
-  pointer-events: none;
-  z-index: 50;
+/* Scrollbars — keep them quiet so they don't fight the chrome */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-hairline-bright) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--color-hairline-bright);
+  border-radius: 4px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ink-faint);
 }

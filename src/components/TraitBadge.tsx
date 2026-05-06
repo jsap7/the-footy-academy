@@ -6,13 +6,21 @@ type Props = {
   id: TraitId;
 };
 
-const CATEGORY_TONE: Record<TraitCategory, { border: string; text: string }> = {
-  positive: { border: 'border-good-rim', text: 'text-good' },
-  negative: { border: 'border-danger-rim', text: 'text-danger' },
-  neutral: { border: 'border-hairline', text: 'text-ink-mid' },
+const CATEGORY_TONE: Record<TraitCategory, { border: string; bg: string; text: string }> = {
+  positive: {
+    border: 'border-accent-dim',
+    bg: 'bg-accent-faint',
+    text: 'text-accent-bright',
+  },
+  negative: {
+    border: 'border-warn/40',
+    bg: 'bg-warn-faint',
+    text: 'text-warn',
+  },
+  neutral: { border: 'border-hairline-bright', bg: 'bg-bg-elev-2', text: 'text-ink-mid' },
 };
 
-const TOOLTIP_WIDTH = 240;
+const TOOLTIP_WIDTH = 256;
 
 export default function TraitBadge({ id }: Props) {
   const trait = getTrait(id);
@@ -55,7 +63,7 @@ export default function TraitBadge({ id }: Props) {
         onClick={() => setPinned((prev) => !prev)}
         aria-expanded={open}
         aria-describedby={open ? `trait-desc-${id}` : undefined}
-        className={`inline-flex items-center border bg-transparent px-[7px] py-[2px] text-[10px] uppercase tracking-[0.10em] transition focus:outline-none focus-visible:border-accent focus-visible:text-accent ${tone.border} ${tone.text}`}
+        className={`inline-flex items-center rounded-[3px] border px-2 py-[3px] text-[10px] uppercase tracking-[0.10em] leading-none transition-colors duration-150 focus:outline-none focus-visible:ring-1 focus-visible:ring-accent ${tone.border} ${tone.bg} ${tone.text}`}
       >
         {trait.name}
       </button>
@@ -63,7 +71,7 @@ export default function TraitBadge({ id }: Props) {
         <span
           id={`trait-desc-${id}`}
           role="tooltip"
-          className={`pointer-events-none absolute top-full z-20 mt-1 w-60 max-w-[16rem] border border-hairline bg-bg-elev px-3 py-2 text-[14px] leading-snug text-ink-mid shadow-none ${
+          className={`pointer-events-none absolute top-full z-30 mt-2 w-64 max-w-[16rem] rounded-md border border-hairline-bright bg-bg-elev px-3 py-2 text-[12px] leading-snug text-ink-mid shadow-lg font-body ${
             alignRight ? 'right-0' : 'left-0'
           }`}
         >

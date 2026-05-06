@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-type Tone = 'neutral' | 'accent' | 'danger' | 'good';
+type Tone = 'neutral' | 'accent' | 'danger' | 'good' | 'muted';
 
 type Props = {
   tone?: Tone;
@@ -9,16 +9,17 @@ type Props = {
 };
 
 const TONE_STYLES: Record<Tone, string> = {
-  neutral: 'border-hairline text-ink-mid',
-  accent: 'border-accent-dim text-accent',
-  danger: 'border-danger-rim text-danger',
-  good: 'border-good-rim text-good',
+  neutral: 'border-hairline-bright bg-bg-elev text-ink-mid',
+  muted: 'border-transparent bg-bg-elev-2 text-ink-dim',
+  accent: 'border-accent-dim bg-accent-faint text-accent-bright',
+  danger: 'border-warn/40 bg-warn-faint text-warn',
+  good: 'border-accent-dim bg-accent-faint text-accent-bright',
 };
 
 export default function Chip({ tone = 'neutral', children, className = '' }: Props) {
   return (
     <span
-      className={`inline-flex items-center border px-[7px] py-[2px] text-[10px] uppercase tracking-[0.10em] ${TONE_STYLES[tone]} ${className}`}
+      className={`inline-flex items-center rounded-[3px] border px-1.5 py-[1px] text-[10px] uppercase leading-none tracking-[0.10em] ${TONE_STYLES[tone]} ${className}`}
     >
       {children}
     </span>

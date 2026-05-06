@@ -1,26 +1,23 @@
 import { useEffect, useMemo, useState } from 'react';
+import Dashboard from './components/Dashboard';
 import EmptyState from './components/EmptyState';
 import EventBanner from './components/EventBanner';
-import NavStrip from './components/NavStrip';
 import OffersPage from './components/OffersPage';
-import PlayerDetail from './components/PlayerDetail';
+import PlayerDetailDrawer from './components/PlayerDetailDrawer';
 import PlayerList from './components/PlayerList';
 import ScoutsPage from './components/ScoutsPage';
 import ShortlistPage from './components/ShortlistPage';
 import TopBar from './components/TopBar';
 import { listPlayer, setPlayerAvailable, unlistPlayer } from './game/gameActions';
-import { monthlyBurn } from './game/finance';
 import { advanceMonth } from './game/turnLoop';
-import Button from './ui/Button';
-import SectionHead from './ui/SectionHead';
 import StatusBar from './ui/StatusBar';
 import { INITIAL_GAME_STATE, type GameState } from './types';
 
-type TabKey = 'roster' | 'shortlist' | 'scouts' | 'offers';
+type TabKey = 'dashboard' | 'roster' | 'shortlist' | 'scouts' | 'offers';
 
 export default function App() {
   const [state, setState] = useState<GameState>(INITIAL_GAME_STATE);
-  const [activeTab, setActiveTab] = useState<TabKey>('roster');
+  const [activeTab, setActiveTab] = useState<TabKey>('dashboard');
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
 
   const selectedPlayer = useMemo(() => {
@@ -46,10 +43,6 @@ export default function App() {
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       if (isTypingTarget(e.target)) return;
-      if (e.key === 'Escape') {
-        setSelectedPlayerId(null);
-        return;
-      }
       if (e.key === 'n' || e.key === 'N') {
         setState((prev) => advanceMonth(prev));
       }
@@ -58,30 +51,19 @@ export default function App() {
     return () => document.removeEventListener('keydown', onKey);
   }, []);
 
-  const headerActions = (
-    <Button variant="primary" onClick={handleAdvanceMonth} hint="N">
-      next month →
-    </Button>
-  );
-
   const actionableOffers = state.pendingOffers.filter(
     (o) => o.status === 'pending' || o.status === 'countered',
   ).length;
 
   const navTabs = [
-    { key: 'roster', label: 'academy' },
-    {
-      key: 'shortlist',
-      label: 'shortlist',
-      hint: state.shortlist.length > 0 ? String(state.shortlist.length) : undefined,
-    },
-    {
-      key: 'offers',
-      label: 'offers',
-      hint: actionableOffers > 0 ? String(actionableOffers) : undefined,
-    },
+    { key: 'dashboard', label: 'dashboard' },
+    { key: 'roster', label: 'roster', badge: state.roster.length },
+    { key: 'shortlist', label: 'shortlist', badge: state.shortlist.length },
+    { key: 'offers', label: 'offers', badge: actionableOffers },
     { key: 'scouts', label: 'scouts' },
   ] as const;
+
+  const onRoster = selectedPlayer ? state.roster.some((p) => p.id === selectedPlayer.id) : false;
 
   return (
     <div className="flex h-full flex-col bg-bg text-ink">
@@ -89,22 +71,29 @@ export default function App() {
         cash={state.cash}
         month={state.currentMonth}
         year={state.currentYear}
-        squad={state.roster.length}
-        burn={monthlyBurn(state)}
-        rightSlot={headerActions}
+        tabs={navTabs}
+        activeTab={activeTab}
+        onChangeTab={(key) => setActiveTab(key as TabKey)}
+        onAdvanceMonth={handleAdvanceMonth}
       />
-      <NavStrip tabs={navTabs} active={activeTab} onChange={(key) => setActiveTab(key as TabKey)} />
       <EventBanner
         birthdays={state.recentBirthdays}
         releases={state.recentReleases}
         sales={state.recentSales}
       />
-      <main className="flex min-h-0 flex-1">
-        <section className="flex w-full min-w-0 flex-1 flex-col border-r border-hairline">
-          {activeTab === 'roster' && (
-            <>
-              <SectionHead label="academy roster" count={state.roster.length} />
-              {state.roster.length === 0 ? (
+      <main className="min-h-0 flex-1 overflow-y-auto">
+        {activeTab === 'dashboard' && (
+          <Dashboard
+            state={state}
+            onAdvanceMonth={handleAdvanceMonth}
+            onJumpTab={(t) => setActiveTab(t as TabKey)}
+            onSelectPlayer={handleSelect}
+          />
+        )}
+        {activeTab !== 'dashboard' && (
+          <div className="mx-auto w-full max-w-[1280px] px-12 py-10 space-y-6">
+            {activeTab === 'roster' &&
+              (state.roster.length === 0 ? (
                 <EmptyState
                   hasScouts={state.scouts.length > 0}
                   onGoToScouts={() => setActiveTab('scouts')}
@@ -115,76 +104,47 @@ export default function App() {
                   selectedPlayerId={selectedPlayerId}
                   onSelect={handleSelect}
                 />
-              )}
-            </>
-          )}
-          {activeTab === 'shortlist' && (
-            <>
-              <SectionHead
-                label="shortlist"
-                count={state.shortlist.length}
-                right={
-                  <span className="text-[10px] tracking-[0.14em] text-ink-faint">
-                    expires after 3 months · sign or lose them
-                  </span>
-                }
-              />
+              ))}
+            {activeTab === 'shortlist' && (
               <ShortlistPage
                 state={state}
                 selectedPlayerId={selectedPlayerId}
                 onSelect={handleSelect}
                 onChange={setState}
               />
-            </>
-          )}
-          {activeTab === 'scouts' && <ScoutsPage state={state} onChange={setState} />}
-          {activeTab === 'offers' && (
-            <>
-              <SectionHead
-                label="incoming offers"
-                count={state.pendingOffers.length}
-                right={
-                  <span className="text-[10px] tracking-[0.14em] text-ink-faint">
-                    accept · counter · reject · expires after 3 months
-                  </span>
-                }
-              />
-              <OffersPage
-                state={state}
-                onChange={setState}
-                onSelectPlayer={(id) => {
-                  setSelectedPlayerId(id);
-                }}
-              />
-            </>
-          )}
-        </section>
-        {selectedPlayer && (
-          <aside className="w-[480px] shrink-0">
-            <PlayerDetail
-              player={selectedPlayer}
-              onClose={handleClose}
-              onSetAvailable={
-                state.roster.some((p) => p.id === selectedPlayer.id)
-                  ? (id, available) => setState((prev) => setPlayerAvailable(prev, id, available))
-                  : undefined
-              }
-              onList={
-                state.roster.some((p) => p.id === selectedPlayer.id)
-                  ? (id, price) => setState((prev) => listPlayer(prev, id, price))
-                  : undefined
-              }
-              onUnlist={
-                state.roster.some((p) => p.id === selectedPlayer.id)
-                  ? (id) => setState((prev) => unlistPlayer(prev, id))
-                  : undefined
-              }
-            />
-          </aside>
+            )}
+            {activeTab === 'scouts' && <ScoutsPage state={state} onChange={setState} />}
+            {activeTab === 'offers' && (
+              <OffersPage state={state} onChange={setState} onSelectPlayer={handleSelect} />
+            )}
+          </div>
         )}
       </main>
       <StatusBar
-        hints={selectedPlayer ? '[N] next month · [ESC] close' : '[N] next month · [↑/↓] navigate'}
+        hints={
+          selectedPlayer
+            ? '[N] next month · [ESC] close drawer'
+            : '[N] next month · click any player to drill in'
+        }
+      />
+      <PlayerDetailDrawer
+        player={selectedPlayer}
+        onClose={handleClose}
+        onSetAvailable={
+          onRoster && selectedPlayer
+            ? (id, available) => setState((prev) => setPlayerAvailable(prev, id, available))
+            : undefined
+        }
+        onList={
+          onRoster && selectedPlayer
+            ? (id, price) => setState((prev) => listPlayer(prev, id, price))
+            : undefined
+        }
+        onUnlist={
+          onRoster && selectedPlayer
+            ? (id) => setState((prev) => unlistPlayer(prev, id))
+            : undefined
+        }
       />
     </div>
   );

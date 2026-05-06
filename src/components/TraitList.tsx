@@ -7,7 +7,7 @@ type Props = {
 
 export default function TraitList({ traits }: Props) {
   if (traits.length === 0) {
-    return <p className="text-[12px] uppercase tracking-[0.14em] text-ink-faint">no traits</p>;
+    return <p className="text-[11px] uppercase tracking-[0.12em] text-ink-faint">no traits</p>;
   }
   return (
     <div className="flex flex-wrap gap-1.5">

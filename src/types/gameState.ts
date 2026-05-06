@@ -22,6 +22,10 @@ export type GameState = {
   pendingOffers: Offer[];
   completedSales: Offer[];
 
+  // End-of-month cash for the trailing 12 months — used by the dashboard
+  // sparkline. Pushed on every advanceMonth tick.
+  cashHistory: number[];
+
   // Ephemeral UI events — populated each turn, cleared at start of next turn.
   recentBirthdays: BirthdayEvent[];
   recentReleases: ReleaseEvent[];
@@ -39,6 +43,7 @@ export const INITIAL_GAME_STATE: GameState = {
   clubs: CLUB_LIBRARY,
   pendingOffers: [],
   completedSales: [],
+  cashHistory: [50_000],
   recentBirthdays: [],
   recentReleases: [],
   recentSales: [],
