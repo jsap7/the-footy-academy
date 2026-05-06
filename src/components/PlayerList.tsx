@@ -8,6 +8,7 @@ import {
 } from '../game/playerStats';
 import { calculateStipend } from '../game/stipends';
 import { computeMarketValue } from '../game/marketValue';
+import { MINIMUM_TRANSFER_AGE } from '../game/offers';
 import { formatCash } from '../util/format';
 import Chip from '../ui/Chip';
 
@@ -231,7 +232,9 @@ export default function PlayerList({ players, pendingOffers, selectedPlayerId, o
                 <span className="truncate">
                   {player.firstName} {player.lastName}
                 </span>
-                {player.askingPrice != null ? (
+                {player.age < MINIMUM_TRANSFER_AGE ? (
+                  <Chip tone="muted">locked u{MINIMUM_TRANSFER_AGE}</Chip>
+                ) : player.askingPrice != null ? (
                   <Chip tone="accent">listed</Chip>
                 ) : player.availableForSale ? (
                   <Chip tone="muted">available</Chip>

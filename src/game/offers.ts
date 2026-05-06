@@ -3,6 +3,11 @@ import type { Club, ClubTier, GameState, Offer, Player, QualityTier, SaleEvent }
 
 export const OFFER_LIFESPAN_TURNS = 3;
 
+// FIFA-style: international transfers locked for under-16s. We surface this
+// as a hard rule in offer generation + the selling UI so the user makes a
+// real commitment when signing a young kid.
+export const MINIMUM_TRANSFER_AGE = 16;
+
 const VISIBLE_QUALITY_BY_TIER: Record<QualityTier, number> = {
   mid: 0.05,
   good: 0.2,
@@ -68,6 +73,7 @@ function pickClubForPlayer(player: Player, clubs: readonly Club[]): Club | undef
 export function generateOffersForTurn(state: GameState): Offer[] {
   const newOffers: Offer[] = [];
   for (const player of state.roster) {
+    if (player.age < MINIMUM_TRANSFER_AGE) continue;
     if (player.blockOffers) continue;
     const chance = computeOfferChance(player);
     if (chance <= 0) continue;
