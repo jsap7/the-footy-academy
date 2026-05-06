@@ -8,8 +8,8 @@ import type { GameState } from '../types';
 // immediately. Cup bonuses, sponsors, and sell-on payouts arrive in later phases.
 // Income deliberately does NOT inflate (FOOTY-66): the squeeze is supposed to
 // tighten over time, not stay flat.
-export const MONTHLY_BASE_INCOME = 5_000;
-export const MONTHLY_OPERATING_COSTS_BASE = 20_000;
+export const MONTHLY_BASE_INCOME = 8_000;
+export const MONTHLY_OPERATING_COSTS_BASE = 15_000;
 
 export function currentOperatingCosts(state: GameState): number {
   return applyInflation(MONTHLY_OPERATING_COSTS_BASE, state.currentYear);
