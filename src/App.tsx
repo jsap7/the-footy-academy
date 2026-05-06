@@ -101,6 +101,7 @@ export default function App() {
               ) : (
                 <PlayerList
                   players={state.roster}
+                  pendingOffers={state.pendingOffers}
                   selectedPlayerId={selectedPlayerId}
                   onSelect={handleSelect}
                 />

@@ -1,20 +1,28 @@
 import { useMemo, useState } from 'react';
-import type { Player } from '../types';
-import { averageCurrent, averagePotential } from '../game/playerStats';
+import type { Offer, Player } from '../types';
+import {
+  averageCurrent,
+  averagePotential,
+  buildPendingOffersIndex,
+  highestOfferAmount,
+} from '../game/playerStats';
 import { calculateStipend } from '../game/stipends';
+import { computeMarketValue } from '../game/marketValue';
 import { formatCash } from '../util/format';
 import Chip from '../ui/Chip';
 
 type Props = {
   players: readonly Player[];
+  pendingOffers: readonly Offer[];
   selectedPlayerId: string | null;
   onSelect: (playerId: string) => void;
 };
 
-type SortKey = 'age' | 'cur' | 'pot' | 'stipend';
+type SortKey = 'age' | 'cur' | 'pot' | 'mv' | 'stipend' | 'offers';
 type SortDir = 'asc' | 'desc';
 
-const COLS = 'grid-cols-[minmax(0,1.6fr)_56px_72px_64px_64px_36px_minmax(0,1fr)_minmax(0,1fr)]';
+const COLS =
+  'grid-cols-[minmax(0,1.4fr)_44px_64px_44px_44px_minmax(0,1fr)_72px_72px_minmax(0,1.1fr)]';
 
 const DOTTED_TRACK =
   'repeating-linear-gradient(to right, var(--color-ink-faint) 0 2px, transparent 2px 4px)';
@@ -23,7 +31,9 @@ const DEFAULT_DIRECTION: Record<SortKey, SortDir> = {
   age: 'asc',
   cur: 'desc',
   pot: 'desc',
+  mv: 'desc',
   stipend: 'desc',
+  offers: 'desc',
 };
 
 function PotBar({ current, potential }: { current: number; potential: number }) {
@@ -75,18 +85,27 @@ function SortHeader({ label, sortKey, activeKey, direction, align = 'left', onTo
   );
 }
 
-export default function PlayerList({ players, selectedPlayerId, onSelect }: Props) {
+export default function PlayerList({ players, pendingOffers, selectedPlayerId, onSelect }: Props) {
   const [sortKey, setSortKey] = useState<SortKey>('pot');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
 
+  const offersByPlayer = useMemo(() => buildPendingOffersIndex(pendingOffers), [pendingOffers]);
+
   const sortedPlayers = useMemo(() => {
-    const enriched = players.map((p) => ({
-      player: p,
-      cur: averageCurrent(p),
-      pot: averagePotential(p),
-      stipend: calculateStipend(p),
-      name: `${p.lastName} ${p.firstName}`,
-    }));
+    const enriched = players.map((p) => {
+      const offers = offersByPlayer.get(p.id) ?? [];
+      const bestOffer = highestOfferAmount(offers);
+      return {
+        player: p,
+        cur: averageCurrent(p),
+        pot: averagePotential(p),
+        stipend: calculateStipend(p),
+        marketValue: computeMarketValue(p),
+        offerCount: offers.length,
+        bestOffer,
+        name: `${p.lastName} ${p.firstName}`,
+      };
+    });
     const dir = sortDir === 'asc' ? 1 : -1;
     enriched.sort((a, b) => {
       let primary = 0;
@@ -100,15 +119,21 @@ export default function PlayerList({ players, selectedPlayerId, onSelect }: Prop
         case 'pot':
           primary = a.pot - b.pot;
           break;
+        case 'mv':
+          primary = a.marketValue - b.marketValue;
+          break;
         case 'stipend':
           primary = a.stipend - b.stipend;
+          break;
+        case 'offers':
+          primary = a.bestOffer - b.bestOffer || a.offerCount - b.offerCount;
           break;
       }
       if (primary !== 0) return primary * dir;
       return a.name.localeCompare(b.name);
     });
     return enriched;
-  }, [players, sortKey, sortDir]);
+  }, [players, offersByPlayer, sortKey, sortDir]);
 
   const handleToggle = (key: SortKey) => {
     if (key === sortKey) {
@@ -122,7 +147,7 @@ export default function PlayerList({ players, selectedPlayerId, onSelect }: Prop
   return (
     <div className="overflow-hidden rounded-md border border-hairline bg-bg-elev">
       <div
-        className={`grid ${COLS} items-center gap-5 border-b border-hairline px-6 py-3 text-[10px] uppercase tracking-[0.12em] text-ink-dim`}
+        className={`grid ${COLS} items-center gap-4 border-b border-hairline px-6 py-3 text-[10px] uppercase tracking-[0.12em] text-ink-dim`}
       >
         <span>player</span>
         <SortHeader
@@ -149,11 +174,26 @@ export default function PlayerList({ players, selectedPlayerId, onSelect }: Prop
           align="right"
           onToggle={handleToggle}
         />
-        <span className="text-right">tr</span>
         <span>development</span>
         <SortHeader
-          label="stipend / mo"
+          label="value"
+          sortKey="mv"
+          activeKey={sortKey}
+          direction={sortDir}
+          align="right"
+          onToggle={handleToggle}
+        />
+        <SortHeader
+          label="stipend"
           sortKey="stipend"
+          activeKey={sortKey}
+          direction={sortDir}
+          align="right"
+          onToggle={handleToggle}
+        />
+        <SortHeader
+          label="offers"
+          sortKey="offers"
           activeKey={sortKey}
           direction={sortDir}
           align="right"
@@ -161,17 +201,21 @@ export default function PlayerList({ players, selectedPlayerId, onSelect }: Prop
         />
       </div>
       <div className="divide-y divide-hairline">
-        {sortedPlayers.map(({ player, cur, pot, stipend }) => {
+        {sortedPlayers.map(({ player, cur, pot, stipend, marketValue, offerCount, bestOffer }) => {
           const isSelected = player.id === selectedPlayerId;
+          const hasOffers = offerCount > 0;
           return (
             <button
               key={player.id}
               type="button"
               onClick={() => onSelect(player.id)}
-              className={`grid w-full ${COLS} items-center gap-5 px-6 py-4 text-left text-[13px] leading-none transition-colors duration-150 ${
+              className={`relative grid w-full ${COLS} items-center gap-4 px-6 py-4 text-left text-[13px] leading-none transition-colors duration-150 ${
                 isSelected ? 'bg-bg-row-hi text-ink' : 'text-ink hover:bg-bg-elev-2'
               }`}
             >
+              {hasOffers ? (
+                <span aria-hidden className="absolute inset-y-2 left-0 w-[2px] bg-accent" />
+              ) : null}
               <span className="flex min-w-0 items-center gap-3">
                 <span
                   aria-hidden
@@ -192,9 +236,20 @@ export default function PlayerList({ players, selectedPlayerId, onSelect }: Prop
               </span>
               <span className="text-right tabular-nums text-ink">{cur}</span>
               <span className="text-right tabular-nums text-ink-mid">{pot}</span>
-              <span className="text-right tabular-nums text-ink-dim">{player.traits.length}</span>
               <PotBar current={cur} potential={pot} />
+              <span className="text-right tabular-nums text-ink">{formatCash(marketValue)}</span>
               <span className="text-right tabular-nums text-ink-mid">{formatCash(stipend)}</span>
+              <span className="text-right tabular-nums text-ink-dim">
+                {hasOffers ? (
+                  <span className="text-ink">
+                    {offerCount}
+                    <span className="px-1 text-ink-faint">·</span>
+                    <span className="text-accent-bright">{formatCash(bestOffer)}</span>
+                  </span>
+                ) : (
+                  '—'
+                )}
+              </span>
             </button>
           );
         })}
