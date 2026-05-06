@@ -1,11 +1,11 @@
 import { ALL_STAT_KEYS, type Club, type Player, type QualityTier } from '../types';
 
 const TIER_PREMIUM: Record<QualityTier, number> = {
-  mid: 1.0,
-  good: 1.0,
-  great: 1.1,
-  elite: 1.5,
-  generational: 4.0,
+  mid: 0.04,
+  good: 0.12,
+  great: 0.5,
+  elite: 2.0,
+  generational: 6.0,
 };
 
 // Resale curve: peaks at 16-18, drops fast after.

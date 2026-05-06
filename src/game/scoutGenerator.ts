@@ -1,12 +1,13 @@
+import { applyInflation, INFLATION_BASE_YEAR } from './inflation';
 import { generateEnglishName } from './nameGenerator';
 import type { Scout, ScoutLevel } from '../types/scout';
 
 export const SCOUT_SALARIES: Record<ScoutLevel, number> = {
-  1: 2_000,
-  2: 8_000,
-  3: 30_000,
-  4: 80_000,
-  5: 200_000,
+  1: 5_000,
+  2: 20_000,
+  3: 75_000,
+  4: 200_000,
+  5: 400_000,
 };
 
 // Most market scouts are mediocre. Sums to 1.0.
@@ -30,14 +31,37 @@ export function rollScoutLevel(): ScoutLevel {
   return lastLevel;
 }
 
-export function generateScout(): Scout {
-  const level = rollScoutLevel();
+export function generateScout(currentYear: number = INFLATION_BASE_YEAR): Scout {
+  return generateScoutAtLevel(rollScoutLevel(), currentYear);
+}
+
+export function generateScoutAtLevel(
+  level: ScoutLevel,
+  currentYear: number = INFLATION_BASE_YEAR,
+): Scout {
   const { firstName, lastName } = generateEnglishName();
   return {
     id: crypto.randomUUID(),
     firstName,
     lastName,
     level,
-    monthlySalary: SCOUT_SALARIES[level],
+    monthlySalary: applyInflation(SCOUT_SALARIES[level], currentYear),
   };
+}
+
+// Renormalize SCOUT_LEVEL_WEIGHTS over a restricted set of levels — used by
+// the facility-aware scout market so each tier's pool reflects the original
+// rarity curve within its allowed levels.
+export function rollLevelFromAllowed(allowed: readonly ScoutLevel[]): ScoutLevel {
+  if (allowed.length === 0) return 1;
+  let total = 0;
+  for (const lvl of allowed) total += SCOUT_LEVEL_WEIGHTS[lvl];
+  if (total <= 0) return allowed[0];
+  const r = Math.random() * total;
+  let cumulative = 0;
+  for (const lvl of allowed) {
+    cumulative += SCOUT_LEVEL_WEIGHTS[lvl];
+    if (r < cumulative) return lvl;
+  }
+  return allowed[allowed.length - 1];
 }

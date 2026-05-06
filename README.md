@@ -47,7 +47,7 @@ Open the URL printed by Vite (defaults to <http://localhost:5173>).
 | `npm run format`       | Format the codebase with Prettier         |
 | `npm run format:check` | Check formatting without writing changes  |
 
-## What's shipped (phases 0 → 3.5)
+## What's shipped (phases 0 → 4)
 
 **Phase 0 — engine baseline.** `Player` data model (38 outfield stats × current/potential), English name generator, player generator, list + side-panel detail view.
 
@@ -78,6 +78,18 @@ Open the URL printed by Vite (defaults to <http://localhost:5173>).
 - Offers page now groups by player. Group header shows player + position + age + current/potential + market value + count + status summary + best active. Expand to see per-club sub-rows; offers within a group sort by status priority then amount desc.
 - Each offer sub-row shows a `±N% vs MV` line (green / neutral / red).
 - Counter UI rework: their bid + market value at the top, presets for +10/+20/+30/+50% and Match MV, custom field with euro preview, send disabled until the counter is above their bid and below the club's wealth ceiling × 1.5.
+
+**Phase 4 — economy overhaul.** The Phase 3.5 playtest revealed you could bank €100M by 2029 starting from nothing. Phase 4 redesigns the economy around a single pillar: *the squeeze is the engine*.
+
+- Income crashed from €50k → €5k/mo; new €20k baseline operating cost. Net is -€15k/mo idle, so doing nothing burns through starting cash in 4 turns.
+- Tier premiums on sale value crashed for low tiers and lifted for top tiers (`mid 0.04 / good 0.12 / great 0.5 / elite 2.0 / generational 6.0`). Mid kids now sell for €100–300k (was millions), generational sales hit €35M+ jackpot territory.
+- 16+ rule for sales — under-16 players cannot be sold or listed, with a "locked u16" chip on the roster row. Auto-unlocks at 16th birthday.
+- Scout salaries 2.5–3× across the board (L1 €5k → L5 €400k). Existing scouts grandfathered.
+- Tier-based signing fees: mid €15k → generational €800k (±15% noise, locked at find time on the shortlist entry).
+- Five-tier facility system (Backyard Pitch → World-Class). Each tier sets monthly cost, a development multiplier (1.0× → 1.5×), and which scout levels can surface in the market. Manual upgrades (no refund), manual downgrades (blocked if it would orphan scouts), and auto-downgrade after 2 broke months at any tier > 1 (auto path force-fires scouts above the new tier).
+- Annual 3% inflation on operating costs, facility monthly + upgrade costs, signing fees, stipends, and new-hire scout salaries. Income deliberately stays flat at €5k so the squeeze tightens by year.
+- Dashboard burn breakdown widget (operating / facility / stipends / scouts with ASCII bars + % of total).
+- New Finances tab with cash hero, monthly net + annual run-rate, 12-month cash chart with peak/trough markers, inflated cost breakdown, and a transaction list (last ~24 months of sales / signings / scout hires + fires / facility moves / monthly burn).
 
 What's intentionally **not** here yet:
 

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Dashboard from './components/Dashboard';
 import EmptyState from './components/EmptyState';
 import EventBanner from './components/EventBanner';
+import FinancesPage from './components/FinancesPage';
 import OffersPage from './components/OffersPage';
 import PlayerDetailDrawer from './components/PlayerDetailDrawer';
 import PlayerList from './components/PlayerList';
@@ -9,16 +10,18 @@ import ScoutsPage from './components/ScoutsPage';
 import ShortlistPage from './components/ShortlistPage';
 import TopBar from './components/TopBar';
 import {
+  downgradeFacility,
   listPlayer,
   setPlayerAvailable,
   setPlayerBlockOffers,
   unlistPlayer,
+  upgradeFacility,
 } from './game/gameActions';
 import { advanceMonth } from './game/turnLoop';
 import StatusBar from './ui/StatusBar';
 import { INITIAL_GAME_STATE, type GameState } from './types';
 
-type TabKey = 'dashboard' | 'roster' | 'shortlist' | 'scouts' | 'offers';
+type TabKey = 'dashboard' | 'roster' | 'shortlist' | 'scouts' | 'offers' | 'finances';
 
 export default function App() {
   const [state, setState] = useState<GameState>(INITIAL_GAME_STATE);
@@ -66,6 +69,7 @@ export default function App() {
     { key: 'shortlist', label: 'shortlist', badge: state.shortlist.length },
     { key: 'offers', label: 'offers', badge: actionableOffers },
     { key: 'scouts', label: 'scouts' },
+    { key: 'finances', label: 'finances' },
   ] as const;
 
   const onRoster = selectedPlayer ? state.roster.some((p) => p.id === selectedPlayer.id) : false;
@@ -85,6 +89,8 @@ export default function App() {
         birthdays={state.recentBirthdays}
         releases={state.recentReleases}
         sales={state.recentSales}
+        facilityEvents={state.recentFacilityEvents}
+        forcedScoutFires={state.recentForcedScoutFires}
       />
       <main className="min-h-0 flex-1 overflow-y-auto">
         {activeTab === 'dashboard' && (
@@ -93,6 +99,8 @@ export default function App() {
             onAdvanceMonth={handleAdvanceMonth}
             onJumpTab={(t) => setActiveTab(t as TabKey)}
             onSelectPlayer={handleSelect}
+            onUpgradeFacility={() => setState((prev) => upgradeFacility(prev))}
+            onDowngradeFacility={() => setState((prev) => downgradeFacility(prev))}
           />
         )}
         {activeTab !== 'dashboard' && (
@@ -108,6 +116,7 @@ export default function App() {
                   players={state.roster}
                   pendingOffers={state.pendingOffers}
                   selectedPlayerId={selectedPlayerId}
+                  currentYear={state.currentYear}
                   onSelect={handleSelect}
                 />
               ))}
@@ -123,6 +132,7 @@ export default function App() {
             {activeTab === 'offers' && (
               <OffersPage state={state} onChange={setState} onSelectPlayer={handleSelect} />
             )}
+            {activeTab === 'finances' && <FinancesPage state={state} />}
           </div>
         )}
       </main>
