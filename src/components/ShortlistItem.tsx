@@ -13,6 +13,8 @@ type Props = {
   onSign: (entryId: string) => void;
 };
 
+const COLS = 'grid-cols-[minmax(0,1.4fr)_56px_72px_60px_36px_minmax(0,1fr)_72px_120px_104px]';
+
 export default function ShortlistItem({
   entry,
   scoutName,
@@ -27,47 +29,39 @@ export default function ShortlistItem({
 
   return (
     <div
-      className={`flex items-stretch border-b border-hairline ${
-        selected ? 'bg-bg-row-hi text-accent' : ''
+      className={`grid w-full ${COLS} items-center gap-5 px-6 py-4 text-[13px] leading-none transition-colors duration-150 ${
+        selected ? 'bg-bg-row-hi text-ink' : 'text-ink hover:bg-bg-elev-2'
       }`}
     >
       <button
         type="button"
         onClick={() => onSelect(entry.id)}
-        className="flex flex-1 flex-col gap-1 px-3 py-3 text-left hover:text-accent"
+        className="flex min-w-0 items-center gap-3 text-left hover:text-accent-bright"
       >
-        <div className="flex items-center gap-3 text-[18px]">
-          <span aria-hidden className="w-3 text-accent">
-            {selected ? '>' : ' '}
-          </span>
-          <span className="truncate">
-            {player.firstName} {player.lastName}
-          </span>
-          <span className="tabular-nums text-ink-mid">{player.age}</span>
-          <Chip>{player.position}</Chip>
-          <span className="tabular-nums text-ink-dim">[{player.traits.length}]</span>
-        </div>
-        <div className="flex items-center gap-3 pl-6 text-[14px] text-ink-dim">
-          <span className="truncate">found by {scoutName}</span>
-          <span className="text-ink-faint">·</span>
-          <span className="tabular-nums">avg pot {averagePotential(player)}</span>
-          <span className="text-ink-faint">·</span>
-          <span className={`tabular-nums ${expiresUrgent ? 'text-danger' : ''}`}>
-            {entry.monthsRemaining}mo left
-          </span>
-        </div>
+        <span
+          aria-hidden
+          className={`h-1.5 w-1.5 rounded-full ${selected ? 'bg-accent' : 'bg-transparent'}`}
+        />
+        <span className="truncate">
+          {player.firstName} {player.lastName}
+        </span>
       </button>
-      <div className="flex shrink-0 items-center gap-3 px-4">
-        <span className="tabular-nums text-ink">{formatCash(entry.signingFee)}</span>
-        <Button
-          variant="primary"
-          disabled={cantAfford}
-          onClick={() => onSign(entry.id)}
-          className={cantAfford ? 'cursor-not-allowed opacity-40' : ''}
-        >
+      <span className="tabular-nums text-ink-mid">{player.age}</span>
+      <span>
+        <Chip tone="muted">{player.position}</Chip>
+      </span>
+      <span className="text-right tabular-nums text-ink">{averagePotential(player)}</span>
+      <span className="text-right tabular-nums text-ink-dim">{player.traits.length}</span>
+      <span className="truncate text-[12px] text-ink-mid">found by {scoutName}</span>
+      <span className={`text-right tabular-nums ${expiresUrgent ? 'text-warn' : 'text-ink-mid'}`}>
+        {entry.monthsRemaining}mo left
+      </span>
+      <span className="text-right tabular-nums text-ink">{formatCash(entry.signingFee)}</span>
+      <span className="flex justify-end">
+        <Button variant="primary" disabled={cantAfford} onClick={() => onSign(entry.id)}>
           sign
         </Button>
-      </div>
+      </span>
     </div>
   );
 }

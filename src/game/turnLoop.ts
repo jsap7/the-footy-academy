@@ -77,6 +77,9 @@ export function advanceMonth(state: GameState): GameState {
   // 9. Refresh scout market — anything you didn't hire is gone.
   const scoutMarket = generateScoutMarket();
 
+  // Track end-of-month cash for the dashboard sparkline (trailing 12 months).
+  const cashHistory = [...state.cashHistory, cash].slice(-12);
+
   return {
     ...state,
     currentMonth,
@@ -87,6 +90,7 @@ export function advanceMonth(state: GameState): GameState {
     roster: rosterAfterSales,
     pendingOffers,
     completedSales,
+    cashHistory,
     recentBirthdays: birthdayEvents,
     recentReleases: releaseEvents,
     recentSales: saleResult.saleEvents,
