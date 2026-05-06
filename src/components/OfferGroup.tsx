@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { computeMarketValue } from '../game/marketValue';
 import { averageCurrent, averagePotential } from '../game/playerStats';
 import type { Club, Offer, OfferStatus, Player } from '../types';
 import { formatCash } from '../util/format';
@@ -57,6 +58,7 @@ export default function OfferGroup({
   const hasActive = activeOffers.length > 0;
   const [expanded, setExpanded] = useState(hasActive);
   const summary = summarizeStatuses(sorted);
+  const marketValue = player ? computeMarketValue(player) : null;
 
   return (
     <div>
@@ -82,6 +84,7 @@ export default function OfferGroup({
           {player ? (
             <span className="text-[10px] uppercase tracking-[0.12em] text-ink-faint">
               {averageCurrent(player)}/{averagePotential(player)}
+              {marketValue != null ? <> · mv {formatCash(marketValue)}</> : null}
             </span>
           ) : null}
         </div>
@@ -120,6 +123,7 @@ export default function OfferGroup({
                 offer={offer}
                 club={clubsById.get(offer.clubId)}
                 player={player}
+                marketValue={marketValue}
                 onSelectPlayer={onSelectPlayer}
                 onAccept={onAccept}
                 onCounter={onCounter}
