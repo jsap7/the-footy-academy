@@ -114,6 +114,7 @@ export default function App() {
                   players={state.roster}
                   pendingOffers={state.pendingOffers}
                   selectedPlayerId={selectedPlayerId}
+                  currentYear={state.currentYear}
                   onSelect={handleSelect}
                 />
               ))}

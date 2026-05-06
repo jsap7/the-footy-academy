@@ -2,10 +2,13 @@ import { useState } from 'react';
 import {
   canDowngradeFacility,
   canUpgradeFacility,
+  currentFacilityMonthly,
+  currentUpgradeCost,
   getCurrentFacility,
   getNextFacilityTier,
   getPrevFacilityTier,
 } from '../game/facilities';
+import { applyInflation } from '../game/inflation';
 import { FACILITY_DEFINITIONS, type GameState } from '../types';
 import { formatCash } from '../util/format';
 import Button from '../ui/Button';
@@ -69,7 +72,9 @@ export default function FacilityCard({ state, onUpgrade, onDowngrade }: Props) {
       <div className="grid grid-cols-3 gap-4 border-t border-hairline pt-4 text-[12px]">
         <div>
           <div className="text-[10px] uppercase tracking-[0.10em] text-ink-dim">monthly</div>
-          <div className="mt-1 tabular-nums text-ink">{formatCash(current.monthlyCost)}</div>
+          <div className="mt-1 tabular-nums text-ink">
+            {formatCash(currentFacilityMonthly(state))}
+          </div>
         </div>
         <div>
           <div className="text-[10px] uppercase tracking-[0.10em] text-ink-dim">development</div>
@@ -86,20 +91,20 @@ export default function FacilityCard({ state, onUpgrade, onDowngrade }: Props) {
         </div>
       </div>
 
-      {next ? (
+      {next && nextTier != null ? (
         <div className="rounded-md border border-hairline-bright bg-bg-elev-2 p-4 text-[12px]">
           {pending === 'upgrade' ? (
             <div className="flex flex-col gap-3">
               <p className="text-ink">
                 upgrade to <span className="text-accent-bright">{next.name.toLowerCase()}</span> for{' '}
                 <span className="tabular-nums text-accent-bright">
-                  {formatCash(next.upgradeCost)}
+                  {formatCash(currentUpgradeCost(state, nextTier))}
                 </span>
                 ?
               </p>
               <p className="text-[11px] text-ink-dim font-body">
-                monthly cost goes from {formatCash(current.monthlyCost)} →{' '}
-                {formatCash(next.monthlyCost)}. development ×
+                monthly cost goes from {formatCash(currentFacilityMonthly(state))} →{' '}
+                {formatCash(applyInflation(next.monthlyCost, state.currentYear))}. development ×
                 {current.developmentMultiplier.toFixed(2)} → ×
                 {next.developmentMultiplier.toFixed(2)}.
               </p>
@@ -122,7 +127,8 @@ export default function FacilityCard({ state, onUpgrade, onDowngrade }: Props) {
                 </div>
                 <div className="mt-1 text-ink">{next.name.toLowerCase()}</div>
                 <div className="mt-1 text-[11px] text-ink-dim font-body">
-                  {formatCash(next.upgradeCost)} now · {formatCash(next.monthlyCost)}/mo · dev ×
+                  {formatCash(currentUpgradeCost(state, nextTier))} now ·{' '}
+                  {formatCash(applyInflation(next.monthlyCost, state.currentYear))}/mo · dev ×
                   {next.developmentMultiplier.toFixed(2)}
                 </div>
               </div>
@@ -153,8 +159,8 @@ export default function FacilityCard({ state, onUpgrade, onDowngrade }: Props) {
                 downgrade to <span className="text-warn">{prev.name.toLowerCase()}</span>?
               </p>
               <p className="text-[11px] text-ink-dim font-body">
-                no refund. monthly cost drops from {formatCash(current.monthlyCost)} →{' '}
-                {formatCash(prev.monthlyCost)}.
+                no refund. monthly cost drops from {formatCash(currentFacilityMonthly(state))} →{' '}
+                {formatCash(applyInflation(prev.monthlyCost, state.currentYear))}.
               </p>
               <div className="flex items-center gap-2">
                 <Button variant="danger" onClick={confirmDowngrade}>

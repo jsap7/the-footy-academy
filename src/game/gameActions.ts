@@ -1,4 +1,10 @@
-import { canDowngradeFacility, canUpgradeFacility, getFacility, getNextFacilityTier, getPrevFacilityTier } from './facilities';
+import {
+  canDowngradeFacility,
+  canUpgradeFacility,
+  currentUpgradeCost,
+  getNextFacilityTier,
+  getPrevFacilityTier,
+} from './facilities';
 import { executeAcceptedOffers } from './offers';
 import type { GameState } from '../types';
 
@@ -141,7 +147,7 @@ export function upgradeFacility(state: GameState): GameState {
   if (next == null) return state;
   return {
     ...state,
-    cash: state.cash - getFacility(next).upgradeCost,
+    cash: state.cash - currentUpgradeCost(state, next),
     facilityTier: next,
     facilityGraceMonthsRemaining: 0,
   };

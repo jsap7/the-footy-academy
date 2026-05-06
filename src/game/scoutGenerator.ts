@@ -1,3 +1,4 @@
+import { applyInflation, INFLATION_BASE_YEAR } from './inflation';
 import { generateEnglishName } from './nameGenerator';
 import type { Scout, ScoutLevel } from '../types/scout';
 
@@ -30,18 +31,21 @@ export function rollScoutLevel(): ScoutLevel {
   return lastLevel;
 }
 
-export function generateScout(): Scout {
-  return generateScoutAtLevel(rollScoutLevel());
+export function generateScout(currentYear: number = INFLATION_BASE_YEAR): Scout {
+  return generateScoutAtLevel(rollScoutLevel(), currentYear);
 }
 
-export function generateScoutAtLevel(level: ScoutLevel): Scout {
+export function generateScoutAtLevel(
+  level: ScoutLevel,
+  currentYear: number = INFLATION_BASE_YEAR,
+): Scout {
   const { firstName, lastName } = generateEnglishName();
   return {
     id: crypto.randomUUID(),
     firstName,
     lastName,
     level,
-    monthlySalary: SCOUT_SALARIES[level],
+    monthlySalary: applyInflation(SCOUT_SALARIES[level], currentYear),
   };
 }
 

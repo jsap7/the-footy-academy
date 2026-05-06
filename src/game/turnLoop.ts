@@ -93,7 +93,7 @@ export function advanceMonth(state: GameState): GameState {
   for (const scout of state.scouts) cash -= scout.monthlySalary;
 
   // 9. Deduct player stipends (post-aging, post-sale roster, with 20-21 squeeze).
-  for (const player of rosterAfterSales) cash -= calculateStipend(player);
+  for (const player of rosterAfterSales) cash -= calculateStipend(player, currentYear);
 
   // 10. Grace + auto-downgrade. We tick up only when we're actually in the
   // red AND have somewhere to fall to. Once the counter hits the threshold
@@ -136,8 +136,9 @@ export function advanceMonth(state: GameState): GameState {
   }
 
   // 11. Refresh scout market — anything you didn't hire is gone. New tier may
-  // open higher levels; downgrades close them.
-  const scoutMarket = generateScoutMarket(facilityTier);
+  // open higher levels; downgrades close them. currentYear is threaded
+  // through so 2030 hires book inflated salaries.
+  const scoutMarket = generateScoutMarket(facilityTier, currentYear);
 
   // Track end-of-month cash for the dashboard sparkline (trailing 12 months).
   const cashHistory = [...state.cashHistory, cash].slice(-12);

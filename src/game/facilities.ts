@@ -1,3 +1,4 @@
+import { applyInflation } from './inflation';
 import {
   FACILITY_DEFINITIONS,
   FACILITY_TIERS,
@@ -44,10 +45,21 @@ export function scoutsAboveTier(scouts: readonly Scout[], tier: FacilityTier): S
 
 export type FacilityGate = { ok: true } | { ok: false; reason: string };
 
+// Inflated upgrade cost — read at use-time so the displayed price reflects
+// the current year's inflation factor.
+export function currentUpgradeCost(state: GameState, targetTier: FacilityTier): number {
+  return applyInflation(getFacility(targetTier).upgradeCost, state.currentYear);
+}
+
+// Inflated monthly cost for the facility currently selected by state.
+export function currentFacilityMonthly(state: GameState): number {
+  return applyInflation(getCurrentFacility(state).monthlyCost, state.currentYear);
+}
+
 export function canUpgradeFacility(state: GameState): FacilityGate {
   const next = getNextFacilityTier(state.facilityTier);
   if (next == null) return { ok: false, reason: 'already at top tier' };
-  const cost = getFacility(next).upgradeCost;
+  const cost = currentUpgradeCost(state, next);
   if (state.cash < cost) return { ok: false, reason: 'insufficient cash' };
   return { ok: true };
 }

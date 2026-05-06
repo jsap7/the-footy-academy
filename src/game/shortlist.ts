@@ -16,7 +16,7 @@ export function runScoutFinds(state: GameState): ShortlistEntry[] {
       player,
       foundByScoutId: scout.id,
       monthsRemaining: SHORTLIST_LIFESPAN_MONTHS,
-      signingFee: computeSigningFee(player),
+      signingFee: computeSigningFee(player, state.currentYear),
     };
   });
 }

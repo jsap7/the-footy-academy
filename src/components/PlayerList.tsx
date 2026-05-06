@@ -16,6 +16,7 @@ type Props = {
   players: readonly Player[];
   pendingOffers: readonly Offer[];
   selectedPlayerId: string | null;
+  currentYear: number;
   onSelect: (playerId: string) => void;
 };
 
@@ -93,7 +94,13 @@ function SortHeader({
   );
 }
 
-export default function PlayerList({ players, pendingOffers, selectedPlayerId, onSelect }: Props) {
+export default function PlayerList({
+  players,
+  pendingOffers,
+  selectedPlayerId,
+  currentYear,
+  onSelect,
+}: Props) {
   const [sortKey, setSortKey] = useState<SortKey>('pot');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
 
@@ -107,7 +114,7 @@ export default function PlayerList({ players, pendingOffers, selectedPlayerId, o
         player: p,
         cur: averageCurrent(p),
         pot: averagePotential(p),
-        stipend: calculateStipend(p),
+        stipend: calculateStipend(p, currentYear),
         marketValue: computeMarketValue(p),
         offerCount: offers.length,
         bestOffer,
@@ -141,7 +148,7 @@ export default function PlayerList({ players, pendingOffers, selectedPlayerId, o
       return a.name.localeCompare(b.name);
     });
     return enriched;
-  }, [players, offersByPlayer, sortKey, sortDir]);
+  }, [players, offersByPlayer, sortKey, sortDir, currentYear]);
 
   const handleToggle = (key: SortKey) => {
     if (key === sortKey) {
