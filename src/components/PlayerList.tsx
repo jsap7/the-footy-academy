@@ -1,5 +1,6 @@
 import type { Player } from '../types';
-import { averagePotential } from '../game/playerStats';
+import { averageCurrent, averagePotential } from '../game/playerStats';
+import Chip from '../ui/Chip';
 
 type Props = {
   players: readonly Player[];
@@ -7,62 +8,66 @@ type Props = {
   onSelect: (playerId: string) => void;
 };
 
-export default function PlayerList({ players, selectedPlayerId, onSelect }: Props) {
-  if (players.length === 0) {
-    return (
-      <div className="flex h-full items-center justify-center px-6 py-16 text-sm text-neutral-500">
-        No players yet. Generate one to get started.
-      </div>
-    );
-  }
+const DOTTED_TRACK =
+  'repeating-linear-gradient(to right, var(--color-ink-faint) 0 2px, transparent 2px 4px)';
 
+function PotBar({ current, potential }: { current: number; potential: number }) {
+  const maxed = current >= potential;
+  return (
+    <div className="relative h-[8px] w-full" style={{ backgroundImage: DOTTED_TRACK }} aria-hidden>
+      <div
+        className={`absolute inset-y-0 left-0 ${maxed ? 'bg-good' : 'bg-accent'}`}
+        style={{ width: `${current}%` }}
+      />
+      <div
+        className="absolute -top-[2px] -bottom-[2px] w-[2px] bg-ink-mid"
+        style={{ left: `calc(${potential}% - 1px)` }}
+      />
+    </div>
+  );
+}
+
+export default function PlayerList({ players, selectedPlayerId, onSelect }: Props) {
   return (
     <div className="overflow-y-auto">
-      <table className="w-full border-separate border-spacing-0 text-sm">
-        <thead className="sticky top-0 bg-neutral-950/95 backdrop-blur">
-          <tr className="text-left text-xs uppercase tracking-wider text-neutral-500">
-            <th className="border-b border-neutral-800 px-4 py-2 font-medium">Name</th>
-            <th className="border-b border-neutral-800 px-4 py-2 font-medium">Age</th>
-            <th className="border-b border-neutral-800 px-4 py-2 font-medium">Pos</th>
-            <th className="border-b border-neutral-800 px-4 py-2 font-medium">Tr</th>
-            <th className="border-b border-neutral-800 px-4 py-2 text-right font-medium">
-              Avg Potential
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {players.map((player) => {
-            const isSelected = player.id === selectedPlayerId;
-            return (
-              <tr
-                key={player.id}
-                onClick={() => onSelect(player.id)}
-                className={`cursor-pointer border-b border-neutral-900 transition ${
-                  isSelected
-                    ? 'bg-neutral-800 text-neutral-50'
-                    : 'text-neutral-200 hover:bg-neutral-900'
-                }`}
-              >
-                <td className="border-b border-neutral-900 px-4 py-2">
-                  {player.firstName} {player.lastName}
-                </td>
-                <td className="border-b border-neutral-900 px-4 py-2 tabular-nums text-neutral-400">
-                  {player.age}
-                </td>
-                <td className="border-b border-neutral-900 px-4 py-2 font-mono text-xs uppercase text-neutral-400">
-                  {player.position}
-                </td>
-                <td className="border-b border-neutral-900 px-4 py-2 font-mono text-xs tabular-nums text-neutral-500">
-                  [{player.traits.length}]
-                </td>
-                <td className="border-b border-neutral-900 px-4 py-2 text-right tabular-nums">
-                  {averagePotential(player)}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <div className="grid grid-cols-[24px_minmax(0,1.6fr)_28px_56px_44px_minmax(0,1.5fr)_36px] items-center gap-3 border-b border-hairline px-3 py-2 text-[9px] uppercase tracking-[0.14em] text-ink-dim">
+        <span />
+        <span>name</span>
+        <span>age</span>
+        <span>pos</span>
+        <span>tr</span>
+        <span>pot</span>
+        <span className="text-right">avg</span>
+      </div>
+      {players.map((player) => {
+        const isSelected = player.id === selectedPlayerId;
+        const cur = averageCurrent(player);
+        const pot = averagePotential(player);
+        return (
+          <button
+            key={player.id}
+            type="button"
+            onClick={() => onSelect(player.id)}
+            className={`grid w-full grid-cols-[24px_minmax(0,1.6fr)_28px_56px_44px_minmax(0,1.5fr)_36px] items-center gap-3 border-b border-hairline px-3 py-2 text-left text-[18px] leading-none transition ${
+              isSelected ? 'bg-bg-row-hi text-accent' : 'text-ink hover:bg-bg-row'
+            }`}
+          >
+            <span aria-hidden className="text-accent">
+              {isSelected ? '>' : ' '}
+            </span>
+            <span className="truncate">
+              {player.firstName} {player.lastName}
+            </span>
+            <span className="tabular-nums text-ink-mid">{player.age}</span>
+            <span>
+              <Chip>{player.position}</Chip>
+            </span>
+            <span className="tabular-nums text-ink-dim">[{player.traits.length}]</span>
+            <PotBar current={cur} potential={pot} />
+            <span className="text-right tabular-nums">{pot}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }

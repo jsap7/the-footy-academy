@@ -36,12 +36,18 @@ export function getTraitsByCategory(category: TraitCategory): Trait[] {
   return getAllTraits().filter((t) => t.category === category);
 }
 
-export function applyBaseEffects(stats: PlayerStats, traitIds: readonly TraitId[]): PlayerStats {
+export function applyBaseEffects(
+  stats: PlayerStats,
+  traitIds: readonly TraitId[],
+  applyTo: 'current' | 'potential',
+): PlayerStats {
   const result: PlayerStats = { ...stats };
   for (const id of traitIds) {
     const trait = getTrait(id);
     if (!trait) continue;
     for (const effect of trait.baseEffects) {
+      const target = effect.target ?? 'both';
+      if (target !== 'both' && target !== applyTo) continue;
       result[effect.stat] = result[effect.stat] + effect.delta;
     }
   }

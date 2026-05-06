@@ -91,9 +91,12 @@ export const SLOW_LEARNER: Trait = {
   devRateEffects: [{ target: 'technical', multiplier: 0.85 }],
 };
 
-// All 32 outfield stats at -10. Spec is explicit: every outfield stat
-// must be present. GK stats are not generated for outfielders in phase 1
-// and are intentionally not listed here.
+// All 32 outfield stats at -10, current-only. Phase 1.5 patch (FOOTY-23):
+// targeting current preserves the player's tier-rolled potential ceiling so
+// the +30% dev-rate (inert in phase 1.5, active when the turn loop ships)
+// can close the gap. Hand-listed: every outfield stat must be present.
+// GK stats are not generated for outfielders in phase 1 and are intentionally
+// not listed here.
 export const LATE_BLOOMER: Trait = {
   id: 'late_bloomer',
   name: 'Late Bloomer',
@@ -101,40 +104,40 @@ export const LATE_BLOOMER: Trait = {
   category: 'neutral',
   baseEffects: [
     // Physical (8)
-    { stat: 'pace', delta: -10 },
-    { stat: 'acceleration', delta: -10 },
-    { stat: 'strength', delta: -10 },
-    { stat: 'stamina', delta: -10 },
-    { stat: 'agility', delta: -10 },
-    { stat: 'balance', delta: -10 },
-    { stat: 'jumpingReach', delta: -10 },
-    { stat: 'naturalFitness', delta: -10 },
+    { stat: 'pace', delta: -10, target: 'current' },
+    { stat: 'acceleration', delta: -10, target: 'current' },
+    { stat: 'strength', delta: -10, target: 'current' },
+    { stat: 'stamina', delta: -10, target: 'current' },
+    { stat: 'agility', delta: -10, target: 'current' },
+    { stat: 'balance', delta: -10, target: 'current' },
+    { stat: 'jumpingReach', delta: -10, target: 'current' },
+    { stat: 'naturalFitness', delta: -10, target: 'current' },
     // Technical (12)
-    { stat: 'finishing', delta: -10 },
-    { stat: 'longShots', delta: -10 },
-    { stat: 'passingShort', delta: -10 },
-    { stat: 'passingLong', delta: -10 },
-    { stat: 'dribbling', delta: -10 },
-    { stat: 'firstTouch', delta: -10 },
-    { stat: 'crossing', delta: -10 },
-    { stat: 'tackling', delta: -10 },
-    { stat: 'heading', delta: -10 },
-    { stat: 'technique', delta: -10 },
-    { stat: 'freeKicks', delta: -10 },
-    { stat: 'penalties', delta: -10 },
+    { stat: 'finishing', delta: -10, target: 'current' },
+    { stat: 'longShots', delta: -10, target: 'current' },
+    { stat: 'passingShort', delta: -10, target: 'current' },
+    { stat: 'passingLong', delta: -10, target: 'current' },
+    { stat: 'dribbling', delta: -10, target: 'current' },
+    { stat: 'firstTouch', delta: -10, target: 'current' },
+    { stat: 'crossing', delta: -10, target: 'current' },
+    { stat: 'tackling', delta: -10, target: 'current' },
+    { stat: 'heading', delta: -10, target: 'current' },
+    { stat: 'technique', delta: -10, target: 'current' },
+    { stat: 'freeKicks', delta: -10, target: 'current' },
+    { stat: 'penalties', delta: -10, target: 'current' },
     // Mental (12)
-    { stat: 'vision', delta: -10 },
-    { stat: 'composure', delta: -10 },
-    { stat: 'decisions', delta: -10 },
-    { stat: 'workRate', delta: -10 },
-    { stat: 'aggression', delta: -10 },
-    { stat: 'positioning', delta: -10 },
-    { stat: 'anticipation', delta: -10 },
-    { stat: 'bravery', delta: -10 },
-    { stat: 'concentration', delta: -10 },
-    { stat: 'determination', delta: -10 },
-    { stat: 'leadership', delta: -10 },
-    { stat: 'teamwork', delta: -10 },
+    { stat: 'vision', delta: -10, target: 'current' },
+    { stat: 'composure', delta: -10, target: 'current' },
+    { stat: 'decisions', delta: -10, target: 'current' },
+    { stat: 'workRate', delta: -10, target: 'current' },
+    { stat: 'aggression', delta: -10, target: 'current' },
+    { stat: 'positioning', delta: -10, target: 'current' },
+    { stat: 'anticipation', delta: -10, target: 'current' },
+    { stat: 'bravery', delta: -10, target: 'current' },
+    { stat: 'concentration', delta: -10, target: 'current' },
+    { stat: 'determination', delta: -10, target: 'current' },
+    { stat: 'leadership', delta: -10, target: 'current' },
+    { stat: 'teamwork', delta: -10, target: 'current' },
   ],
   devRateEffects: [{ target: 'all', multiplier: 1.3 }],
 };

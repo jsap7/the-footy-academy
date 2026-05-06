@@ -1,42 +1,20 @@
 import { generateEnglishName } from './nameGenerator';
-import { applyBaseEffects, getAllTraits, TRAIT_COUNT_WEIGHTS } from './traits';
+import { POSITION_RELEVANT_STATS } from './positionStats';
+import { rollQualityTier, TIER_POTENTIAL_BANDS, TIER_TRAIT_COUNT_WEIGHTS } from './qualityTier';
+import { applyBaseEffects, getAllTraits } from './traits';
 import {
   ALL_STAT_KEYS,
   OUTFIELD_POSITIONS,
   type OutfieldPosition,
   type Player,
   type PlayerStats,
+  type QualityTier,
   type StatKey,
   type TraitId,
 } from '../types';
 
-const POTENTIAL_MEAN = 60;
-const POTENTIAL_STDDEV = 12;
-const POTENTIAL_MIN = 20;
-const POTENTIAL_MAX = 95;
-
-// Position-relevant stats get a flat bonus on potential. Cap above the base
-// max so position-relevant stats can edge into the 80s-90s for above-average
-// kids without ever pinning at 100 in phase 0 (no generational tier yet).
-const POSITION_BONUS = 10;
+const POSITION_BONUS = 20;
 const POTENTIAL_BONUS_CAP = 99;
-
-const POSITION_BONUSES: Record<OutfieldPosition, readonly StatKey[]> = {
-  CB: ['strength', 'jumpingReach', 'heading', 'tackling', 'positioning'],
-  LB: ['pace', 'stamina', 'crossing', 'tackling'],
-  RB: ['pace', 'stamina', 'crossing', 'tackling'],
-  LWB: ['pace', 'stamina', 'crossing', 'tackling'],
-  RWB: ['pace', 'stamina', 'crossing', 'tackling'],
-  CDM: ['stamina', 'tackling', 'positioning', 'decisions'],
-  CM: ['passingShort', 'passingLong', 'vision', 'stamina'],
-  CAM: ['vision', 'technique', 'passingShort', 'dribbling'],
-  LM: ['pace', 'stamina', 'crossing', 'dribbling'],
-  RM: ['pace', 'stamina', 'crossing', 'dribbling'],
-  LW: ['pace', 'dribbling', 'technique', 'finishing'],
-  RW: ['pace', 'dribbling', 'technique', 'finishing'],
-  CF: ['finishing', 'composure', 'anticipation', 'heading'],
-  ST: ['finishing', 'composure', 'anticipation', 'heading'],
-};
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
@@ -64,34 +42,38 @@ function buildStats(producer: (key: StatKey) => number): PlayerStats {
   return Object.fromEntries(entries) as PlayerStats;
 }
 
-function generatePotential(position: OutfieldPosition): PlayerStats {
-  const bonusKeys = new Set<StatKey>(POSITION_BONUSES[position]);
+function generatePotential(tier: QualityTier, position: OutfieldPosition): PlayerStats {
+  const band = TIER_POTENTIAL_BANDS[tier];
+  const bonusKeys = new Set<StatKey>(POSITION_RELEVANT_STATS[position]);
   return buildStats((key) => {
-    const base = clamp(
-      Math.round(normalSample(POTENTIAL_MEAN, POTENTIAL_STDDEV)),
-      POTENTIAL_MIN,
-      POTENTIAL_MAX,
-    );
+    const base = clamp(Math.round(normalSample(band.center, band.stddev)), band.min, band.max);
     return bonusKeys.has(key) ? Math.min(base + POSITION_BONUS, POTENTIAL_BONUS_CAP) : base;
   });
 }
 
-function generateCurrent(potential: PlayerStats, age: number): PlayerStats {
-  // Age-weighted ratio of current to potential. 14yo lands ~65-85% of the cap,
-  // 17yo lands ~72-92%. Phase-0 placeholder formula — will get tuned.
-  const ageFactor = 0.4 + age * 0.025;
+// Linear interpolation: age 12 → 0.40, age 19 → 0.85.
+// Anchors potential to age without coupling them — same potential, different
+// growth gap depending on age.
+function computeAgeFactor(age: number): number {
+  return 0.4 + (age - 12) * 0.064;
+}
+
+function rollCurrentFromPotential(potential: PlayerStats, age: number): PlayerStats {
+  const ageFactor = computeAgeFactor(age);
   return buildStats((key) => {
     const cap = potential[key];
-    const noise = (Math.random() - 0.5) * 0.2;
-    return clamp(Math.round(cap * (ageFactor + noise)), 1, cap);
+    const noise = (Math.random() - 0.5) * 0.15; // ±7.5% per-stat noise
+    const value = Math.round(cap * (ageFactor + noise));
+    return clamp(value, 1, cap);
   });
 }
 
-function pickTraitCount(): number {
+function pickTraitCount(tier: QualityTier): number {
+  const weights = TIER_TRAIT_COUNT_WEIGHTS[tier];
   const r = Math.random();
   let cumulative = 0;
   let lastCount = 1;
-  for (const [count, weight] of Object.entries(TRAIT_COUNT_WEIGHTS)) {
+  for (const [count, weight] of Object.entries(weights)) {
     cumulative += weight;
     lastCount = Number(count);
     if (r < cumulative) return lastCount;
@@ -121,15 +103,19 @@ function clampCurrentToPotential(current: PlayerStats, potential: PlayerStats): 
 }
 
 export function generatePlayer(): Player {
+  const qualityTier = rollQualityTier();
   const position = pickRandom(OUTFIELD_POSITIONS);
-  const age = randInt(14, 17);
+  const age = randInt(12, 19);
   const { firstName, lastName } = generateEnglishName();
-  const rawPotential = generatePotential(position);
-  const rawCurrent = generateCurrent(rawPotential, age);
+  const rawPotential = generatePotential(qualityTier, position);
+  const rawCurrent = rollCurrentFromPotential(rawPotential, age);
 
-  const traits = pickTraitIds(pickTraitCount());
-  const potential = applyBaseEffects(rawPotential, traits);
-  const current = clampCurrentToPotential(applyBaseEffects(rawCurrent, traits), potential);
+  const traits = pickTraitIds(pickTraitCount(qualityTier));
+  const potential = applyBaseEffects(rawPotential, traits, 'potential');
+  const current = clampCurrentToPotential(
+    applyBaseEffects(rawCurrent, traits, 'current'),
+    potential,
+  );
 
   return {
     id: crypto.randomUUID(),
@@ -140,6 +126,7 @@ export function generatePlayer(): Player {
     position,
     stats: { current, potential },
     traits,
+    qualityTier,
     createdAt: Date.now(),
   };
 }
