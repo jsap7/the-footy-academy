@@ -10,3 +10,5 @@ export type { QualityTier } from './tier';
 
 export type { GameState } from './gameState';
 export { INITIAL_GAME_STATE } from './gameState';
+
+export type { Scout, ScoutLevel } from './scout';

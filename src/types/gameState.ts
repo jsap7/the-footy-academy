@@ -1,7 +1,8 @@
+import { generateScoutMarket } from '../game/scoutMarket';
 import type { Player } from './player';
+import type { Scout } from './scout';
 
-// FOOTY-26 will replace these stubs with the real Scout / ShortlistEntry types.
-type ScoutStub = unknown;
+// FOOTY-28 will replace this stub with the real ShortlistEntry type.
 type ShortlistEntryStub = unknown;
 
 export type GameState = {
@@ -9,8 +10,8 @@ export type GameState = {
   currentMonth: number; // 1-12
   currentYear: number;
 
-  scouts: ScoutStub[];
-  scoutMarket: ScoutStub[];
+  scouts: Scout[];
+  scoutMarket: Scout[];
   shortlist: ShortlistEntryStub[];
   roster: Player[];
 };
@@ -20,7 +21,7 @@ export const INITIAL_GAME_STATE: GameState = {
   currentMonth: 8, // August — the football season opener
   currentYear: 2026,
   scouts: [],
-  scoutMarket: [],
+  scoutMarket: generateScoutMarket(),
   shortlist: [],
   roster: [],
 };
