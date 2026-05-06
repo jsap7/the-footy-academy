@@ -4,8 +4,8 @@ const TIER_PREMIUM: Record<QualityTier, number> = {
   mid: 1.0,
   good: 1.0,
   great: 1.1,
-  elite: 1.4,
-  generational: 2.0,
+  elite: 1.5,
+  generational: 4.0,
 };
 
 // Resale curve: peaks at 16-18, drops fast after.
@@ -28,13 +28,26 @@ function avgPotential(player: Player): number {
   return sum / ALL_STAT_KEYS.length;
 }
 
+function avgCurrent(player: Player): number {
+  let sum = 0;
+  for (const k of ALL_STAT_KEYS) sum += player.stats.current[k];
+  return sum / ALL_STAT_KEYS.length;
+}
+
 // "True" market value — what a perfectly-informed buyer would pay.
+//
+// A player who is closer to realising their potential is worth more than one
+// who is still raw at the same ceiling. ratingBoost ranges 0.6 (untapped) to
+// 1.2 (fully developed); combined with the steeper baseValue and the new
+// generational premium this puts top sales in the €30M+ range.
 export function computeMarketValue(player: Player): number {
   const pot = avgPotential(player);
-  const baseValue = Math.pow(pot, 2.5) * 50;
+  const cur = avgCurrent(player);
+  const baseValue = Math.pow(pot, 2.5) * 100;
+  const ratingBoost = 0.6 + (cur / pot) * 0.6;
   const ageFactor = computeAgeFactor(player.age);
   const tierPremium = TIER_PREMIUM[player.qualityTier];
-  return Math.round(baseValue * ageFactor * tierPremium);
+  return Math.round(baseValue * ratingBoost * ageFactor * tierPremium);
 }
 
 // What a specific club thinks the player is worth — adds ±10% noise to the
