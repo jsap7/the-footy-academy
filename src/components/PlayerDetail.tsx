@@ -2,12 +2,18 @@ import { STAT_GROUPS, STAT_GROUP_LABELS, STAT_LABELS, type Player, type StatGrou
 import { averageCurrent, averagePotential } from '../game/playerStats';
 import Button from '../ui/Button';
 import Chip from '../ui/Chip';
+import SellingControls from './SellingControls';
 import StatRow from './StatRow';
 import TraitList from './TraitList';
 
 type Props = {
   player: Player;
   onClose: () => void;
+  // When the player is on the roster, these wire the selling controls.
+  // Omitted for shortlist-context players (selling controls hidden).
+  onSetAvailable?: (playerId: string, available: boolean) => void;
+  onList?: (playerId: string, price: number) => void;
+  onUnlist?: (playerId: string) => void;
 };
 
 const GROUP_ORDER: readonly StatGroup[] = ['physical', 'technical', 'mental'];
@@ -37,7 +43,7 @@ function SummaryCell({
   );
 }
 
-export default function PlayerDetail({ player, onClose }: Props) {
+export default function PlayerDetail({ player, onClose, onSetAvailable, onList, onUnlist }: Props) {
   const avgCur = averageCurrent(player);
   const avgPot = averagePotential(player);
   const gap = avgPot - avgCur;
@@ -78,6 +84,18 @@ export default function PlayerDetail({ player, onClose }: Props) {
         <TraitList traits={player.traits} />
       </section>
 
+      {onSetAvailable && onList && onUnlist && (
+        <section className="border-b border-hairline px-6 py-4">
+          <h3 className="mb-3 text-[10px] uppercase tracking-[0.14em] text-ink-dim">── selling</h3>
+          <SellingControls
+            player={player}
+            onSetAvailable={onSetAvailable}
+            onList={onList}
+            onUnlist={onUnlist}
+          />
+        </section>
+      )}
+
       <div className="min-h-0 flex-1 overflow-y-auto px-6 py-2">
         {GROUP_ORDER.map((group) => (
           <section key={group} className="border-b border-hairline py-4 last:border-b-0">
@@ -91,6 +109,7 @@ export default function PlayerDetail({ player, onClose }: Props) {
                   label={STAT_LABELS[key]}
                   current={player.stats.current[key]}
                   potential={player.stats.potential[key]}
+                  gain={player.lastTurnGains?.[key]}
                 />
               ))}
             </div>

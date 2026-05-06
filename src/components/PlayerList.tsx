@@ -63,8 +63,15 @@ export default function PlayerList({ players, selectedPlayerId, onSelect }: Prop
             <span aria-hidden className="text-accent">
               {isSelected ? '>' : ' '}
             </span>
-            <span className="truncate">
-              {player.firstName} {player.lastName}
+            <span className="flex min-w-0 items-center gap-2 truncate">
+              <span className="truncate">
+                {player.firstName} {player.lastName}
+              </span>
+              {player.askingPrice != null ? (
+                <Chip tone="accent">listed</Chip>
+              ) : player.availableForSale ? (
+                <Chip tone="accent">FS</Chip>
+              ) : null}
             </span>
             <span className="tabular-nums text-ink-mid">{player.age}</span>
             <span>

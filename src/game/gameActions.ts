@@ -1,3 +1,4 @@
+import { executeAcceptedOffers } from './offers';
 import type { GameState } from '../types';
 
 export function hireScout(state: GameState, scoutId: string): GameState {
@@ -29,5 +30,82 @@ export function signPlayer(state: GameState, shortlistEntryId: string): GameStat
     cash: state.cash - entry.signingFee,
     shortlist: state.shortlist.filter((e) => e.id !== shortlistEntryId),
     roster: [entry.player, ...state.roster],
+  };
+}
+
+// Accept the offer in-place — marks status accepted and immediately executes
+// the sale so the UI sees the cash + roster change instantly. Adds a
+// SaleEvent so the post-turn banner displays the win.
+export function acceptOffer(state: GameState, offerId: string): GameState {
+  const offer = state.pendingOffers.find((o) => o.id === offerId);
+  if (!offer) return state;
+  if (offer.status !== 'pending' && offer.status !== 'countered') return state;
+  const flagged: GameState = {
+    ...state,
+    pendingOffers: state.pendingOffers.map((o) =>
+      o.id === offerId ? { ...o, status: 'accepted' as const } : o,
+    ),
+  };
+  const result = executeAcceptedOffers(flagged);
+  return {
+    ...result.state,
+    recentSales: [...state.recentSales, ...result.saleEvents],
+  };
+}
+
+export function counterOffer(state: GameState, offerId: string, counter: number): GameState {
+  if (counter <= 0) return state;
+  const offer = state.pendingOffers.find((o) => o.id === offerId);
+  if (!offer) return state;
+  if (offer.status !== 'pending') return state;
+  return {
+    ...state,
+    pendingOffers: state.pendingOffers.map((o) =>
+      o.id === offerId
+        ? { ...o, yourCounter: Math.round(counter), status: 'countered' as const }
+        : o,
+    ),
+  };
+}
+
+export function setPlayerAvailable(
+  state: GameState,
+  playerId: string,
+  available: boolean,
+): GameState {
+  return {
+    ...state,
+    roster: state.roster.map((p) =>
+      p.id === playerId ? { ...p, availableForSale: available } : p,
+    ),
+  };
+}
+
+const MIN_ASKING_PRICE = 1_000;
+
+export function listPlayer(state: GameState, playerId: string, askingPrice: number): GameState {
+  const clamped = Math.max(MIN_ASKING_PRICE, Math.round(askingPrice));
+  return {
+    ...state,
+    roster: state.roster.map((p) => (p.id === playerId ? { ...p, askingPrice: clamped } : p)),
+  };
+}
+
+export function unlistPlayer(state: GameState, playerId: string): GameState {
+  return {
+    ...state,
+    roster: state.roster.map((p) => (p.id === playerId ? { ...p, askingPrice: null } : p)),
+  };
+}
+
+export function rejectOffer(state: GameState, offerId: string): GameState {
+  const offer = state.pendingOffers.find((o) => o.id === offerId);
+  if (!offer) return state;
+  if (offer.status !== 'pending' && offer.status !== 'countered') return state;
+  return {
+    ...state,
+    pendingOffers: state.pendingOffers.map((o) =>
+      o.id === offerId ? { ...o, status: 'rejected' as const } : o,
+    ),
   };
 }
