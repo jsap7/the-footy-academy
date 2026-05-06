@@ -1,3 +1,4 @@
+import { ALL_PHASE_1_TRAITS } from '../data/traits/library';
 import {
   ALL_STAT_KEYS,
   STAT_GROUPS,
@@ -9,8 +10,19 @@ import {
   type TraitId,
 } from '../types';
 
-// Populated in FOOTY-15. Keys are TraitIds; values are the full Trait object.
-export const TRAIT_LIBRARY: Record<TraitId, Trait> = {};
+export const TRAIT_LIBRARY: Record<TraitId, Trait> = Object.fromEntries(
+  ALL_PHASE_1_TRAITS.map((t) => [t.id, t]),
+);
+
+// Weighted random for how many traits a player gets at generation time.
+// Sums to 1.0. Roughly matches the design doc distribution.
+export const TRAIT_COUNT_WEIGHTS = {
+  1: 0.4,
+  2: 0.3,
+  3: 0.2,
+  4: 0.08,
+  5: 0.02,
+} as const;
 
 export function getTrait(id: TraitId): Trait | undefined {
   return TRAIT_LIBRARY[id];
