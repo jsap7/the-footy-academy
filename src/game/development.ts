@@ -24,7 +24,7 @@ function computeVariance(): number {
   return 2.0 + Math.random(); // breakout 2.0-3.0
 }
 
-function computeStatGain(
+function computeRawGain(
   current: number,
   potential: number,
   age: number,
@@ -34,13 +34,10 @@ function computeStatGain(
   const rawGain = BASE_RATE * computeAgeCurve(age) * computeVariance() * traitMult;
   const gap = potential - current;
   const gapBonus = Math.min(1.5, 1 + gap * 0.02);
-  const gain = Math.round(rawGain * gapBonus);
-  if (gain <= 0) return 0;
-  return Math.min(gain, potential - current);
+  return rawGain * gapBonus;
 }
 
-// FOOTY-37 will replace the `() => 1` placeholder with the real
-// computeDevRateMultiplier from src/game/traits.ts.
+// FOOTY-37 plugs in computeDevRateMultiplier from src/game/traits.ts.
 type TraitMultiplierFn = (stat: StatKey, traitIds: readonly string[]) => number;
 
 export function developPlayer(
@@ -51,16 +48,34 @@ export function developPlayer(
   gainsByStat: Partial<Record<StatKey, number>>;
 } {
   const newCurrent: PlayerStats = { ...player.stats.current };
+  const newResidual: Partial<Record<StatKey, number>> = {};
   const gainsByStat: Partial<Record<StatKey, number>> = {};
 
   for (const stat of ALL_STAT_KEYS) {
     const cur = newCurrent[stat];
     const pot = player.stats.potential[stat];
+    if (cur >= pot) continue;
+
     const traitMult = traitMultiplier(stat, player.traits);
-    const gain = computeStatGain(cur, pot, player.age, traitMult);
-    if (gain > 0) {
-      newCurrent[stat] = cur + gain;
-      gainsByStat[stat] = gain;
+    const rawGain = computeRawGain(cur, pot, player.age, traitMult);
+
+    // Carry sub-1.0 fractional progress between turns so trait multipliers
+    // actually compound over time instead of being eaten by Math.round.
+    const carry = player.developmentResidual?.[stat] ?? 0;
+    const accumulated = carry + rawGain;
+    const integerGain = Math.floor(accumulated);
+    const remainder = accumulated - integerGain;
+
+    if (integerGain > 0) {
+      const headroom = pot - cur;
+      const applied = Math.min(integerGain, headroom);
+      newCurrent[stat] = cur + applied;
+      gainsByStat[stat] = applied;
+      // Discard residual once we've capped — no point banking growth a
+      // maxed stat will never use.
+      if (newCurrent[stat] < pot) newResidual[stat] = remainder;
+    } else if (remainder > 0) {
+      newResidual[stat] = remainder;
     }
   }
 
@@ -69,6 +84,7 @@ export function developPlayer(
       ...player,
       stats: { current: newCurrent, potential: player.stats.potential },
       lastTurnGains: gainsByStat,
+      developmentResidual: newResidual,
     },
     gainsByStat,
   };

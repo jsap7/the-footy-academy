@@ -56,5 +56,9 @@ export type Player = {
   // turn loop. Used by the UI to flash a "+N" indicator next to stats that
   // grew this month.
   lastTurnGains?: Partial<Record<StatKey, number>>;
+  // Sub-1.0 fractional progress accumulated between integer gains. Lets
+  // trait dev-rate multipliers (e.g. workaholic ×1.20) actually compound
+  // over time instead of being eaten by per-turn Math.round.
+  developmentResidual?: Partial<Record<StatKey, number>>;
   createdAt: number;
 };

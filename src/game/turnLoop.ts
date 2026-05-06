@@ -4,6 +4,7 @@ import { MONTHLY_BASE_INCOME } from './finance';
 import { generateScoutMarket } from './scoutMarket';
 import { runScoutFinds, tickShortlist } from './shortlist';
 import { calculateStipend } from './stipends';
+import { computeDevRateMultiplier } from './traits';
 import type { GameState } from '../types';
 
 // The full monthly turn. Order is locked. Returns a NEW GameState.
@@ -28,9 +29,9 @@ export function advanceMonth(state: GameState): GameState {
 
   // 2c. Development — every roster player ticks up a little. Done AFTER
   // birthdays so a kid who just turned 14 develops as a 14yo this turn.
-  // Trait multipliers wire in on FOOTY-37.
+  // Trait dev-rate effects (workaholic, lazy, late_bloomer, …) plug in here.
   const rosterAfterDevelopment = rosterAfterReleases.map(
-    (player) => developPlayer(player).updated,
+    (player) => developPlayer(player, computeDevRateMultiplier).updated,
   );
 
   // 3. Add monthly base income
