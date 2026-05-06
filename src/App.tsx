@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Dashboard from './components/Dashboard';
 import EmptyState from './components/EmptyState';
 import EventBanner from './components/EventBanner';
+import FinancesPage from './components/FinancesPage';
 import OffersPage from './components/OffersPage';
 import PlayerDetailDrawer from './components/PlayerDetailDrawer';
 import PlayerList from './components/PlayerList';
@@ -20,7 +21,7 @@ import { advanceMonth } from './game/turnLoop';
 import StatusBar from './ui/StatusBar';
 import { INITIAL_GAME_STATE, type GameState } from './types';
 
-type TabKey = 'dashboard' | 'roster' | 'shortlist' | 'scouts' | 'offers';
+type TabKey = 'dashboard' | 'roster' | 'shortlist' | 'scouts' | 'offers' | 'finances';
 
 export default function App() {
   const [state, setState] = useState<GameState>(INITIAL_GAME_STATE);
@@ -68,6 +69,7 @@ export default function App() {
     { key: 'shortlist', label: 'shortlist', badge: state.shortlist.length },
     { key: 'offers', label: 'offers', badge: actionableOffers },
     { key: 'scouts', label: 'scouts' },
+    { key: 'finances', label: 'finances' },
   ] as const;
 
   const onRoster = selectedPlayer ? state.roster.some((p) => p.id === selectedPlayer.id) : false;
@@ -130,6 +132,7 @@ export default function App() {
             {activeTab === 'offers' && (
               <OffersPage state={state} onChange={setState} onSelectPlayer={handleSelect} />
             )}
+            {activeTab === 'finances' && <FinancesPage state={state} />}
           </div>
         )}
       </main>

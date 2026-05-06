@@ -8,6 +8,7 @@ import type {
   FacilityScoutFiredEvent,
   FacilityWarningEvent,
 } from './facilityEvents';
+import type { CashHistoryEntry, Transaction } from './finance';
 import type { Offer, SaleEvent } from './offer';
 import type { Player } from './player';
 import type { Scout } from './scout';
@@ -35,8 +36,13 @@ export type GameState = {
   facilityGraceMonthsRemaining: number;
 
   // End-of-month cash for the trailing 12 months — used by the dashboard
-  // sparkline. Pushed on every advanceMonth tick.
-  cashHistory: number[];
+  // sparkline + finances chart. Pushed on every advanceMonth tick.
+  cashHistory: CashHistoryEntry[];
+
+  // Trailing 24 months of major financial events. Drives the Finances tab's
+  // transaction list and is appended to by sale execution, signings, scout
+  // hires, facility upgrades, and the per-turn monthly burn aggregate.
+  transactions: Transaction[];
 
   // Ephemeral UI events — populated each turn, cleared at start of next turn.
   recentBirthdays: BirthdayEvent[];
@@ -59,7 +65,8 @@ export const INITIAL_GAME_STATE: GameState = {
   completedSales: [],
   facilityTier: 1,
   facilityGraceMonthsRemaining: 0,
-  cashHistory: [50_000],
+  cashHistory: [{ month: 8, year: 2026, cash: 50_000 }],
+  transactions: [],
   recentBirthdays: [],
   recentReleases: [],
   recentSales: [],

@@ -2,10 +2,12 @@ import {
   canDowngradeFacility,
   canUpgradeFacility,
   currentUpgradeCost,
+  getFacility,
   getNextFacilityTier,
   getPrevFacilityTier,
 } from './facilities';
 import { executeAcceptedOffers } from './offers';
+import { appendTransaction } from './transactions';
 import type { GameState } from '../types';
 
 export function hireScout(state: GameState, scoutId: string): GameState {
@@ -14,17 +16,31 @@ export function hireScout(state: GameState, scoutId: string): GameState {
   // No up-front cash deduction. The first monthlySalary is taken at the
   // next month-end via the turn loop. This avoids the double-bill the
   // spec flagged.
+  const transactions = appendTransaction(state, {
+    type: 'scout_hire',
+    description: `Hired ${scout.firstName} ${scout.lastName} (lvl ${scout.level})`,
+    amount: 0,
+  });
   return {
     ...state,
     scoutMarket: state.scoutMarket.filter((s) => s.id !== scoutId),
     scouts: [...state.scouts, scout],
+    transactions,
   };
 }
 
 export function fireScout(state: GameState, scoutId: string): GameState {
+  const scout = state.scouts.find((s) => s.id === scoutId);
+  if (!scout) return state;
+  const transactions = appendTransaction(state, {
+    type: 'scout_fire',
+    description: `Fired ${scout.firstName} ${scout.lastName} (lvl ${scout.level})`,
+    amount: 0,
+  });
   return {
     ...state,
     scouts: state.scouts.filter((s) => s.id !== scoutId),
+    transactions,
   };
 }
 
@@ -32,11 +48,17 @@ export function signPlayer(state: GameState, shortlistEntryId: string): GameStat
   const entry = state.shortlist.find((e) => e.id === shortlistEntryId);
   if (!entry) return state;
   if (state.cash < entry.signingFee) return state;
+  const transactions = appendTransaction(state, {
+    type: 'signing',
+    description: `Signed ${entry.player.firstName} ${entry.player.lastName} (${entry.player.qualityTier})`,
+    amount: -entry.signingFee,
+  });
   return {
     ...state,
     cash: state.cash - entry.signingFee,
     shortlist: state.shortlist.filter((e) => e.id !== shortlistEntryId),
     roster: [entry.player, ...state.roster],
+    transactions,
   };
 }
 
@@ -54,8 +76,20 @@ export function acceptOffer(state: GameState, offerId: string): GameState {
     ),
   };
   const result = executeAcceptedOffers(flagged);
+  let transactions = result.state.transactions;
+  for (const sale of result.saleEvents) {
+    transactions = appendTransaction(
+      { ...result.state, transactions },
+      {
+        type: 'sale',
+        description: `Sold ${sale.playerName} → ${sale.clubName}`,
+        amount: sale.amount,
+      },
+    );
+  }
   return {
     ...result.state,
+    transactions,
     recentSales: [...state.recentSales, ...result.saleEvents],
   };
 }
@@ -145,11 +179,18 @@ export function upgradeFacility(state: GameState): GameState {
   if (!gate.ok) return state;
   const next = getNextFacilityTier(state.facilityTier);
   if (next == null) return state;
+  const cost = currentUpgradeCost(state, next);
+  const transactions = appendTransaction(state, {
+    type: 'facility_upgrade',
+    description: `Upgraded facility to ${getFacility(next).name}`,
+    amount: -cost,
+  });
   return {
     ...state,
-    cash: state.cash - currentUpgradeCost(state, next),
+    cash: state.cash - cost,
     facilityTier: next,
     facilityGraceMonthsRemaining: 0,
+    transactions,
   };
 }
 
@@ -161,10 +202,16 @@ export function downgradeFacility(state: GameState): GameState {
   if (!gate.ok) return state;
   const prev = getPrevFacilityTier(state.facilityTier);
   if (prev == null) return state;
+  const transactions = appendTransaction(state, {
+    type: 'facility_downgrade',
+    description: `Downgraded facility to ${getFacility(prev).name}`,
+    amount: 0,
+  });
   return {
     ...state,
     facilityTier: prev,
     facilityGraceMonthsRemaining: 0,
+    transactions,
   };
 }
 

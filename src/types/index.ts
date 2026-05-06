@@ -29,4 +29,6 @@ export type {
   FacilityScoutFiredEvent,
 } from './facilityEvents';
 
+export type { Transaction, TransactionType, CashHistoryEntry } from './finance';
+
 export type { Offer, OfferStatus, SaleEvent } from './offer';

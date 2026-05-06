@@ -151,12 +151,17 @@ export default function Dashboard({
               {state.cashHistory.length} {state.cashHistory.length === 1 ? 'month' : 'months'}
             </span>
           </div>
-          <Sparkline values={state.cashHistory} width={320} height={88} className="w-full" />
+          <Sparkline
+            values={state.cashHistory.map((e) => e.cash)}
+            width={320}
+            height={88}
+            className="w-full"
+          />
           <div className="flex items-baseline justify-between text-[11px] uppercase tracking-[0.10em] text-ink-dim">
             <span>
               start{' '}
               <span className="text-ink-mid tabular-nums">
-                {formatCash(state.cashHistory[0] ?? state.cash)}
+                {formatCash(state.cashHistory[0]?.cash ?? state.cash)}
               </span>
             </span>
             <span>

@@ -6,6 +6,7 @@ import {
   getPrevFacilityTier,
 } from './facilities';
 import { MONTHLY_BASE_INCOME, currentOperatingCosts } from './finance';
+import { applyInflation } from './inflation';
 import {
   executeAcceptedOffers,
   generateOffersForTurn,
@@ -16,6 +17,8 @@ import { generateScoutMarket } from './scoutMarket';
 import { runScoutFinds, tickShortlist } from './shortlist';
 import { calculateStipend } from './stipends';
 import { computeDevRateMultiplier } from './traits';
+import { appendTransaction } from './transactions';
+import { formatCash } from '../util/format';
 import type {
   FacilityDowngradeEvent,
   FacilityScoutFiredEvent,
@@ -86,14 +89,56 @@ export function advanceMonth(state: GameState): GameState {
   });
   const pendingOffers = [...offersAfterTick, ...newOffers];
 
-  // 7. Deduct facility monthly cost (€0 at Backyard Pitch up to €1M at World-Class).
-  cash -= facility.monthlyCost;
+  // 7. Deduct facility monthly cost (inflated, €0 at Backyard up to €1M+ at World-Class).
+  const facilityMonthly = applyInflation(facility.monthlyCost, currentYear);
+  cash -= facilityMonthly;
 
-  // 8. Deduct scout salaries (everyone currently hired).
-  for (const scout of state.scouts) cash -= scout.monthlySalary;
+  // 8. Deduct scout salaries (everyone currently hired). Salaries are stamped
+  // onto the scout at hire time so existing hires are grandfathered.
+  let scoutSalariesTotal = 0;
+  for (const scout of state.scouts) {
+    cash -= scout.monthlySalary;
+    scoutSalariesTotal += scout.monthlySalary;
+  }
 
   // 9. Deduct player stipends (post-aging, post-sale roster, with 20-21 squeeze).
-  for (const player of rosterAfterSales) cash -= calculateStipend(player, currentYear);
+  let stipendsTotal = 0;
+  for (const player of rosterAfterSales) {
+    const s = calculateStipend(player, currentYear);
+    cash -= s;
+    stipendsTotal += s;
+  }
+
+  // 9b. Income credit (the +5k from earlier was already applied; we record
+  // the aggregate burn here as one transaction so the Finances tab can
+  // show "monthly burn -€X" per month rather than four lines).
+  const operatingThisMonth = currentOperatingCosts(stateAfterCalendar);
+  const monthlyBurnAggregate = operatingThisMonth + facilityMonthly + scoutSalariesTotal + stipendsTotal;
+  let transactions = state.transactions;
+  if (monthlyBurnAggregate > 0) {
+    transactions = appendTransaction(
+      { ...stateAfterCalendar, transactions },
+      {
+        type: 'monthly_burn',
+        description: `Monthly burn (operating ${formatCash(operatingThisMonth)}, facility ${formatCash(facilityMonthly)}, scouts ${formatCash(scoutSalariesTotal)}, stipends ${formatCash(stipendsTotal)})`,
+        amount: -monthlyBurnAggregate,
+      },
+    );
+  }
+  // Pull in any sale transactions that executeAcceptedOffers would have
+  // wanted to emit. The action layer (acceptOffer) handles user-driven
+  // accepts directly; here we only need to log the auto-accepted sales
+  // produced by the offer pipeline this turn.
+  for (const sale of saleResult.saleEvents) {
+    transactions = appendTransaction(
+      { ...stateAfterCalendar, transactions },
+      {
+        type: 'sale',
+        description: `Sold ${sale.playerName} → ${sale.clubName}`,
+        amount: sale.amount,
+      },
+    );
+  }
 
   // 10. Grace + auto-downgrade. We tick up only when we're actually in the
   // red AND have somewhere to fall to. Once the counter hits the threshold
@@ -141,7 +186,9 @@ export function advanceMonth(state: GameState): GameState {
   const scoutMarket = generateScoutMarket(facilityTier, currentYear);
 
   // Track end-of-month cash for the dashboard sparkline (trailing 12 months).
-  const cashHistory = [...state.cashHistory, cash].slice(-12);
+  const cashHistory = [...state.cashHistory, { month: currentMonth, year: currentYear, cash }].slice(
+    -12,
+  );
 
   return {
     ...state,
@@ -155,6 +202,7 @@ export function advanceMonth(state: GameState): GameState {
     pendingOffers,
     completedSales,
     cashHistory,
+    transactions,
     facilityTier,
     facilityGraceMonthsRemaining,
     recentBirthdays: birthdayEvents,
