@@ -1,0 +1,103 @@
+import { useState } from 'react';
+import type { Club, Offer, OfferStatus, Player } from '../types';
+import { formatCash } from '../util/format';
+import Button from '../ui/Button';
+import Chip from '../ui/Chip';
+import CounterOfferInput from './CounterOfferInput';
+
+type Props = {
+  offer: Offer;
+  club: Club | undefined;
+  player: Player | undefined;
+  onSelectPlayer: (playerId: string) => void;
+  onAccept: (offerId: string) => void;
+  onCounter: (offerId: string, counter: number) => void;
+  onReject: (offerId: string) => void;
+};
+
+const STATUS_LABEL: Record<OfferStatus, string> = {
+  pending: 'pending',
+  countered: 'awaiting response',
+  accepted: 'sale completed',
+  rejected: 'rejected',
+  walked: 'club walked away',
+  expired: 'expired',
+};
+
+const STATUS_TONE: Record<OfferStatus, 'neutral' | 'accent' | 'good' | 'danger'> = {
+  pending: 'neutral',
+  countered: 'accent',
+  accepted: 'good',
+  rejected: 'neutral',
+  walked: 'danger',
+  expired: 'neutral',
+};
+
+export default function OfferRow({
+  offer,
+  club,
+  player,
+  onSelectPlayer,
+  onAccept,
+  onCounter,
+  onReject,
+}: Props) {
+  const [countering, setCountering] = useState(false);
+  const actionable = offer.status === 'pending';
+
+  return (
+    <div className="grid grid-cols-[minmax(0,1.4fr)_minmax(0,1.4fr)_120px_minmax(0,1fr)_auto] items-center gap-3 border-b border-hairline px-4 py-3 text-[16px]">
+      <div className="flex flex-col gap-1">
+        <span className="truncate text-ink">{club?.name ?? offer.clubId}</span>
+        <span className="text-[10px] uppercase tracking-[0.14em] text-ink-dim">
+          tier {club?.tier ?? '?'} · {club?.country ?? ''}
+        </span>
+      </div>
+      <button
+        type="button"
+        className="truncate text-left text-ink hover:text-accent"
+        onClick={() => player && onSelectPlayer(player.id)}
+      >
+        {player ? `${player.firstName} ${player.lastName}` : <span className="text-ink-dim">(sold)</span>}
+      </button>
+      <div className="flex flex-col items-end gap-1 text-right">
+        <span className="font-mono tabular-nums">{formatCash(offer.amount)}</span>
+        {offer.yourCounter ? (
+          <span className="text-[12px] text-ink-dim">
+            you: {formatCash(offer.yourCounter)}
+          </span>
+        ) : null}
+      </div>
+      <div className="flex flex-col gap-1">
+        <Chip tone={STATUS_TONE[offer.status]}>{STATUS_LABEL[offer.status]}</Chip>
+        {(offer.status === 'pending' || offer.status === 'countered') && (
+          <span className="text-[10px] tracking-[0.14em] text-ink-faint">
+            {offer.turnsRemaining}mo to respond
+          </span>
+        )}
+      </div>
+      {actionable ? (
+        countering ? (
+          <CounterOfferInput
+            initialAmount={offer.amount}
+            onSend={(amt) => {
+              onCounter(offer.id, amt);
+              setCountering(false);
+            }}
+            onCancel={() => setCountering(false)}
+          />
+        ) : (
+          <div className="flex items-center gap-2">
+            <Button variant="primary" onClick={() => onAccept(offer.id)}>
+              accept
+            </Button>
+            <Button onClick={() => setCountering(true)}>counter</Button>
+            <Button onClick={() => onReject(offer.id)}>reject</Button>
+          </div>
+        )
+      ) : (
+        <div />
+      )}
+    </div>
+  );
+}

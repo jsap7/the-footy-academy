@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import EmptyState from './components/EmptyState';
 import EventBanner from './components/EventBanner';
 import NavStrip from './components/NavStrip';
+import OffersPage from './components/OffersPage';
 import PlayerDetail from './components/PlayerDetail';
 import PlayerList from './components/PlayerList';
 import ScoutsPage from './components/ScoutsPage';
@@ -14,7 +15,7 @@ import SectionHead from './ui/SectionHead';
 import StatusBar from './ui/StatusBar';
 import { INITIAL_GAME_STATE, type GameState } from './types';
 
-type TabKey = 'roster' | 'shortlist' | 'scouts';
+type TabKey = 'roster' | 'shortlist' | 'scouts' | 'offers';
 
 export default function App() {
   const [state, setState] = useState<GameState>(INITIAL_GAME_STATE);
@@ -62,6 +63,10 @@ export default function App() {
     </Button>
   );
 
+  const actionableOffers = state.pendingOffers.filter(
+    (o) => o.status === 'pending' || o.status === 'countered',
+  ).length;
+
   const navTabs = [
     { key: 'roster', label: 'academy' },
     {
@@ -69,8 +74,12 @@ export default function App() {
       label: 'shortlist',
       hint: state.shortlist.length > 0 ? String(state.shortlist.length) : undefined,
     },
+    {
+      key: 'offers',
+      label: 'offers',
+      hint: actionableOffers > 0 ? String(actionableOffers) : undefined,
+    },
     { key: 'scouts', label: 'scouts' },
-    { key: 'transfers', label: 'transfers', hint: 'phase 3', disabled: true },
   ] as const;
 
   return (
@@ -84,7 +93,11 @@ export default function App() {
         rightSlot={headerActions}
       />
       <NavStrip tabs={navTabs} active={activeTab} onChange={(key) => setActiveTab(key as TabKey)} />
-      <EventBanner birthdays={state.recentBirthdays} releases={state.recentReleases} />
+      <EventBanner
+        birthdays={state.recentBirthdays}
+        releases={state.recentReleases}
+        sales={state.recentSales}
+      />
       <main className="flex min-h-0 flex-1">
         <section className="flex w-full min-w-0 flex-1 flex-col border-r border-hairline">
           {activeTab === 'roster' && (
@@ -124,6 +137,26 @@ export default function App() {
             </>
           )}
           {activeTab === 'scouts' && <ScoutsPage state={state} onChange={setState} />}
+          {activeTab === 'offers' && (
+            <>
+              <SectionHead
+                label="incoming offers"
+                count={state.pendingOffers.length}
+                right={
+                  <span className="text-[10px] tracking-[0.14em] text-ink-faint">
+                    accept · counter · reject · expires after 3 months
+                  </span>
+                }
+              />
+              <OffersPage
+                state={state}
+                onChange={setState}
+                onSelectPlayer={(id) => {
+                  setSelectedPlayerId(id);
+                }}
+              />
+            </>
+          )}
         </section>
         {selectedPlayer && (
           <aside className="w-[480px] shrink-0">
