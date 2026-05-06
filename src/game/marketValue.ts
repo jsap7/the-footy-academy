@@ -1,9 +1,9 @@
 import { ALL_STAT_KEYS, type Club, type Player, type QualityTier } from '../types';
 
 const TIER_PREMIUM: Record<QualityTier, number> = {
-  mid: 0.04,
-  good: 0.12,
-  great: 0.5,
+  mid: 0.1,
+  good: 0.2,
+  great: 0.55,
   elite: 2.0,
   generational: 6.0,
 };

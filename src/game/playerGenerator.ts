@@ -102,10 +102,10 @@ function clampCurrentToPotential(current: PlayerStats, potential: PlayerStats): 
   return result;
 }
 
-export function generatePlayer(opts?: { forceTier?: QualityTier }): Player {
+export function generatePlayer(opts?: { forceTier?: QualityTier; forceAge?: number }): Player {
   const qualityTier = opts?.forceTier ?? rollQualityTier();
   const position = pickRandom(OUTFIELD_POSITIONS);
-  const age = randInt(12, 19);
+  const age = opts?.forceAge != null ? Math.max(12, Math.min(19, opts.forceAge)) : randInt(12, 19);
   const birthMonth = randInt(1, 12);
   const { firstName, lastName } = generateEnglishName();
   const rawPotential = generatePotential(qualityTier, position);
