@@ -91,6 +91,7 @@ export default function PlayerDetail({ player, onClose }: Props) {
                   label={STAT_LABELS[key]}
                   current={player.stats.current[key]}
                   potential={player.stats.potential[key]}
+                  gain={player.lastTurnGains?.[key]}
                 />
               ))}
             </div>

@@ -2,12 +2,13 @@ type Props = {
   label: string;
   current: number;
   potential: number;
+  gain?: number;
 };
 
 const DOTTED_TRACK =
   'repeating-linear-gradient(to right, var(--color-ink-faint) 0 2px, transparent 2px 4px)';
 
-export default function StatRow({ label, current, potential }: Props) {
+export default function StatRow({ label, current, potential, gain }: Props) {
   const maxed = current >= potential;
   return (
     <div className="grid grid-cols-[130px_1fr_28px_28px] items-center gap-3 py-1 text-[19px] leading-none">
@@ -26,7 +27,14 @@ export default function StatRow({ label, current, potential }: Props) {
           style={{ left: `calc(${potential}% - 1px)` }}
         />
       </div>
-      <span className="text-right tabular-nums text-ink">{current}</span>
+      <span className="relative text-right tabular-nums text-ink">
+        {current}
+        {gain && gain > 0 ? (
+          <span className="absolute -top-[10px] right-0 text-[10px] tabular-nums text-good">
+            +{gain}
+          </span>
+        ) : null}
+      </span>
       <span className="text-right tabular-nums text-ink-dim">{potential}</span>
     </div>
   );

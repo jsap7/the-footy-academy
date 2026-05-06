@@ -1,4 +1,4 @@
-import type { PlayerStats } from './stats';
+import type { PlayerStats, StatKey } from './stats';
 import type { QualityTier } from './tier';
 import type { TraitId } from './trait';
 
@@ -52,5 +52,9 @@ export type Player = {
   };
   traits: TraitId[];
   qualityTier: QualityTier;
+  // Per-stat gains from the most recent dev tick. Cleared/overwritten by the
+  // turn loop. Used by the UI to flash a "+N" indicator next to stats that
+  // grew this month.
+  lastTurnGains?: Partial<Record<StatKey, number>>;
   createdAt: number;
 };

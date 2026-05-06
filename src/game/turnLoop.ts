@@ -1,4 +1,5 @@
 import { processBirthdays, processReleases } from './aging';
+import { developPlayer } from './development';
 import { MONTHLY_BASE_INCOME } from './finance';
 import { generateScoutMarket } from './scoutMarket';
 import { runScoutFinds, tickShortlist } from './shortlist';
@@ -25,11 +26,18 @@ export function advanceMonth(state: GameState): GameState {
   const { updatedRoster: rosterAfterReleases, releaseEvents } =
     processReleases(rosterAfterBirthdays);
 
+  // 2c. Development — every roster player ticks up a little. Done AFTER
+  // birthdays so a kid who just turned 14 develops as a 14yo this turn.
+  // Trait multipliers wire in on FOOTY-37.
+  const rosterAfterDevelopment = rosterAfterReleases.map(
+    (player) => developPlayer(player).updated,
+  );
+
   // 3. Add monthly base income
   let cash = state.cash + MONTHLY_BASE_INCOME;
 
   // 4. Each hired scout finds 1 player → goes to shortlist (BEFORE tick).
-  const findsState: GameState = { ...stateAfterCalendar, roster: rosterAfterReleases };
+  const findsState: GameState = { ...stateAfterCalendar, roster: rosterAfterDevelopment };
   const newFinds = runScoutFinds(findsState);
   let shortlist = [...state.shortlist, ...newFinds];
 
@@ -40,7 +48,7 @@ export function advanceMonth(state: GameState): GameState {
   for (const scout of state.scouts) cash -= scout.monthlySalary;
 
   // 7. Deduct player stipends (post-aging roster, with 20-21 squeeze).
-  for (const player of rosterAfterReleases) cash -= calculateStipend(player);
+  for (const player of rosterAfterDevelopment) cash -= calculateStipend(player);
 
   // 8. Refresh scout market — anything you didn't hire is gone.
   const scoutMarket = generateScoutMarket();
@@ -52,7 +60,7 @@ export function advanceMonth(state: GameState): GameState {
     cash,
     shortlist,
     scoutMarket,
-    roster: rosterAfterReleases,
+    roster: rosterAfterDevelopment,
     recentBirthdays: birthdayEvents,
     recentReleases: releaseEvents,
   };
