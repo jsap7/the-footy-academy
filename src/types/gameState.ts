@@ -1,5 +1,7 @@
+import { CLUB_LIBRARY } from '../data/clubs/library';
 import { generateScoutMarket } from '../game/scoutMarket';
 import type { BirthdayEvent, ReleaseEvent } from './aging';
+import type { Club } from './club';
 import type { Player } from './player';
 import type { Scout } from './scout';
 import type { ShortlistEntry } from './shortlist';
@@ -14,6 +16,8 @@ export type GameState = {
   shortlist: ShortlistEntry[];
   roster: Player[];
 
+  clubs: readonly Club[]; // populated once on game start; never mutated
+
   // Ephemeral UI events — populated each turn, cleared at start of next turn.
   recentBirthdays: BirthdayEvent[];
   recentReleases: ReleaseEvent[];
@@ -27,6 +31,7 @@ export const INITIAL_GAME_STATE: GameState = {
   scoutMarket: generateScoutMarket(),
   shortlist: [],
   roster: [],
+  clubs: CLUB_LIBRARY,
   recentBirthdays: [],
   recentReleases: [],
 };
