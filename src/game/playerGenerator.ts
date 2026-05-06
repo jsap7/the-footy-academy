@@ -55,14 +55,20 @@ function generatePotential(tier: QualityTier, position: OutfieldPosition): Playe
   });
 }
 
-function generateCurrent(potential: PlayerStats, age: number): PlayerStats {
-  // Age-weighted ratio of current to potential. FOOTY-22 will rewrite this
-  // formula to decouple age from potential.
-  const ageFactor = 0.4 + age * 0.025;
+// Linear interpolation: age 12 → 0.40, age 19 → 0.85.
+// Anchors potential to age without coupling them — same potential, different
+// growth gap depending on age.
+function computeAgeFactor(age: number): number {
+  return 0.4 + (age - 12) * 0.064;
+}
+
+function rollCurrentFromPotential(potential: PlayerStats, age: number): PlayerStats {
+  const ageFactor = computeAgeFactor(age);
   return buildStats((key) => {
     const cap = potential[key];
-    const noise = (Math.random() - 0.5) * 0.2;
-    return clamp(Math.round(cap * (ageFactor + noise)), 1, cap);
+    const noise = (Math.random() - 0.5) * 0.15; // ±7.5% per-stat noise
+    const value = Math.round(cap * (ageFactor + noise));
+    return clamp(value, 1, cap);
   });
 }
 
@@ -103,10 +109,10 @@ function clampCurrentToPotential(current: PlayerStats, potential: PlayerStats): 
 export function generatePlayer(): Player {
   const qualityTier = rollQualityTier();
   const position = pickRandom(OUTFIELD_POSITIONS);
-  const age = randInt(14, 17);
+  const age = randInt(12, 19);
   const { firstName, lastName } = generateEnglishName();
   const rawPotential = generatePotential(qualityTier, position);
-  const rawCurrent = generateCurrent(rawPotential, age);
+  const rawCurrent = rollCurrentFromPotential(rawPotential, age);
 
   const traits = pickTraitIds(pickTraitCount(qualityTier));
   const potential = applyBaseEffects(rawPotential, traits);
