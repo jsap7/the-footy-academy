@@ -1,9 +1,7 @@
 import { generateScoutMarket } from '../game/scoutMarket';
 import type { Player } from './player';
 import type { Scout } from './scout';
-
-// FOOTY-28 will replace this stub with the real ShortlistEntry type.
-type ShortlistEntryStub = unknown;
+import type { ShortlistEntry } from './shortlist';
 
 export type GameState = {
   cash: number;
@@ -12,7 +10,7 @@ export type GameState = {
 
   scouts: Scout[];
   scoutMarket: Scout[];
-  shortlist: ShortlistEntryStub[];
+  shortlist: ShortlistEntry[];
   roster: Player[];
 };
 
