@@ -76,20 +76,29 @@ export default function CashHistoryChart({ history, width = 720, height = 160 }:
             r={i === peakIdx || i === troughIdx ? 3 : 1.5}
             fill="currentColor"
             className={
-              i === peakIdx
-                ? 'text-accent-bright'
-                : i === troughIdx
-                  ? 'text-warn'
-                  : 'text-accent'
+              i === peakIdx ? 'text-accent-bright' : i === troughIdx ? 'text-warn' : 'text-accent'
             }
           />
         ))}
       </svg>
       <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.10em] text-ink-faint">
         <span>{formatMonth(history[0].month, history[0].year).toLowerCase()}</span>
-        <span>peak <span className="text-accent-bright tabular-nums">{formatCash(history[peakIdx].cash)}</span></span>
-        <span>trough <span className="text-warn tabular-nums">{formatCash(history[troughIdx].cash)}</span></span>
-        <span>{formatMonth(history[history.length - 1].month, history[history.length - 1].year).toLowerCase()}</span>
+        <span>
+          peak{' '}
+          <span className="text-accent-bright tabular-nums">
+            {formatCash(history[peakIdx].cash)}
+          </span>
+        </span>
+        <span>
+          trough{' '}
+          <span className="text-warn tabular-nums">{formatCash(history[troughIdx].cash)}</span>
+        </span>
+        <span>
+          {formatMonth(
+            history[history.length - 1].month,
+            history[history.length - 1].year,
+          ).toLowerCase()}
+        </span>
       </div>
     </div>
   );

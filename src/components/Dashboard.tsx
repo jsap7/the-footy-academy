@@ -85,7 +85,10 @@ export default function Dashboard({
 }: Props) {
   const burn = monthlyBurn(state);
   const net = monthlyNet(state);
-  const totalStipends = state.roster.reduce((s, p) => s + calculateStipend(p, state.currentYear), 0);
+  const totalStipends = state.roster.reduce(
+    (s, p) => s + calculateStipend(p, state.currentYear),
+    0,
+  );
   const totalScoutSalary = state.scouts.reduce((s, sc) => s + sc.monthlySalary, 0);
   const avgPotAcrossRoster =
     state.roster.length > 0

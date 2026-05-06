@@ -21,7 +21,8 @@ export function generateScoutMarket(
   const rare = facility.scoutLevelsAvailable.rareUpgrade;
   const market: Scout[] = [];
   for (let i = 0; i < SCOUT_MARKET_SIZE; i++) {
-    const level = rare && Math.random() < RARE_UPGRADE_CHANCE ? rare : rollLevelFromAllowed(allowed);
+    const level =
+      rare && Math.random() < RARE_UPGRADE_CHANCE ? rare : rollLevelFromAllowed(allowed);
     market.push(generateScoutAtLevel(level, currentYear));
   }
   return market;

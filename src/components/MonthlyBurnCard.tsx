@@ -48,9 +48,7 @@ export default function MonthlyBurnCard({ state }: Props) {
     <Card className="col-span-12 lg:col-span-4 flex flex-col gap-4">
       <div className="flex items-baseline justify-between">
         <span className="text-[11px] uppercase tracking-[0.14em] text-ink-dim">monthly burn</span>
-        <span className="text-[11px] tabular-nums text-ink-faint">
-          {formatCash(b.total)}
-        </span>
+        <span className="text-[11px] tabular-nums text-ink-faint">{formatCash(b.total)}</span>
       </div>
       <div className="flex flex-col gap-1.5">
         <Line label="operating" amount={b.operating} total={b.total} />
@@ -69,9 +67,7 @@ export default function MonthlyBurnCard({ state }: Props) {
         </div>
         <div>
           <div className="text-[10px] uppercase tracking-[0.10em] text-ink-dim">net</div>
-          <div
-            className={`mt-1 tabular-nums ${b.net >= 0 ? 'text-accent-bright' : 'text-warn'}`}
-          >
+          <div className={`mt-1 tabular-nums ${b.net >= 0 ? 'text-accent-bright' : 'text-warn'}`}>
             {b.net >= 0 ? '+' : ''}
             {formatCash(b.net)}
           </div>

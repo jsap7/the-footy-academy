@@ -16,7 +16,10 @@ const SQUEEZE_AGE_MIN = 20;
 const SQUEEZE_AGE_MAX = 21;
 const SQUEEZE_MULT = 3;
 
-export function calculateStipend(player: Player, currentYear: number = INFLATION_BASE_YEAR): number {
+export function calculateStipend(
+  player: Player,
+  currentYear: number = INFLATION_BASE_YEAR,
+): number {
   const ageBase = player.age * 200;
   const tierMult = STIPEND_MULTIPLIER_BY_TIER[player.qualityTier];
   const ageMult = player.age >= SQUEEZE_AGE_MIN && player.age <= SQUEEZE_AGE_MAX ? SQUEEZE_MULT : 1;

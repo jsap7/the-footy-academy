@@ -63,7 +63,9 @@ export default function FinancesPage({ state }: Props) {
             </div>
           </div>
           <div>
-            <span className="text-[11px] uppercase tracking-[0.14em] text-ink-dim">monthly net</span>
+            <span className="text-[11px] uppercase tracking-[0.14em] text-ink-dim">
+              monthly net
+            </span>
             <div
               className={`mt-2 text-[28px] tabular-nums leading-none ${
                 breakdown.net >= 0 ? 'text-accent-bright' : 'text-warn'
@@ -115,11 +117,7 @@ export default function FinancesPage({ state }: Props) {
           </span>
         </div>
         <div className="space-y-2">
-          <InflatedLine
-            label="operating"
-            base={MONTHLY_OPERATING_COSTS_BASE}
-            factor={factor}
-          />
+          <InflatedLine label="operating" base={MONTHLY_OPERATING_COSTS_BASE} factor={factor} />
           <InflatedLine
             label={`facility · ${facility.name.toLowerCase()}`}
             base={facility.monthlyCost}
@@ -145,9 +143,7 @@ export default function FinancesPage({ state }: Props) {
 
       <Card>
         <div className="mb-4 flex items-baseline justify-between">
-          <span className="text-[11px] uppercase tracking-[0.14em] text-ink-dim">
-            transactions
-          </span>
+          <span className="text-[11px] uppercase tracking-[0.14em] text-ink-dim">transactions</span>
           <span className="text-[11px] tabular-nums text-ink-faint">
             {state.transactions.length} recent
           </span>

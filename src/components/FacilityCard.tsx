@@ -28,7 +28,8 @@ function ScoutAvailabilitySummary({
   levels: readonly (1 | 2 | 3 | 4 | 5)[];
   rareUpgrade?: 1 | 2 | 3 | 4 | 5;
 }) {
-  const main = levels.length > 1 ? `lvl ${levels[0]}–${levels[levels.length - 1]}` : `lvl ${levels[0]}`;
+  const main =
+    levels.length > 1 ? `lvl ${levels[0]}–${levels[levels.length - 1]}` : `lvl ${levels[0]}`;
   return (
     <span>
       {main}
@@ -78,7 +79,9 @@ export default function FacilityCard({ state, onUpgrade, onDowngrade }: Props) {
         </div>
         <div>
           <div className="text-[10px] uppercase tracking-[0.10em] text-ink-dim">development</div>
-          <div className="mt-1 tabular-nums text-ink">×{current.developmentMultiplier.toFixed(2)}</div>
+          <div className="mt-1 tabular-nums text-ink">
+            ×{current.developmentMultiplier.toFixed(2)}
+          </div>
         </div>
         <div>
           <div className="text-[10px] uppercase tracking-[0.10em] text-ink-dim">scouts</div>

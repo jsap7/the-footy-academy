@@ -1,10 +1,6 @@
 import { processBirthdays, processReleases } from './aging';
 import { developPlayer } from './development';
-import {
-  allowedScoutLevelsForTier,
-  getCurrentFacility,
-  getPrevFacilityTier,
-} from './facilities';
+import { allowedScoutLevelsForTier, getCurrentFacility, getPrevFacilityTier } from './facilities';
 import { MONTHLY_BASE_INCOME, currentOperatingCosts } from './finance';
 import { applyInflation } from './inflation';
 import {
@@ -113,7 +109,8 @@ export function advanceMonth(state: GameState): GameState {
   // the aggregate burn here as one transaction so the Finances tab can
   // show "monthly burn -€X" per month rather than four lines).
   const operatingThisMonth = currentOperatingCosts(stateAfterCalendar);
-  const monthlyBurnAggregate = operatingThisMonth + facilityMonthly + scoutSalariesTotal + stipendsTotal;
+  const monthlyBurnAggregate =
+    operatingThisMonth + facilityMonthly + scoutSalariesTotal + stipendsTotal;
   let transactions = state.transactions;
   if (monthlyBurnAggregate > 0) {
     transactions = appendTransaction(
@@ -186,9 +183,10 @@ export function advanceMonth(state: GameState): GameState {
   const scoutMarket = generateScoutMarket(facilityTier, currentYear);
 
   // Track end-of-month cash for the dashboard sparkline (trailing 12 months).
-  const cashHistory = [...state.cashHistory, { month: currentMonth, year: currentYear, cash }].slice(
-    -12,
-  );
+  const cashHistory = [
+    ...state.cashHistory,
+    { month: currentMonth, year: currentYear, cash },
+  ].slice(-12);
 
   return {
     ...state,
