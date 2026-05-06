@@ -1,8 +1,20 @@
 import { useEffect, useState } from 'react';
-import { STAT_GROUPS, STAT_GROUP_LABELS, STAT_LABELS, type Player, type StatGroup } from '../types';
+import {
+  STAT_GROUPS,
+  STAT_GROUP_LABELS,
+  STAT_LABELS,
+  type GameState,
+  type Player,
+  type StatGroup,
+} from '../types';
+import { computeMarketValue } from '../game/marketValue';
 import { averageCurrent, averagePotential } from '../game/playerStats';
+import { projectMVAtAges } from '../game/projection';
+import { getSellRecommendation, type RecommendationKind } from '../game/recommendation';
+import { formatCash } from '../util/format';
 import Button from '../ui/Button';
 import Chip from '../ui/Chip';
+import MVHistoryChart from './MVHistoryChart';
 import SellingControls from './SellingControls';
 import StatRow from './StatRow';
 import TraitList from './TraitList';
@@ -10,11 +22,20 @@ import TraitList from './TraitList';
 type Props = {
   player: Player | null;
   onClose: () => void;
+  state?: GameState;
+  developmentMultiplier?: number;
   onSetAvailable?: (playerId: string, available: boolean) => void;
   onList?: (playerId: string, price: number) => void;
   onUnlist?: (playerId: string) => void;
   onSetBlockOffers?: (playerId: string, blocked: boolean) => void;
   onRelease?: (playerId: string) => void;
+};
+
+const RECOMMENDATION_TONE: Record<RecommendationKind, 'good' | 'warn' | 'neutral' | 'muted'> = {
+  hold: 'good',
+  sell_now: 'warn',
+  consider_selling: 'neutral',
+  no_offers_yet: 'muted',
 };
 
 const GROUP_ORDER: readonly StatGroup[] = ['physical', 'technical', 'mental'];
@@ -49,6 +70,8 @@ function HeroNumber({
 export default function PlayerDetailDrawer({
   player,
   onClose,
+  state,
+  developmentMultiplier = 1.0,
   onSetAvailable,
   onList,
   onUnlist,
@@ -94,7 +117,7 @@ export default function PlayerDetailDrawer({
             <header className="border-b border-hairline px-8 pt-8 pb-6">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.12em] text-ink-dim">
+                  <div className="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[0.12em] text-ink-dim">
                     <Chip tone={TIER_TONE[player.qualityTier]}>{player.qualityTier}</Chip>
                     <span className="text-ink-faint">·</span>
                     <span>{player.position}</span>
@@ -102,6 +125,18 @@ export default function PlayerDetailDrawer({
                     <span className="tabular-nums">age {player.age}</span>
                     <span className="text-ink-faint">·</span>
                     <span>{player.nationality}</span>
+                    {player.callups && player.callups.length > 0 ? (
+                      <>
+                        <span className="text-ink-faint">·</span>
+                        <Chip tone="accent">{player.callups.length}× call-up</Chip>
+                      </>
+                    ) : null}
+                    {(player.monthsOnRoster ?? 0) >= 24 ? (
+                      <>
+                        <span className="text-ink-faint">·</span>
+                        <Chip tone="accent">veteran</Chip>
+                      </>
+                    ) : null}
                   </div>
                   <h2 className="mt-3 truncate text-[28px] leading-[1.1] text-ink">
                     {player.firstName} {player.lastName}
@@ -127,6 +162,118 @@ export default function PlayerDetailDrawer({
               <h3 className="mb-3 text-[11px] uppercase tracking-[0.14em] text-ink-dim">traits</h3>
               <TraitList traits={player.traits} />
             </section>
+
+            <section className="border-b border-hairline px-8 py-6">
+              <div className="mb-3 flex items-baseline justify-between">
+                <h3 className="text-[11px] uppercase tracking-[0.14em] text-ink-dim">
+                  market value
+                </h3>
+                <span className="text-[18px] tabular-nums text-ink">
+                  {formatCash(computeMarketValue(player))}
+                </span>
+              </div>
+              <MVHistoryChart
+                history={player.mvHistory ?? []}
+                currentMV={computeMarketValue(player)}
+              />
+              {(() => {
+                const currentMV = computeMarketValue(player);
+                const projections = projectMVAtAges(player, [17, 18, 19], developmentMultiplier);
+                if (projections.length === 0) {
+                  return (
+                    <p className="mt-4 text-[11px] uppercase tracking-[0.10em] text-ink-faint">
+                      no further appreciation expected
+                    </p>
+                  );
+                }
+                return (
+                  <div className="mt-5 border-t border-hairline pt-4">
+                    <div className="mb-2 flex items-baseline justify-between">
+                      <span className="text-[10px] uppercase tracking-[0.12em] text-ink-dim">
+                        projected value
+                      </span>
+                      <span className="text-[10px] uppercase tracking-[0.10em] text-ink-faint">
+                        deterministic estimate
+                      </span>
+                    </div>
+                    <div className="space-y-1.5">
+                      {projections.map((p) => {
+                        const pct = currentMV > 0 ? Math.round((p.mv / currentMV - 1) * 100) : 0;
+                        const tone =
+                          p.mv > currentMV
+                            ? 'text-accent-bright'
+                            : p.mv < currentMV
+                              ? 'text-warn'
+                              : 'text-ink-mid';
+                        return (
+                          <div
+                            key={p.age}
+                            className="grid grid-cols-[80px_minmax(0,1fr)_72px] items-baseline gap-3 text-[12px]"
+                          >
+                            <span className="uppercase tracking-[0.10em] text-ink-mid">
+                              at age {p.age}
+                            </span>
+                            <span className="text-[11px] text-ink-faint font-body">
+                              {p.monthsForward} mo forward
+                            </span>
+                            <span className="text-right">
+                              <span className="tabular-nums text-ink">{formatCash(p.mv)}</span>
+                              <span className={`ml-2 text-[10px] tabular-nums ${tone}`}>
+                                {pct >= 0 ? '+' : ''}
+                                {pct}%
+                              </span>
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
+            </section>
+
+            {state ? (
+              <section className="border-b border-hairline px-8 py-6">
+                <h3 className="mb-3 text-[11px] uppercase tracking-[0.14em] text-ink-dim">
+                  recommendation
+                </h3>
+                {(() => {
+                  const rec = getSellRecommendation(player, state, developmentMultiplier);
+                  const tone = RECOMMENDATION_TONE[rec.kind];
+                  const arrow =
+                    rec.kind === 'sell_now'
+                      ? '→'
+                      : rec.kind === 'consider_selling'
+                        ? '?'
+                        : rec.kind === 'hold'
+                          ? '✓'
+                          : '·';
+                  const headlineClass =
+                    tone === 'good'
+                      ? 'text-accent-bright'
+                      : tone === 'warn'
+                        ? 'text-warn'
+                        : tone === 'neutral'
+                          ? 'text-ink'
+                          : 'text-ink-mid';
+                  return (
+                    <div className="space-y-3">
+                      <div className={`text-[16px] uppercase tracking-[0.10em] ${headlineClass}`}>
+                        <span className="font-mono">{arrow}</span> <span>{rec.headline}</span>
+                      </div>
+                      <ul className="space-y-1 text-[11px] text-ink-mid font-body">
+                        {rec.reasoning.map((line, idx) => (
+                          <li key={idx} className="flex items-baseline gap-2">
+                            <span className="text-ink-faint">·</span>
+                            <span>{line}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })()}
+              </section>
+            ) : null}
 
             {onSetAvailable && onList && onUnlist && (
               <section className="border-b border-hairline px-8 py-6">

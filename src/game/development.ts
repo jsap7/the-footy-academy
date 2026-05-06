@@ -49,6 +49,9 @@ export function developPlayer(
   updated: Player;
   gainsByStat: Partial<Record<StatKey, number>>;
 } {
+  // FOOTY-83: veterans (24+ months on roster) get a flat +10% dev rate.
+  const veteranDevMult = (player.monthsOnRoster ?? 0) >= 24 ? 1.1 : 1;
+  const effectiveFacilityMult = facilityMultiplier * veteranDevMult;
   const newCurrent: PlayerStats = { ...player.stats.current };
   const newResidual: Partial<Record<StatKey, number>> = {};
   const gainsByStat: Partial<Record<StatKey, number>> = {};
@@ -59,7 +62,7 @@ export function developPlayer(
     if (cur >= pot) continue;
 
     const traitMult = traitMultiplier(stat, player.traits);
-    const rawGain = computeRawGain(cur, pot, player.age, traitMult, facilityMultiplier);
+    const rawGain = computeRawGain(cur, pot, player.age, traitMult, effectiveFacilityMult);
 
     // Carry sub-1.0 fractional progress between turns so trait multipliers
     // actually compound over time instead of being eaten by Math.round.

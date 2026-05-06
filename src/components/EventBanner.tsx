@@ -1,5 +1,7 @@
 import {
+  ACHIEVEMENT_DEFINITIONS,
   FACILITY_DEFINITIONS,
+  type AchievementId,
   type BirthdayEvent,
   type FacilityDowngradeEvent,
   type FacilityScoutFiredEvent,
@@ -7,6 +9,10 @@ import {
   type ReleaseEvent,
   type SaleEvent,
 } from '../types';
+import type { StatMilestoneEvent } from '../game/statMilestones';
+import type { YouthCallupEvent } from '../game/youthCallups';
+
+const ACHIEVEMENT_TITLE = new Map(ACHIEVEMENT_DEFINITIONS.map((d) => [d.id, d.title]));
 import { formatCash } from '../util/format';
 import Chip from '../ui/Chip';
 
@@ -16,6 +22,10 @@ type Props = {
   sales: readonly SaleEvent[];
   facilityEvents?: readonly (FacilityWarningEvent | FacilityDowngradeEvent)[];
   forcedScoutFires?: readonly FacilityScoutFiredEvent[];
+  achievements?: readonly AchievementId[];
+  statMilestones?: readonly StatMilestoneEvent[];
+  callups?: readonly YouthCallupEvent[];
+  veterans?: readonly { playerId: string; playerName: string }[];
 };
 
 export default function EventBanner({
@@ -24,13 +34,21 @@ export default function EventBanner({
   sales,
   facilityEvents = [],
   forcedScoutFires = [],
+  achievements = [],
+  statMilestones = [],
+  callups = [],
+  veterans = [],
 }: Props) {
   const totalEvents =
     birthdays.length +
     releases.length +
     sales.length +
     facilityEvents.length +
-    forcedScoutFires.length;
+    forcedScoutFires.length +
+    achievements.length +
+    statMilestones.length +
+    callups.length +
+    veterans.length;
   if (totalEvents === 0) return null;
   return (
     <div className="border-b border-hairline bg-bg-elev">
@@ -87,6 +105,38 @@ export default function EventBanner({
               <Chip tone="danger">fired</Chip>
               <span className="text-ink">{f.scoutName}</span>
               <span className="text-ink-mid">lvl {f.scoutLevel} — facility downgrade</span>
+            </span>
+          ))}
+          {achievements.map((id) => (
+            <span key={`a-${id}`} className="flex items-center gap-2">
+              <Chip tone="accent">★ unlocked</Chip>
+              <span className="text-ink">{ACHIEVEMENT_TITLE.get(id) ?? id}</span>
+            </span>
+          ))}
+          {statMilestones.map((m) => {
+            const top = m.thresholds.reduce((mx, t) => (t.threshold > mx ? t.threshold : mx), 0);
+            const tone = top >= 90 ? 'accent' : 'muted';
+            const summary = m.thresholds.map((t) => t.statLabel).join(', ');
+            return (
+              <span key={`m-${m.playerId}`} className="flex items-center gap-2">
+                <Chip tone={tone}>milestone {top}</Chip>
+                <span className="text-ink">{m.playerName}</span>
+                <span className="text-ink-mid">→ {summary}</span>
+              </span>
+            );
+          })}
+          {callups.map((c) => (
+            <span key={`cu-${c.playerId}`} className="flex items-center gap-2">
+              <Chip tone="accent">england {c.callupType}</Chip>
+              <span className="text-ink">{c.playerName}</span>
+              <span className="text-accent-bright">+{Math.round(c.bonusPct * 100)}% mv</span>
+            </span>
+          ))}
+          {veterans.map((v) => (
+            <span key={`vet-${v.playerId}`} className="flex items-center gap-2">
+              <Chip tone="accent">veteran</Chip>
+              <span className="text-ink">{v.playerName}</span>
+              <span className="text-ink-mid">24 months — dev +10%, mv +15%</span>
             </span>
           ))}
         </div>

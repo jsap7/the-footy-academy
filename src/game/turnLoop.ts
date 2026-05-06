@@ -1,8 +1,10 @@
+import { detectNewlyUnlocked, stampUnlocked } from './achievements';
 import { processBirthdays, processReleases } from './aging';
 import { developPlayer } from './development';
 import { allowedScoutLevelsForTier, getCurrentFacility, getPrevFacilityTier } from './facilities';
 import { MONTHLY_BASE_INCOME, currentOperatingCosts } from './finance';
 import { applyInflation } from './inflation';
+import { computeMarketValue } from './marketValue';
 import {
   executeAcceptedOffers,
   generateOffersForTurn,
@@ -11,7 +13,9 @@ import {
 } from './offers';
 import { generateScoutMarket } from './scoutMarket';
 import { runScoutFinds, tickShortlist } from './shortlist';
+import { detectStatMilestones, type StatMilestoneEvent } from './statMilestones';
 import { calculateStipend } from './stipends';
+import { rollYouthCallups, type YouthCallupEvent } from './youthCallups';
 import { computeDevRateMultiplier } from './traits';
 import { appendTransaction } from './transactions';
 import { formatCash } from '../util/format';
@@ -45,12 +49,59 @@ export function advanceMonth(state: GameState): GameState {
 
   // 2c. Development — every roster player ticks up a little. Facility tier
   // applies a flat multiplier to every gain (1.0× at Backyard Pitch up to
-  // 1.5× at World-Class).
+  // 1.5× at World-Class). After development, each player's MV history gets
+  // a fresh entry (FOOTY-74) — capped at 12 trailing months for the chart.
+  // FOOTY-81: also detect stat milestones (70/80/90 crossings) and surface
+  // them in the event banner.
   const facility = getCurrentFacility(stateAfterCalendar);
-  const rosterAfterDevelopment = rosterAfterReleases.map(
-    (player) =>
-      developPlayer(player, computeDevRateMultiplier, facility.developmentMultiplier).updated,
-  );
+  const recentStatMilestones: StatMilestoneEvent[] = [];
+  const rosterAfterDevelopmentRaw = rosterAfterReleases.map((player) => {
+    const developed = developPlayer(
+      player,
+      computeDevRateMultiplier,
+      facility.developmentMultiplier,
+    ).updated;
+    const milestone = detectStatMilestones(
+      developed,
+      player.stats.current,
+      developed.stats.current,
+    );
+    if (milestone) recentStatMilestones.push(milestone);
+    return developed;
+  });
+
+  // 2d. Youth international call-ups — random monthly chance for eligible
+  // 16-19yo high-potential kids. Multiplies callupMultiplier (capped 2.0)
+  // and surfaces a YouthCallupEvent. Runs before the MV history snapshot
+  // so the new multiplier shows up immediately on this month's MV chart.
+  const callupResult = rollYouthCallups(rosterAfterDevelopmentRaw, currentMonth, currentYear);
+  const rosterAfterCallups = callupResult.roster;
+  const recentYouthCallups: YouthCallupEvent[] = callupResult.events;
+
+  // 2e. Increment monthsOnRoster and detect veteran-threshold crossings.
+  // FOOTY-83: 24+ months unlocks the Veteran badge — applied to dev rate
+  // (development.ts) and MV (marketValue.ts). One-time crossing event
+  // surfaces in the banner.
+  const recentVeterans: { playerId: string; playerName: string }[] = [];
+  const rosterAfterDevelopment = rosterAfterCallups.map((developed) => {
+    const wasVeteran = (developed.monthsOnRoster ?? 0) >= 24;
+    const monthsOnRoster = (developed.monthsOnRoster ?? 0) + 1;
+    const isVeteran = monthsOnRoster >= 24;
+    if (!wasVeteran && isVeteran) {
+      recentVeterans.push({
+        playerId: developed.id,
+        playerName: `${developed.firstName} ${developed.lastName}`,
+      });
+    }
+    const withMonths = { ...developed, monthsOnRoster };
+    const mvEntry = {
+      month: currentMonth,
+      year: currentYear,
+      mv: computeMarketValue(withMonths),
+    };
+    const mvHistory = [...(withMonths.mvHistory ?? []), mvEntry].slice(-12);
+    return { ...withMonths, mvHistory };
+  });
 
   // 3. Add monthly base income, deduct operating cost floor.
   let cash = state.cash + MONTHLY_BASE_INCOME;
@@ -188,7 +239,11 @@ export function advanceMonth(state: GameState): GameState {
     { month: currentMonth, year: currentYear, cash },
   ].slice(-12);
 
-  return {
+  // Achievement detection runs against the fully-updated end-of-turn state
+  // so all the year/sale/facility/roster signals are in place. Newly-unlocked
+  // ids are stamped with the current month/year and surfaced to the UI via
+  // recentAchievements.
+  const provisional: GameState = {
     ...state,
     currentMonth,
     currentYear,
@@ -203,10 +258,24 @@ export function advanceMonth(state: GameState): GameState {
     transactions,
     facilityTier,
     facilityGraceMonthsRemaining,
+  };
+  const newlyUnlocked = detectNewlyUnlocked(provisional);
+  const achievements =
+    newlyUnlocked.length > 0
+      ? stampUnlocked(state.achievements, newlyUnlocked, currentMonth, currentYear)
+      : state.achievements;
+
+  return {
+    ...provisional,
+    achievements,
     recentBirthdays: birthdayEvents,
     recentReleases: releaseEvents,
     recentSales: saleResult.saleEvents,
     recentFacilityEvents,
     recentForcedScoutFires,
+    recentAchievements: newlyUnlocked,
+    recentStatMilestones,
+    recentYouthCallups,
+    recentVeterans,
   };
 }

@@ -6,8 +6,11 @@ import { formatCash, formatMonth } from '../util/format';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
 import Chip from '../ui/Chip';
+import AchievementsCard from './AchievementsCard';
 import FacilityCard from './FacilityCard';
+import GoalsCard from './GoalsCard';
 import MonthlyBurnCard from './MonthlyBurnCard';
+import ReputationCard from './ReputationCard';
 import Sparkline from './Sparkline';
 
 type Props = {
@@ -294,6 +297,17 @@ export default function Dashboard({
             onDowngrade={onDowngradeFacility}
           />
         </div>
+      </div>
+
+      {/* Progression row */}
+      <div className="mt-10 grid grid-cols-12 gap-6">
+        <ReputationCard state={state} />
+        <AchievementsCard state={state} />
+      </div>
+
+      {/* Long-term goals */}
+      <div className="mt-10 grid grid-cols-12 gap-6">
+        <GoalsCard state={state} />
       </div>
 
       {/* Recent activity */}

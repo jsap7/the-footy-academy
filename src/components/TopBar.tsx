@@ -12,6 +12,7 @@ type Props = {
   cash: number;
   month: number;
   year: number;
+  reputation?: number;
   tabs: readonly Tab[];
   activeTab: string;
   onChangeTab: (key: string) => void;
@@ -76,6 +77,7 @@ export default function TopBar({
   cash,
   month,
   year,
+  reputation,
   tabs,
   activeTab,
   onChangeTab,
@@ -100,6 +102,7 @@ export default function TopBar({
         ))}
       </nav>
       <div className="ml-auto flex shrink-0 items-center gap-7">
+        {reputation != null ? <HudBlock label="Rep" value={reputation} /> : null}
         <HudBlock label="Cash" value={formatCash(cash)} tone={cashTone} />
         <HudBlock label="Month" value={formatMonth(month, year).toLowerCase()} />
         <Button

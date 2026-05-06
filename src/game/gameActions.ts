@@ -1,3 +1,4 @@
+import { withAchievementCheck } from './achievements';
 import {
   canDowngradeFacility,
   canUpgradeFacility,
@@ -21,12 +22,12 @@ export function hireScout(state: GameState, scoutId: string): GameState {
     description: `Hired ${scout.firstName} ${scout.lastName} (lvl ${scout.level})`,
     amount: 0,
   });
-  return {
+  return withAchievementCheck({
     ...state,
     scoutMarket: state.scoutMarket.filter((s) => s.id !== scoutId),
     scouts: [...state.scouts, scout],
     transactions,
-  };
+  });
 }
 
 export function fireScout(state: GameState, scoutId: string): GameState {
@@ -53,13 +54,13 @@ export function signPlayer(state: GameState, shortlistEntryId: string): GameStat
     description: `Signed ${entry.player.firstName} ${entry.player.lastName} (${entry.player.qualityTier})`,
     amount: -entry.signingFee,
   });
-  return {
+  return withAchievementCheck({
     ...state,
     cash: state.cash - entry.signingFee,
     shortlist: state.shortlist.filter((e) => e.id !== shortlistEntryId),
     roster: [entry.player, ...state.roster],
     transactions,
-  };
+  });
 }
 
 // Accept the offer in-place — marks status accepted and immediately executes
@@ -87,11 +88,11 @@ export function acceptOffer(state: GameState, offerId: string): GameState {
       },
     );
   }
-  return {
+  return withAchievementCheck({
     ...result.state,
     transactions,
     recentSales: [...state.recentSales, ...result.saleEvents],
-  };
+  });
 }
 
 export function counterOffer(state: GameState, offerId: string, counter: number): GameState {
@@ -218,13 +219,13 @@ export function upgradeFacility(state: GameState): GameState {
     description: `Upgraded facility to ${getFacility(next).name}`,
     amount: -cost,
   });
-  return {
+  return withAchievementCheck({
     ...state,
     cash: state.cash - cost,
     facilityTier: next,
     facilityGraceMonthsRemaining: 0,
     transactions,
-  };
+  });
 }
 
 // Manual downgrade — never refunds the upgrade cost. Auto-downgrade
