@@ -6,6 +6,7 @@ import PlayerList from './components/PlayerList';
 import ScoutsPage from './components/ScoutsPage';
 import ShortlistPage from './components/ShortlistPage';
 import TopBar from './components/TopBar';
+import { monthlyBurn } from './game/finance';
 import { generatePlayer } from './game/playerGenerator';
 import Button from './ui/Button';
 import SectionHead from './ui/SectionHead';
@@ -80,6 +81,7 @@ export default function App() {
         month={state.currentMonth}
         year={state.currentYear}
         squad={state.roster.length}
+        burn={monthlyBurn(state)}
         rightSlot={generateButton}
       />
       <NavStrip
