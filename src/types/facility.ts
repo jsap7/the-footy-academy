@@ -21,7 +21,10 @@ export const FACILITY_DEFINITIONS: Record<FacilityTier, FacilityDefinition> = {
     upgradeCost: 0,
     monthlyCost: 0,
     developmentMultiplier: 1.0,
-    scoutLevelsAvailable: { levels: [1, 2, 3] },
+    // FOOTY-70: tightened to lvl 1 only. The "sliver of hope" tier-bias
+    // change means even an L1 scout can in theory find an elite, so the
+    // facility gate is what funnels users toward upgrading.
+    scoutLevelsAvailable: { levels: [1] },
   },
   2: {
     tier: 2,
@@ -29,7 +32,7 @@ export const FACILITY_DEFINITIONS: Record<FacilityTier, FacilityDefinition> = {
     upgradeCost: 500_000,
     monthlyCost: 15_000,
     developmentMultiplier: 1.1,
-    scoutLevelsAvailable: { levels: [1, 2, 3], rareUpgrade: 4 },
+    scoutLevelsAvailable: { levels: [1], rareUpgrade: 2 },
   },
   3: {
     tier: 3,
@@ -37,7 +40,7 @@ export const FACILITY_DEFINITIONS: Record<FacilityTier, FacilityDefinition> = {
     upgradeCost: 2_000_000,
     monthlyCost: 75_000,
     developmentMultiplier: 1.2,
-    scoutLevelsAvailable: { levels: [2, 3, 4], rareUpgrade: 5 },
+    scoutLevelsAvailable: { levels: [2, 3] },
   },
   4: {
     tier: 4,
@@ -45,7 +48,7 @@ export const FACILITY_DEFINITIONS: Record<FacilityTier, FacilityDefinition> = {
     upgradeCost: 8_000_000,
     monthlyCost: 300_000,
     developmentMultiplier: 1.35,
-    scoutLevelsAvailable: { levels: [3, 4, 5] },
+    scoutLevelsAvailable: { levels: [3, 4], rareUpgrade: 5 },
   },
   5: {
     tier: 5,
