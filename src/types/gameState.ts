@@ -1,6 +1,8 @@
 import { CLUB_LIBRARY } from '../data/clubs/library';
+import { buildInitialAchievements } from '../game/achievements';
 import { generateScoutMarket } from '../game/scoutMarket';
 import { generateStartingRoster } from '../game/startingRoster';
+import type { Achievement, AchievementId } from './achievement';
 import type { BirthdayEvent, ReleaseEvent } from './aging';
 import type { Club } from './club';
 import type { FacilityTier } from './facility';
@@ -45,12 +47,16 @@ export type GameState = {
   // hires, facility upgrades, and the per-turn monthly burn aggregate.
   transactions: Transaction[];
 
+  // FOOTY-77: per-achievement state, including the timestamp at unlock.
+  achievements: Record<AchievementId, Achievement>;
+
   // Ephemeral UI events — populated each turn, cleared at start of next turn.
   recentBirthdays: BirthdayEvent[];
   recentReleases: ReleaseEvent[];
   recentSales: SaleEvent[];
   recentFacilityEvents: (FacilityWarningEvent | FacilityDowngradeEvent)[];
   recentForcedScoutFires: FacilityScoutFiredEvent[];
+  recentAchievements: AchievementId[];
 };
 
 export const INITIAL_GAME_STATE: GameState = {
@@ -68,9 +74,11 @@ export const INITIAL_GAME_STATE: GameState = {
   facilityGraceMonthsRemaining: 0,
   cashHistory: [{ month: 8, year: 2026, cash: 100_000 }],
   transactions: [],
+  achievements: buildInitialAchievements(),
   recentBirthdays: [],
   recentReleases: [],
   recentSales: [],
   recentFacilityEvents: [],
   recentForcedScoutFires: [],
+  recentAchievements: [],
 };

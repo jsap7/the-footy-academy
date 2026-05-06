@@ -1,3 +1,4 @@
+import { detectNewlyUnlocked, stampUnlocked } from './achievements';
 import { processBirthdays, processReleases } from './aging';
 import { developPlayer } from './development';
 import { allowedScoutLevelsForTier, getCurrentFacility, getPrevFacilityTier } from './facilities';
@@ -196,7 +197,11 @@ export function advanceMonth(state: GameState): GameState {
     { month: currentMonth, year: currentYear, cash },
   ].slice(-12);
 
-  return {
+  // Achievement detection runs against the fully-updated end-of-turn state
+  // so all the year/sale/facility/roster signals are in place. Newly-unlocked
+  // ids are stamped with the current month/year and surfaced to the UI via
+  // recentAchievements.
+  const provisional: GameState = {
     ...state,
     currentMonth,
     currentYear,
@@ -211,10 +216,21 @@ export function advanceMonth(state: GameState): GameState {
     transactions,
     facilityTier,
     facilityGraceMonthsRemaining,
+  };
+  const newlyUnlocked = detectNewlyUnlocked(provisional);
+  const achievements =
+    newlyUnlocked.length > 0
+      ? stampUnlocked(state.achievements, newlyUnlocked, currentMonth, currentYear)
+      : state.achievements;
+
+  return {
+    ...provisional,
+    achievements,
     recentBirthdays: birthdayEvents,
     recentReleases: releaseEvents,
     recentSales: saleResult.saleEvents,
     recentFacilityEvents,
     recentForcedScoutFires,
+    recentAchievements: newlyUnlocked,
   };
 }

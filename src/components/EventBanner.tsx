@@ -1,5 +1,7 @@
 import {
+  ACHIEVEMENT_DEFINITIONS,
   FACILITY_DEFINITIONS,
+  type AchievementId,
   type BirthdayEvent,
   type FacilityDowngradeEvent,
   type FacilityScoutFiredEvent,
@@ -7,6 +9,8 @@ import {
   type ReleaseEvent,
   type SaleEvent,
 } from '../types';
+
+const ACHIEVEMENT_TITLE = new Map(ACHIEVEMENT_DEFINITIONS.map((d) => [d.id, d.title]));
 import { formatCash } from '../util/format';
 import Chip from '../ui/Chip';
 
@@ -16,6 +20,7 @@ type Props = {
   sales: readonly SaleEvent[];
   facilityEvents?: readonly (FacilityWarningEvent | FacilityDowngradeEvent)[];
   forcedScoutFires?: readonly FacilityScoutFiredEvent[];
+  achievements?: readonly AchievementId[];
 };
 
 export default function EventBanner({
@@ -24,13 +29,15 @@ export default function EventBanner({
   sales,
   facilityEvents = [],
   forcedScoutFires = [],
+  achievements = [],
 }: Props) {
   const totalEvents =
     birthdays.length +
     releases.length +
     sales.length +
     facilityEvents.length +
-    forcedScoutFires.length;
+    forcedScoutFires.length +
+    achievements.length;
   if (totalEvents === 0) return null;
   return (
     <div className="border-b border-hairline bg-bg-elev">
@@ -87,6 +94,12 @@ export default function EventBanner({
               <Chip tone="danger">fired</Chip>
               <span className="text-ink">{f.scoutName}</span>
               <span className="text-ink-mid">lvl {f.scoutLevel} — facility downgrade</span>
+            </span>
+          ))}
+          {achievements.map((id) => (
+            <span key={`a-${id}`} className="flex items-center gap-2">
+              <Chip tone="accent">★ unlocked</Chip>
+              <span className="text-ink">{ACHIEVEMENT_TITLE.get(id) ?? id}</span>
             </span>
           ))}
         </div>
