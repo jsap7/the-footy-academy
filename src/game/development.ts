@@ -1,6 +1,6 @@
 import { ALL_STAT_KEYS, type Player, type PlayerStats, type StatKey } from '../types';
 
-const BASE_RATE = 0.5; // average points per stat per month before modifiers
+const BASE_RATE = 0.7; // average points per stat per month before modifiers
 
 // Peaks 13-17, drops sharply after 19. 22+ are released so we never see them
 // here, but the curve floors at 0 for safety.

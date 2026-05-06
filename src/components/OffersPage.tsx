@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { acceptOffer, counterOffer, rejectOffer } from '../game/gameActions';
-import type { GameState, OfferStatus } from '../types';
+import type { GameState, Offer, OfferStatus } from '../types';
 import Card from '../ui/Card';
-import OfferRow from './OfferRow';
+import OfferGroup from './OfferGroup';
 
 type Props = {
   state: GameState;
@@ -26,23 +26,56 @@ const FILTER_PREDICATE: Record<FilterKey, (s: OfferStatus) => boolean> = {
   archive: (s) => s === 'walked' || s === 'rejected' || s === 'expired',
 };
 
+function bestActiveAmount(offers: readonly Offer[]): number {
+  let best = 0;
+  for (const o of offers) {
+    if (o.status === 'pending' || o.status === 'countered') {
+      if (o.amount > best) best = o.amount;
+    }
+  }
+  return best;
+}
+
+function newestTimestamp(offers: readonly Offer[]): number {
+  let max = 0;
+  for (const o of offers) {
+    const ts = o.createdYear * 12 + o.createdMonth;
+    if (ts > max) max = ts;
+  }
+  return max;
+}
+
 export default function OffersPage({ state, onChange, onSelectPlayer }: Props) {
   const [filter, setFilter] = useState<FilterKey>('pending');
 
-  const ordered = [...state.pendingOffers].sort((a, b) => {
-    if (a.createdYear !== b.createdYear) return b.createdYear - a.createdYear;
-    return b.createdMonth - a.createdMonth;
-  });
+  const filteredOffers = state.pendingOffers.filter((o) => FILTER_PREDICATE[filter](o.status));
 
-  const filtered = ordered.filter((o) => FILTER_PREDICATE[filter](o.status));
-
-  // Counts by filter for the chip badges.
   const counts: Record<FilterKey, number> = {
-    all: ordered.length,
-    pending: ordered.filter((o) => FILTER_PREDICATE.pending(o.status)).length,
-    completed: ordered.filter((o) => FILTER_PREDICATE.completed(o.status)).length,
-    archive: ordered.filter((o) => FILTER_PREDICATE.archive(o.status)).length,
+    all: state.pendingOffers.length,
+    pending: state.pendingOffers.filter((o) => FILTER_PREDICATE.pending(o.status)).length,
+    completed: state.pendingOffers.filter((o) => FILTER_PREDICATE.completed(o.status)).length,
+    archive: state.pendingOffers.filter((o) => FILTER_PREDICATE.archive(o.status)).length,
   };
+
+  const clubsById = useMemo(() => new Map(state.clubs.map((c) => [c.id, c])), [state.clubs]);
+  const playerById = useMemo(() => new Map(state.roster.map((p) => [p.id, p])), [state.roster]);
+
+  const groups = useMemo(() => {
+    const map = new Map<string, Offer[]>();
+    for (const offer of filteredOffers) {
+      const bucket = map.get(offer.playerId);
+      if (bucket) bucket.push(offer);
+      else map.set(offer.playerId, [offer]);
+    }
+    return [...map.entries()]
+      .map(([playerId, offers]) => ({ playerId, offers }))
+      .sort((a, b) => {
+        const aBest = bestActiveAmount(a.offers);
+        const bBest = bestActiveAmount(b.offers);
+        if (aBest !== bBest) return bBest - aBest;
+        return newestTimestamp(b.offers) - newestTimestamp(a.offers);
+      });
+  }, [filteredOffers]);
 
   if (state.pendingOffers.length === 0) {
     return (
@@ -85,7 +118,7 @@ export default function OffersPage({ state, onChange, onSelectPlayer }: Props) {
         })}
       </div>
 
-      {filtered.length === 0 ? (
+      {groups.length === 0 ? (
         <Card>
           <p className="text-center text-[13px] text-ink-dim font-body">
             no offers match this filter.
@@ -94,22 +127,18 @@ export default function OffersPage({ state, onChange, onSelectPlayer }: Props) {
       ) : (
         <Card padded={false}>
           <div className="divide-y divide-hairline">
-            {filtered.map((offer) => {
-              const club = state.clubs.find((c) => c.id === offer.clubId);
-              const player = state.roster.find((p) => p.id === offer.playerId);
-              return (
-                <OfferRow
-                  key={offer.id}
-                  offer={offer}
-                  club={club}
-                  player={player}
-                  onSelectPlayer={onSelectPlayer}
-                  onAccept={(id) => onChange(acceptOffer(state, id))}
-                  onCounter={(id, amt) => onChange(counterOffer(state, id, amt))}
-                  onReject={(id) => onChange(rejectOffer(state, id))}
-                />
-              );
-            })}
+            {groups.map(({ playerId, offers }) => (
+              <OfferGroup
+                key={playerId}
+                player={playerById.get(playerId)}
+                offers={offers}
+                clubsById={clubsById}
+                onSelectPlayer={onSelectPlayer}
+                onAccept={(id) => onChange(acceptOffer(state, id))}
+                onCounter={(id, amt) => onChange(counterOffer(state, id, amt))}
+                onReject={(id) => onChange(rejectOffer(state, id))}
+              />
+            ))}
           </div>
         </Card>
       )}

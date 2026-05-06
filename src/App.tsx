@@ -8,7 +8,12 @@ import PlayerList from './components/PlayerList';
 import ScoutsPage from './components/ScoutsPage';
 import ShortlistPage from './components/ShortlistPage';
 import TopBar from './components/TopBar';
-import { listPlayer, setPlayerAvailable, unlistPlayer } from './game/gameActions';
+import {
+  listPlayer,
+  setPlayerAvailable,
+  setPlayerBlockOffers,
+  unlistPlayer,
+} from './game/gameActions';
 import { advanceMonth } from './game/turnLoop';
 import StatusBar from './ui/StatusBar';
 import { INITIAL_GAME_STATE, type GameState } from './types';
@@ -101,6 +106,7 @@ export default function App() {
               ) : (
                 <PlayerList
                   players={state.roster}
+                  pendingOffers={state.pendingOffers}
                   selectedPlayerId={selectedPlayerId}
                   onSelect={handleSelect}
                 />
@@ -143,6 +149,11 @@ export default function App() {
         onUnlist={
           onRoster && selectedPlayer
             ? (id) => setState((prev) => unlistPlayer(prev, id))
+            : undefined
+        }
+        onSetBlockOffers={
+          onRoster && selectedPlayer
+            ? (id, blocked) => setState((prev) => setPlayerBlockOffers(prev, id, blocked))
             : undefined
         }
       />

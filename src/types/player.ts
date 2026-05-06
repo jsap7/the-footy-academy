@@ -55,6 +55,9 @@ export type Player = {
   // Selling state — toggled by the user via FOOTY-42 controls.
   availableForSale: boolean;
   askingPrice: number | null;
+  // When true, no new offers are generated for this player. Mutually
+  // exclusive with availableForSale / askingPrice — set via setPlayerBlockOffers.
+  blockOffers: boolean;
   // Per-stat gains from the most recent dev tick. Cleared/overwritten by the
   // turn loop. Used by the UI to flash a "+N" indicator next to stats that
   // grew this month.

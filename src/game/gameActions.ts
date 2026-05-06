@@ -76,7 +76,9 @@ export function setPlayerAvailable(
   return {
     ...state,
     roster: state.roster.map((p) =>
-      p.id === playerId ? { ...p, availableForSale: available } : p,
+      p.id === playerId
+        ? { ...p, availableForSale: available, blockOffers: available ? false : p.blockOffers }
+        : p,
     ),
   };
 }
@@ -87,7 +89,9 @@ export function listPlayer(state: GameState, playerId: string, askingPrice: numb
   const clamped = Math.max(MIN_ASKING_PRICE, Math.round(askingPrice));
   return {
     ...state,
-    roster: state.roster.map((p) => (p.id === playerId ? { ...p, askingPrice: clamped } : p)),
+    roster: state.roster.map((p) =>
+      p.id === playerId ? { ...p, askingPrice: clamped, blockOffers: false } : p,
+    ),
   };
 }
 
@@ -95,6 +99,37 @@ export function unlistPlayer(state: GameState, playerId: string): GameState {
   return {
     ...state,
     roster: state.roster.map((p) => (p.id === playerId ? { ...p, askingPrice: null } : p)),
+  };
+}
+
+// Toggle the per-player block-offers flag. When turning ON, also clear
+// availableForSale + askingPrice — they're mutually exclusive UI states.
+// Existing pending offers stay so the user can resolve them manually.
+export function setPlayerBlockOffers(
+  state: GameState,
+  playerId: string,
+  blocked: boolean,
+): GameState {
+  return {
+    ...state,
+    roster: state.roster.map((p) =>
+      p.id === playerId
+        ? blocked
+          ? { ...p, blockOffers: true, availableForSale: false, askingPrice: null }
+          : { ...p, blockOffers: false }
+        : p,
+    ),
+  };
+}
+
+// Drop a shortlist entry. Used when a scout's find isn't worth a signing
+// slot — clears the row so it doesn't keep showing up against the cap.
+export function rejectShortlistEntry(state: GameState, entryId: string): GameState {
+  const entry = state.shortlist.find((e) => e.id === entryId);
+  if (!entry) return state;
+  return {
+    ...state,
+    shortlist: state.shortlist.filter((e) => e.id !== entryId),
   };
 }
 

@@ -131,6 +131,7 @@ export function generatePlayer(opts?: { forceTier?: QualityTier }): Player {
     qualityTier,
     availableForSale: false,
     askingPrice: null,
+    blockOffers: false,
     createdAt: Date.now(),
   };
 }

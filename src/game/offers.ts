@@ -68,6 +68,7 @@ function pickClubForPlayer(player: Player, clubs: readonly Club[]): Club | undef
 export function generateOffersForTurn(state: GameState): Offer[] {
   const newOffers: Offer[] = [];
   for (const player of state.roster) {
+    if (player.blockOffers) continue;
     const chance = computeOfferChance(player);
     if (chance <= 0) continue;
     if (Math.random() >= chance) continue;
