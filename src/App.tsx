@@ -1,21 +1,70 @@
+import { useEffect, useMemo, useState } from 'react';
+import GeneratePlayerButton from './components/GeneratePlayerButton';
+import PlayerDetail from './components/PlayerDetail';
+import PlayerList from './components/PlayerList';
+import { generatePlayer } from './game/playerGenerator';
+import type { Player } from './types';
+
 export default function App() {
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
+
+  const selectedPlayer = useMemo(
+    () => (selectedPlayerId ? (players.find((p) => p.id === selectedPlayerId) ?? null) : null),
+    [players, selectedPlayerId],
+  );
+
+  const handleGenerate = () => {
+    setPlayers((prev) => [generatePlayer(), ...prev]);
+  };
+
+  const handleSelect = (id: string) => {
+    setSelectedPlayerId((prev) => (prev === id ? null : id));
+  };
+
+  const handleClose = () => setSelectedPlayerId(null);
+
+  useEffect(() => {
+    const isTypingTarget = (target: EventTarget | null) =>
+      target instanceof HTMLElement &&
+      (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (isTypingTarget(e.target)) return;
+      if (e.key === 'Escape') {
+        setSelectedPlayerId(null);
+        return;
+      }
+      if (e.key === 'g' || e.key === 'G') {
+        setPlayers((prev) => [generatePlayer(), ...prev]);
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
+
   return (
-    <main className="flex min-h-full flex-col items-center justify-center px-6 py-16">
-      <div className="max-w-xl text-center">
-        <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">Phase 0</p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight text-neutral-100">
+    <div className="flex h-full flex-col">
+      <header className="flex items-center justify-between border-b border-neutral-800 px-6 py-3">
+        <h1 className="text-base font-semibold tracking-tight text-neutral-100">
           The Footy Academy
         </h1>
-        <p className="mt-4 text-sm leading-relaxed text-neutral-400">
-          Scaffolding is wired up. Player generation lands next.
-        </p>
-        <button
-          type="button"
-          className="mt-8 inline-flex items-center rounded-md border border-neutral-700 bg-neutral-900 px-4 py-2 text-sm font-medium text-neutral-100 transition hover:border-neutral-500 hover:bg-neutral-800"
-        >
-          Placeholder action
-        </button>
-      </div>
-    </main>
+        <GeneratePlayerButton onGenerate={handleGenerate} />
+      </header>
+      <main className="flex min-h-0 flex-1">
+        <section className="flex w-full min-w-0 flex-1 flex-col border-r border-neutral-800">
+          <PlayerList
+            players={players}
+            selectedPlayerId={selectedPlayerId}
+            onSelect={handleSelect}
+          />
+        </section>
+        {selectedPlayer && (
+          <aside className="w-[460px] shrink-0">
+            <PlayerDetail player={selectedPlayer} onClose={handleClose} />
+          </aside>
+        )}
+      </main>
+    </div>
   );
 }
