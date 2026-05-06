@@ -6,13 +6,13 @@ type Props = {
   id: TraitId;
 };
 
-const CATEGORY_STYLES: Record<TraitCategory, string> = {
-  positive: 'border-emerald-800/70 bg-emerald-950/40 text-emerald-300',
-  negative: 'border-rose-900/70 bg-rose-950/40 text-rose-300',
-  neutral: 'border-neutral-700 bg-neutral-900 text-neutral-300',
+const CATEGORY_TONE: Record<TraitCategory, { border: string; text: string }> = {
+  positive: { border: 'border-good-rim', text: 'text-good' },
+  negative: { border: 'border-danger-rim', text: 'text-danger' },
+  neutral: { border: 'border-hairline', text: 'text-ink-mid' },
 };
 
-const TOOLTIP_WIDTH = 240; // matches w-60
+const TOOLTIP_WIDTH = 240;
 
 export default function TraitBadge({ id }: Props) {
   const trait = getTrait(id);
@@ -42,7 +42,7 @@ export default function TraitBadge({ id }: Props) {
 
   if (!trait) return null;
 
-  const tone = CATEGORY_STYLES[trait.category];
+  const tone = CATEGORY_TONE[trait.category];
 
   return (
     <span ref={wrapperRef} className="relative inline-block">
@@ -55,7 +55,7 @@ export default function TraitBadge({ id }: Props) {
         onClick={() => setPinned((prev) => !prev)}
         aria-expanded={open}
         aria-describedby={open ? `trait-desc-${id}` : undefined}
-        className={`inline-flex items-center border px-1.5 py-[1px] font-mono text-[0.7rem] uppercase tracking-wider transition focus:outline-none focus-visible:ring-1 focus-visible:ring-neutral-500 ${tone}`}
+        className={`inline-flex items-center border bg-transparent px-[7px] py-[2px] text-[10px] uppercase tracking-[0.10em] transition focus:outline-none focus-visible:border-accent focus-visible:text-accent ${tone.border} ${tone.text}`}
       >
         {trait.name}
       </button>
@@ -63,7 +63,7 @@ export default function TraitBadge({ id }: Props) {
         <span
           id={`trait-desc-${id}`}
           role="tooltip"
-          className={`pointer-events-none absolute top-full z-20 mt-1 w-60 max-w-[16rem] border border-neutral-700 bg-neutral-950 px-2 py-1.5 text-xs leading-snug text-neutral-300 shadow-lg ${
+          className={`pointer-events-none absolute top-full z-20 mt-1 w-60 max-w-[16rem] border border-hairline bg-bg-elev px-3 py-2 text-[14px] leading-snug text-ink-mid shadow-none ${
             alignRight ? 'right-0' : 'left-0'
           }`}
         >

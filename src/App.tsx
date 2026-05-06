@@ -1,9 +1,20 @@
 import { useEffect, useMemo, useState } from 'react';
-import GeneratePlayerButton from './components/GeneratePlayerButton';
+import EmptyState from './components/EmptyState';
+import NavStrip from './components/NavStrip';
 import PlayerDetail from './components/PlayerDetail';
 import PlayerList from './components/PlayerList';
+import TopBar from './components/TopBar';
 import { generatePlayer } from './game/playerGenerator';
+import Button from './ui/Button';
+import SectionHead from './ui/SectionHead';
+import StatusBar from './ui/StatusBar';
 import type { Player } from './types';
+
+const NAV_TABS = [
+  { key: 'roster', label: 'academy' },
+  { key: 'scouts', label: 'scouts', hint: 'phase 2', disabled: true },
+  { key: 'transfers', label: 'transfers', hint: 'phase 3', disabled: true },
+] as const;
 
 export default function App() {
   const [players, setPlayers] = useState<Player[]>([]);
@@ -43,28 +54,42 @@ export default function App() {
     return () => document.removeEventListener('keydown', onKey);
   }, []);
 
+  const generateButton = (
+    <Button variant="primary" onClick={handleGenerate} hint="G">
+      + generate player
+    </Button>
+  );
+
   return (
-    <div className="flex h-full flex-col">
-      <header className="flex items-center justify-between border-b border-neutral-800 px-6 py-3">
-        <h1 className="text-base font-semibold tracking-tight text-neutral-100">
-          The Footy Academy
-        </h1>
-        <GeneratePlayerButton onGenerate={handleGenerate} />
-      </header>
+    <div className="flex h-full flex-col bg-bg text-ink">
+      <TopBar squad={players.length} rightSlot={generateButton} />
+      <NavStrip tabs={NAV_TABS} active="roster" />
       <main className="flex min-h-0 flex-1">
-        <section className="flex w-full min-w-0 flex-1 flex-col border-r border-neutral-800">
-          <PlayerList
-            players={players}
-            selectedPlayerId={selectedPlayerId}
-            onSelect={handleSelect}
-          />
+        <section className="flex w-full min-w-0 flex-1 flex-col border-r border-hairline">
+          <SectionHead label="academy roster" count={players.length} />
+          {players.length === 0 ? (
+            <EmptyState onGenerate={handleGenerate} />
+          ) : (
+            <PlayerList
+              players={players}
+              selectedPlayerId={selectedPlayerId}
+              onSelect={handleSelect}
+            />
+          )}
         </section>
         {selectedPlayer && (
-          <aside className="w-[460px] shrink-0">
+          <aside className="w-[480px] shrink-0">
             <PlayerDetail player={selectedPlayer} onClose={handleClose} />
           </aside>
         )}
       </main>
+      <StatusBar
+        hints={
+          selectedPlayer
+            ? '[G] generate · [ESC] close · [↑/↓] navigate'
+            : '[G] generate · [↑/↓] navigate'
+        }
+      />
     </div>
   );
 }

@@ -4,27 +4,30 @@ type Props = {
   potential: number;
 };
 
+const DOTTED_TRACK =
+  'repeating-linear-gradient(to right, var(--color-ink-faint) 0 2px, transparent 2px 4px)';
+
 export default function StatRow({ label, current, potential }: Props) {
+  const maxed = current >= potential;
   return (
-    <div className="grid grid-cols-[minmax(0,1.3fr)_auto_minmax(0,1.6fr)] items-center gap-3 py-1 text-sm">
-      <span className="truncate text-neutral-300">{label}</span>
-      <span className="whitespace-nowrap text-right font-mono tabular-nums">
-        <span className="text-neutral-50">{current}</span>
-        <span className="text-neutral-600"> / </span>
-        <span className="text-neutral-500">{potential}</span>
-      </span>
-      <div className="relative h-1.5 w-full overflow-hidden rounded bg-neutral-800">
+    <div className="grid grid-cols-[130px_1fr_28px_28px] items-center gap-3 py-1 text-[19px] leading-none">
+      <span className="truncate text-ink-mid">{label}</span>
+      <div
+        className="relative h-[10px] w-full"
+        style={{ backgroundImage: DOTTED_TRACK }}
+        aria-hidden
+      >
         <div
-          className="absolute inset-y-0 left-0 bg-neutral-600"
-          style={{ width: `${potential}%` }}
-          aria-hidden
+          className={`absolute inset-y-0 left-0 ${maxed ? 'bg-good' : 'bg-accent'}`}
+          style={{ width: `${current}%` }}
         />
         <div
-          className="absolute inset-y-0 left-0 bg-neutral-100"
-          style={{ width: `${current}%` }}
-          aria-hidden
+          className="absolute -top-[2px] -bottom-[2px] w-[2px] bg-ink-mid"
+          style={{ left: `calc(${potential}% - 1px)` }}
         />
       </div>
+      <span className="text-right tabular-nums text-ink">{current}</span>
+      <span className="text-right tabular-nums text-ink-dim">{potential}</span>
     </div>
   );
 }
