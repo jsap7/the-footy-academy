@@ -3,6 +3,7 @@ import { developPlayer } from './development';
 import { allowedScoutLevelsForTier, getCurrentFacility, getPrevFacilityTier } from './facilities';
 import { MONTHLY_BASE_INCOME, currentOperatingCosts } from './finance';
 import { applyInflation } from './inflation';
+import { computeMarketValue } from './marketValue';
 import {
   executeAcceptedOffers,
   generateOffersForTurn,
@@ -45,12 +46,19 @@ export function advanceMonth(state: GameState): GameState {
 
   // 2c. Development — every roster player ticks up a little. Facility tier
   // applies a flat multiplier to every gain (1.0× at Backyard Pitch up to
-  // 1.5× at World-Class).
+  // 1.5× at World-Class). After development, each player's MV history gets
+  // a fresh entry (FOOTY-74) — capped at 12 trailing months for the chart.
   const facility = getCurrentFacility(stateAfterCalendar);
-  const rosterAfterDevelopment = rosterAfterReleases.map(
-    (player) =>
-      developPlayer(player, computeDevRateMultiplier, facility.developmentMultiplier).updated,
-  );
+  const rosterAfterDevelopment = rosterAfterReleases.map((player) => {
+    const developed = developPlayer(
+      player,
+      computeDevRateMultiplier,
+      facility.developmentMultiplier,
+    ).updated;
+    const mvEntry = { month: currentMonth, year: currentYear, mv: computeMarketValue(developed) };
+    const mvHistory = [...(developed.mvHistory ?? []), mvEntry].slice(-12);
+    return { ...developed, mvHistory };
+  });
 
   // 3. Add monthly base income, deduct operating cost floor.
   let cash = state.cash + MONTHLY_BASE_INCOME;

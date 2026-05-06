@@ -132,6 +132,7 @@ export function generatePlayer(opts?: { forceTier?: QualityTier; forceAge?: numb
     availableForSale: false,
     askingPrice: null,
     blockOffers: false,
+    mvHistory: [],
     createdAt: Date.now(),
   };
 }

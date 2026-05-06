@@ -66,5 +66,8 @@ export type Player = {
   // trait dev-rate multipliers (e.g. workaholic ×1.20) actually compound
   // over time instead of being eaten by per-turn Math.round.
   developmentResidual?: Partial<Record<StatKey, number>>;
+  // FOOTY-74: trailing 12 entries of monthly market value (pushed by
+  // turnLoop after development). Drives the per-player MV chart.
+  mvHistory?: { month: number; year: number; mv: number }[];
   createdAt: number;
 };

@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import { STAT_GROUPS, STAT_GROUP_LABELS, STAT_LABELS, type Player, type StatGroup } from '../types';
+import { computeMarketValue } from '../game/marketValue';
 import { averageCurrent, averagePotential } from '../game/playerStats';
+import { formatCash } from '../util/format';
 import Button from '../ui/Button';
 import Chip from '../ui/Chip';
+import MVHistoryChart from './MVHistoryChart';
 import SellingControls from './SellingControls';
 import StatRow from './StatRow';
 import TraitList from './TraitList';
@@ -126,6 +129,21 @@ export default function PlayerDetailDrawer({
             <section className="border-b border-hairline px-8 py-6">
               <h3 className="mb-3 text-[11px] uppercase tracking-[0.14em] text-ink-dim">traits</h3>
               <TraitList traits={player.traits} />
+            </section>
+
+            <section className="border-b border-hairline px-8 py-6">
+              <div className="mb-3 flex items-baseline justify-between">
+                <h3 className="text-[11px] uppercase tracking-[0.14em] text-ink-dim">
+                  market value
+                </h3>
+                <span className="text-[18px] tabular-nums text-ink">
+                  {formatCash(computeMarketValue(player))}
+                </span>
+              </div>
+              <MVHistoryChart
+                history={player.mvHistory ?? []}
+                currentMV={computeMarketValue(player)}
+              />
             </section>
 
             {onSetAvailable && onList && onUnlist && (
