@@ -1,4 +1,5 @@
 import { findPlayerForScout } from './scoutFind';
+import { computeSigningFee } from './signingFees';
 import type { GameState, ShortlistEntry } from '../types';
 
 export const SHORTLIST_LIFESPAN_MONTHS = 3;
@@ -8,12 +9,16 @@ export const SHORTLIST_LIFESPAN_MONTHS = 3;
 // state.shortlist BEFORE calling tickShortlist (so the new finds get one
 // fewer effective month, matching the spec).
 export function runScoutFinds(state: GameState): ShortlistEntry[] {
-  return state.scouts.map((scout) => ({
-    id: crypto.randomUUID(),
-    player: findPlayerForScout(scout),
-    foundByScoutId: scout.id,
-    monthsRemaining: SHORTLIST_LIFESPAN_MONTHS,
-  }));
+  return state.scouts.map((scout) => {
+    const player = findPlayerForScout(scout);
+    return {
+      id: crypto.randomUUID(),
+      player,
+      foundByScoutId: scout.id,
+      monthsRemaining: SHORTLIST_LIFESPAN_MONTHS,
+      signingFee: computeSigningFee(player),
+    };
+  });
 }
 
 export function tickShortlist(shortlist: readonly ShortlistEntry[]): ShortlistEntry[] {

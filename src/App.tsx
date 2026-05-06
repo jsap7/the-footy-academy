@@ -4,6 +4,7 @@ import NavStrip from './components/NavStrip';
 import PlayerDetail from './components/PlayerDetail';
 import PlayerList from './components/PlayerList';
 import ScoutsPage from './components/ScoutsPage';
+import ShortlistPage from './components/ShortlistPage';
 import TopBar from './components/TopBar';
 import { generatePlayer } from './game/playerGenerator';
 import Button from './ui/Button';
@@ -11,26 +12,20 @@ import SectionHead from './ui/SectionHead';
 import StatusBar from './ui/StatusBar';
 import { INITIAL_GAME_STATE, type GameState } from './types';
 
-const NAV_TABS = [
-  { key: 'roster', label: 'academy' },
-  { key: 'scouts', label: 'scouts' },
-  { key: 'transfers', label: 'transfers', hint: 'phase 3', disabled: true },
-] as const;
-
-type TabKey = 'roster' | 'scouts';
+type TabKey = 'roster' | 'shortlist' | 'scouts';
 
 export default function App() {
   const [state, setState] = useState<GameState>(INITIAL_GAME_STATE);
   const [activeTab, setActiveTab] = useState<TabKey>('roster');
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
 
-  const selectedPlayer = useMemo(
-    () =>
-      selectedPlayerId
-        ? (state.roster.find((p) => p.id === selectedPlayerId) ?? null)
-        : null,
-    [state.roster, selectedPlayerId],
-  );
+  const selectedPlayer = useMemo(() => {
+    if (!selectedPlayerId) return null;
+    const onRoster = state.roster.find((p) => p.id === selectedPlayerId);
+    if (onRoster) return onRoster;
+    const onShortlist = state.shortlist.find((e) => e.player.id === selectedPlayerId);
+    return onShortlist?.player ?? null;
+  }, [state.roster, state.shortlist, selectedPlayerId]);
 
   const handleGenerate = () => {
     setState((prev) => ({ ...prev, roster: [generatePlayer(), ...prev.roster] }));
@@ -67,6 +62,17 @@ export default function App() {
     </Button>
   );
 
+  const navTabs = [
+    { key: 'roster', label: 'academy' },
+    {
+      key: 'shortlist',
+      label: 'shortlist',
+      hint: state.shortlist.length > 0 ? String(state.shortlist.length) : undefined,
+    },
+    { key: 'scouts', label: 'scouts' },
+    { key: 'transfers', label: 'transfers', hint: 'phase 3', disabled: true },
+  ] as const;
+
   return (
     <div className="flex h-full flex-col bg-bg text-ink">
       <TopBar
@@ -77,14 +83,14 @@ export default function App() {
         rightSlot={generateButton}
       />
       <NavStrip
-        tabs={NAV_TABS}
+        tabs={navTabs}
         active={activeTab}
         onChange={(key) => setActiveTab(key as TabKey)}
       />
       <main className="flex min-h-0 flex-1">
-        {activeTab === 'roster' && (
-          <>
-            <section className="flex w-full min-w-0 flex-1 flex-col border-r border-hairline">
+        <section className="flex w-full min-w-0 flex-1 flex-col border-r border-hairline">
+          {activeTab === 'roster' && (
+            <>
               <SectionHead label="academy roster" count={state.roster.length} />
               {state.roster.length === 0 ? (
                 <EmptyState onGenerate={handleGenerate} />
@@ -95,23 +101,38 @@ export default function App() {
                   onSelect={handleSelect}
                 />
               )}
-            </section>
-            {selectedPlayer && (
-              <aside className="w-[480px] shrink-0">
-                <PlayerDetail player={selectedPlayer} onClose={handleClose} />
-              </aside>
-            )}
-          </>
-        )}
-        {activeTab === 'scouts' && (
-          <section className="flex w-full min-w-0 flex-1 flex-col">
-            <ScoutsPage state={state} onChange={setState} />
-          </section>
+            </>
+          )}
+          {activeTab === 'shortlist' && (
+            <>
+              <SectionHead
+                label="shortlist"
+                count={state.shortlist.length}
+                right={
+                  <span className="text-[10px] tracking-[0.14em] text-ink-faint">
+                    expires after 3 months · sign or lose them
+                  </span>
+                }
+              />
+              <ShortlistPage
+                state={state}
+                selectedPlayerId={selectedPlayerId}
+                onSelect={handleSelect}
+                onChange={setState}
+              />
+            </>
+          )}
+          {activeTab === 'scouts' && <ScoutsPage state={state} onChange={setState} />}
+        </section>
+        {selectedPlayer && (
+          <aside className="w-[480px] shrink-0">
+            <PlayerDetail player={selectedPlayer} onClose={handleClose} />
+          </aside>
         )}
       </main>
       <StatusBar
         hints={
-          selectedPlayer && activeTab === 'roster'
+          selectedPlayer
             ? '[G] generate · [ESC] close · [↑/↓] navigate'
             : '[G] generate · [↑/↓] navigate'
         }

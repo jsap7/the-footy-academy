@@ -19,3 +19,15 @@ export function fireScout(state: GameState, scoutId: string): GameState {
     scouts: state.scouts.filter((s) => s.id !== scoutId),
   };
 }
+
+export function signPlayer(state: GameState, shortlistEntryId: string): GameState {
+  const entry = state.shortlist.find((e) => e.id === shortlistEntryId);
+  if (!entry) return state;
+  if (state.cash < entry.signingFee) return state;
+  return {
+    ...state,
+    cash: state.cash - entry.signingFee,
+    shortlist: state.shortlist.filter((e) => e.id !== shortlistEntryId),
+    roster: [entry.player, ...state.roster],
+  };
+}
