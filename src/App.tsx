@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import GeneratePlayerButton from './components/GeneratePlayerButton';
+import PlayerDetail from './components/PlayerDetail';
 import PlayerList from './components/PlayerList';
 import { generatePlayer } from './game/playerGenerator';
 import type { Player } from './types';
@@ -8,6 +9,11 @@ export default function App() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
 
+  const selectedPlayer = useMemo(
+    () => (selectedPlayerId ? (players.find((p) => p.id === selectedPlayerId) ?? null) : null),
+    [players, selectedPlayerId],
+  );
+
   const handleGenerate = () => {
     setPlayers((prev) => [generatePlayer(), ...prev]);
   };
@@ -15,6 +21,17 @@ export default function App() {
   const handleSelect = (id: string) => {
     setSelectedPlayerId((prev) => (prev === id ? null : id));
   };
+
+  const handleClose = () => setSelectedPlayerId(null);
+
+  useEffect(() => {
+    if (!selectedPlayerId) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelectedPlayerId(null);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [selectedPlayerId]);
 
   return (
     <div className="flex h-full flex-col">
@@ -32,9 +49,11 @@ export default function App() {
             onSelect={handleSelect}
           />
         </section>
-        <aside className="hidden w-[420px] shrink-0 lg:block">
-          {/* Detail panel will be implemented in FOOTY-11 */}
-        </aside>
+        {selectedPlayer && (
+          <aside className="w-[460px] shrink-0">
+            <PlayerDetail player={selectedPlayer} onClose={handleClose} />
+          </aside>
+        )}
       </main>
     </div>
   );
