@@ -12,10 +12,13 @@ const CATEGORY_STYLES: Record<TraitCategory, string> = {
   neutral: 'border-neutral-700 bg-neutral-900 text-neutral-300',
 };
 
+const TOOLTIP_WIDTH = 240; // matches w-60
+
 export default function TraitBadge({ id }: Props) {
   const trait = getTrait(id);
   const [hovered, setHovered] = useState(false);
   const [pinned, setPinned] = useState(false);
+  const [alignRight, setAlignRight] = useState(false);
   const wrapperRef = useRef<HTMLSpanElement | null>(null);
 
   useEffect(() => {
@@ -29,9 +32,16 @@ export default function TraitBadge({ id }: Props) {
     return () => document.removeEventListener('mousedown', onDocClick);
   }, [pinned]);
 
+  const open = hovered || pinned;
+
+  useEffect(() => {
+    if (!open || !wrapperRef.current) return;
+    const rect = wrapperRef.current.getBoundingClientRect();
+    setAlignRight(rect.left + TOOLTIP_WIDTH > window.innerWidth - 8);
+  }, [open]);
+
   if (!trait) return null;
 
-  const open = hovered || pinned;
   const tone = CATEGORY_STYLES[trait.category];
 
   return (
@@ -53,7 +63,9 @@ export default function TraitBadge({ id }: Props) {
         <span
           id={`trait-desc-${id}`}
           role="tooltip"
-          className="pointer-events-none absolute left-0 top-full z-20 mt-1 w-60 max-w-[16rem] border border-neutral-700 bg-neutral-950 px-2 py-1.5 text-xs leading-snug text-neutral-300 shadow-lg"
+          className={`pointer-events-none absolute top-full z-20 mt-1 w-60 max-w-[16rem] border border-neutral-700 bg-neutral-950 px-2 py-1.5 text-xs leading-snug text-neutral-300 shadow-lg ${
+            alignRight ? 'right-0' : 'left-0'
+          }`}
         >
           {trait.description}
         </span>
