@@ -148,6 +148,7 @@ export default function App() {
       <PlayerDetailDrawer
         player={selectedPlayer}
         onClose={handleClose}
+        state={state}
         developmentMultiplier={getCurrentFacility(state).developmentMultiplier}
         onSetAvailable={
           onRoster && selectedPlayer

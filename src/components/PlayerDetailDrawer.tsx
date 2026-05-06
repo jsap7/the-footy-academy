@@ -1,8 +1,16 @@
 import { useEffect, useState } from 'react';
-import { STAT_GROUPS, STAT_GROUP_LABELS, STAT_LABELS, type Player, type StatGroup } from '../types';
+import {
+  STAT_GROUPS,
+  STAT_GROUP_LABELS,
+  STAT_LABELS,
+  type GameState,
+  type Player,
+  type StatGroup,
+} from '../types';
 import { computeMarketValue } from '../game/marketValue';
 import { averageCurrent, averagePotential } from '../game/playerStats';
 import { projectMVAtAges } from '../game/projection';
+import { getSellRecommendation, type RecommendationKind } from '../game/recommendation';
 import { formatCash } from '../util/format';
 import Button from '../ui/Button';
 import Chip from '../ui/Chip';
@@ -14,12 +22,20 @@ import TraitList from './TraitList';
 type Props = {
   player: Player | null;
   onClose: () => void;
+  state?: GameState;
   developmentMultiplier?: number;
   onSetAvailable?: (playerId: string, available: boolean) => void;
   onList?: (playerId: string, price: number) => void;
   onUnlist?: (playerId: string) => void;
   onSetBlockOffers?: (playerId: string, blocked: boolean) => void;
   onRelease?: (playerId: string) => void;
+};
+
+const RECOMMENDATION_TONE: Record<RecommendationKind, 'good' | 'warn' | 'neutral' | 'muted'> = {
+  hold: 'good',
+  sell_now: 'warn',
+  consider_selling: 'neutral',
+  no_offers_yet: 'muted',
 };
 
 const GROUP_ORDER: readonly StatGroup[] = ['physical', 'technical', 'mental'];
@@ -54,6 +70,7 @@ function HeroNumber({
 export default function PlayerDetailDrawer({
   player,
   onClose,
+  state,
   developmentMultiplier = 1.0,
   onSetAvailable,
   onList,
@@ -202,6 +219,50 @@ export default function PlayerDetailDrawer({
                 );
               })()}
             </section>
+
+            {state ? (
+              <section className="border-b border-hairline px-8 py-6">
+                <h3 className="mb-3 text-[11px] uppercase tracking-[0.14em] text-ink-dim">
+                  recommendation
+                </h3>
+                {(() => {
+                  const rec = getSellRecommendation(player, state, developmentMultiplier);
+                  const tone = RECOMMENDATION_TONE[rec.kind];
+                  const arrow =
+                    rec.kind === 'sell_now'
+                      ? '→'
+                      : rec.kind === 'consider_selling'
+                        ? '?'
+                        : rec.kind === 'hold'
+                          ? '✓'
+                          : '·';
+                  const headlineClass =
+                    tone === 'good'
+                      ? 'text-accent-bright'
+                      : tone === 'warn'
+                        ? 'text-warn'
+                        : tone === 'neutral'
+                          ? 'text-ink'
+                          : 'text-ink-mid';
+                  return (
+                    <div className="space-y-3">
+                      <div className={`text-[16px] uppercase tracking-[0.10em] ${headlineClass}`}>
+                        <span className="font-mono">{arrow}</span>{' '}
+                        <span>{rec.headline}</span>
+                      </div>
+                      <ul className="space-y-1 text-[11px] text-ink-mid font-body">
+                        {rec.reasoning.map((line, idx) => (
+                          <li key={idx} className="flex items-baseline gap-2">
+                            <span className="text-ink-faint">·</span>
+                            <span>{line}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })()}
+              </section>
+            ) : null}
 
             {onSetAvailable && onList && onUnlist && (
               <section className="border-b border-hairline px-8 py-6">
