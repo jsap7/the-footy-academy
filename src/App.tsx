@@ -10,6 +10,7 @@ import ScoutsPage from './components/ScoutsPage';
 import ShortlistPage from './components/ShortlistPage';
 import TopBar from './components/TopBar';
 import { getCurrentFacility } from './game/facilities';
+import { computeReputation } from './game/reputation';
 import {
   downgradeFacility,
   listPlayer,
@@ -82,6 +83,7 @@ export default function App() {
         cash={state.cash}
         month={state.currentMonth}
         year={state.currentYear}
+        reputation={computeReputation(state)}
         tabs={navTabs}
         activeTab={activeTab}
         onChangeTab={(key) => setActiveTab(key as TabKey)}
