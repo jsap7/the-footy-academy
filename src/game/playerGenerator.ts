@@ -129,6 +129,8 @@ export function generatePlayer(opts?: { forceTier?: QualityTier }): Player {
     stats: { current, potential },
     traits,
     qualityTier,
+    availableForSale: false,
+    askingPrice: null,
     createdAt: Date.now(),
   };
 }

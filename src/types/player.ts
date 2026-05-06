@@ -52,6 +52,9 @@ export type Player = {
   };
   traits: TraitId[];
   qualityTier: QualityTier;
+  // Selling state — toggled by the user via FOOTY-42 controls.
+  availableForSale: boolean;
+  askingPrice: number | null;
   // Per-stat gains from the most recent dev tick. Cleared/overwritten by the
   // turn loop. Used by the UI to flash a "+N" indicator next to stats that
   // grew this month.

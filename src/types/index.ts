@@ -19,3 +19,5 @@ export type { BirthdayEvent, ReleaseEvent } from './aging';
 
 export type { Club, ClubTier } from './club';
 export { TIER_WEALTH } from './club';
+
+export type { Offer, OfferStatus, SaleEvent } from './offer';
