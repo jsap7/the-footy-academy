@@ -8,6 +8,7 @@ import ShortlistPage from './components/ShortlistPage';
 import TopBar from './components/TopBar';
 import { monthlyBurn } from './game/finance';
 import { generatePlayer } from './game/playerGenerator';
+import { advanceMonth } from './game/turnLoop';
 import Button from './ui/Button';
 import SectionHead from './ui/SectionHead';
 import StatusBar from './ui/StatusBar';
@@ -51,16 +52,27 @@ export default function App() {
       }
       if (e.key === 'g' || e.key === 'G') {
         setState((prev) => ({ ...prev, roster: [generatePlayer(), ...prev.roster] }));
+        return;
+      }
+      if (e.key === 'n' || e.key === 'N') {
+        setState((prev) => advanceMonth(prev));
       }
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, []);
 
-  const generateButton = (
-    <Button variant="primary" onClick={handleGenerate} hint="G">
-      + generate player
-    </Button>
+  const handleAdvanceMonth = () => setState((prev) => advanceMonth(prev));
+
+  const headerActions = (
+    <div className="flex items-center gap-3">
+      <Button onClick={handleGenerate} hint="G">
+        + generate
+      </Button>
+      <Button variant="primary" onClick={handleAdvanceMonth} hint="N">
+        next month →
+      </Button>
+    </div>
   );
 
   const navTabs = [
@@ -82,7 +94,7 @@ export default function App() {
         year={state.currentYear}
         squad={state.roster.length}
         burn={monthlyBurn(state)}
-        rightSlot={generateButton}
+        rightSlot={headerActions}
       />
       <NavStrip
         tabs={navTabs}
@@ -135,8 +147,8 @@ export default function App() {
       <StatusBar
         hints={
           selectedPlayer
-            ? '[G] generate · [ESC] close · [↑/↓] navigate'
-            : '[G] generate · [↑/↓] navigate'
+            ? '[N] next month · [G] generate · [ESC] close'
+            : '[N] next month · [G] generate'
         }
       />
     </div>
