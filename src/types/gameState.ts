@@ -53,7 +53,7 @@ export type GameState = {
 };
 
 export const INITIAL_GAME_STATE: GameState = {
-  cash: 50_000,
+  cash: 100_000,
   currentMonth: 8, // August — the football season opener
   currentYear: 2026,
   scouts: [],
@@ -65,7 +65,7 @@ export const INITIAL_GAME_STATE: GameState = {
   completedSales: [],
   facilityTier: 1,
   facilityGraceMonthsRemaining: 0,
-  cashHistory: [{ month: 8, year: 2026, cash: 50_000 }],
+  cashHistory: [{ month: 8, year: 2026, cash: 100_000 }],
   transactions: [],
   recentBirthdays: [],
   recentReleases: [],
