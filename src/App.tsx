@@ -110,6 +110,7 @@ export default function App() {
         forcedScoutFires={state.recentForcedScoutFires}
         achievements={state.recentAchievements}
         statMilestones={state.recentStatMilestones}
+        callups={state.recentYouthCallups}
       />
       <main className="min-h-0 flex-1 overflow-y-auto">
         {activeTab === 'dashboard' && (

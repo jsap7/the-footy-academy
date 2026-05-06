@@ -133,6 +133,9 @@ export function generatePlayer(opts?: { forceTier?: QualityTier; forceAge?: numb
     askingPrice: null,
     blockOffers: false,
     mvHistory: [],
+    callupMultiplier: 1,
+    monthsSinceLastCallup: 0,
+    callups: [],
     createdAt: Date.now(),
   };
 }

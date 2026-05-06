@@ -117,7 +117,7 @@ export default function PlayerDetailDrawer({
             <header className="border-b border-hairline px-8 pt-8 pb-6">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.12em] text-ink-dim">
+                  <div className="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[0.12em] text-ink-dim">
                     <Chip tone={TIER_TONE[player.qualityTier]}>{player.qualityTier}</Chip>
                     <span className="text-ink-faint">·</span>
                     <span>{player.position}</span>
@@ -125,6 +125,14 @@ export default function PlayerDetailDrawer({
                     <span className="tabular-nums">age {player.age}</span>
                     <span className="text-ink-faint">·</span>
                     <span>{player.nationality}</span>
+                    {player.callups && player.callups.length > 0 ? (
+                      <>
+                        <span className="text-ink-faint">·</span>
+                        <Chip tone="accent">
+                          {player.callups.length}× call-up
+                        </Chip>
+                      </>
+                    ) : null}
                   </div>
                   <h2 className="mt-3 truncate text-[28px] leading-[1.1] text-ink">
                     {player.firstName} {player.lastName}

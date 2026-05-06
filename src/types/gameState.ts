@@ -13,6 +13,7 @@ import type {
 } from './facilityEvents';
 import type { CashHistoryEntry, Transaction } from './finance';
 import type { StatMilestoneEvent } from '../game/statMilestones';
+import type { YouthCallupEvent } from '../game/youthCallups';
 import type { Offer, SaleEvent } from './offer';
 import type { Player } from './player';
 import type { Scout } from './scout';
@@ -59,6 +60,7 @@ export type GameState = {
   recentForcedScoutFires: FacilityScoutFiredEvent[];
   recentAchievements: AchievementId[];
   recentStatMilestones: StatMilestoneEvent[];
+  recentYouthCallups: YouthCallupEvent[];
 };
 
 export const INITIAL_GAME_STATE: GameState = {
@@ -84,4 +86,5 @@ export const INITIAL_GAME_STATE: GameState = {
   recentForcedScoutFires: [],
   recentAchievements: [],
   recentStatMilestones: [],
+  recentYouthCallups: [],
 };

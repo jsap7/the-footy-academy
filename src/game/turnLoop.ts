@@ -15,6 +15,7 @@ import { generateScoutMarket } from './scoutMarket';
 import { runScoutFinds, tickShortlist } from './shortlist';
 import { detectStatMilestones, type StatMilestoneEvent } from './statMilestones';
 import { calculateStipend } from './stipends';
+import { rollYouthCallups, type YouthCallupEvent } from './youthCallups';
 import { computeDevRateMultiplier } from './traits';
 import { appendTransaction } from './transactions';
 import { formatCash } from '../util/format';
@@ -54,7 +55,7 @@ export function advanceMonth(state: GameState): GameState {
   // them in the event banner.
   const facility = getCurrentFacility(stateAfterCalendar);
   const recentStatMilestones: StatMilestoneEvent[] = [];
-  const rosterAfterDevelopment = rosterAfterReleases.map((player) => {
+  const rosterAfterDevelopmentRaw = rosterAfterReleases.map((player) => {
     const developed = developPlayer(
       player,
       computeDevRateMultiplier,
@@ -62,6 +63,18 @@ export function advanceMonth(state: GameState): GameState {
     ).updated;
     const milestone = detectStatMilestones(developed, player.stats.current, developed.stats.current);
     if (milestone) recentStatMilestones.push(milestone);
+    return developed;
+  });
+
+  // 2d. Youth international call-ups — random monthly chance for eligible
+  // 16-19yo high-potential kids. Multiplies callupMultiplier (capped 2.0)
+  // and surfaces a YouthCallupEvent. Runs before the MV history snapshot
+  // so the new multiplier shows up immediately on this month's MV chart.
+  const callupResult = rollYouthCallups(rosterAfterDevelopmentRaw, currentMonth, currentYear);
+  const rosterAfterCallups = callupResult.roster;
+  const recentYouthCallups: YouthCallupEvent[] = callupResult.events;
+
+  const rosterAfterDevelopment = rosterAfterCallups.map((developed) => {
     const mvEntry = { month: currentMonth, year: currentYear, mv: computeMarketValue(developed) };
     const mvHistory = [...(developed.mvHistory ?? []), mvEntry].slice(-12);
     return { ...developed, mvHistory };
@@ -239,5 +252,6 @@ export function advanceMonth(state: GameState): GameState {
     recentForcedScoutFires,
     recentAchievements: newlyUnlocked,
     recentStatMilestones,
+    recentYouthCallups,
   };
 }

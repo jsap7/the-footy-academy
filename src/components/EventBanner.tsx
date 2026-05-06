@@ -10,6 +10,7 @@ import {
   type SaleEvent,
 } from '../types';
 import type { StatMilestoneEvent } from '../game/statMilestones';
+import type { YouthCallupEvent } from '../game/youthCallups';
 
 const ACHIEVEMENT_TITLE = new Map(ACHIEVEMENT_DEFINITIONS.map((d) => [d.id, d.title]));
 import { formatCash } from '../util/format';
@@ -23,6 +24,7 @@ type Props = {
   forcedScoutFires?: readonly FacilityScoutFiredEvent[];
   achievements?: readonly AchievementId[];
   statMilestones?: readonly StatMilestoneEvent[];
+  callups?: readonly YouthCallupEvent[];
 };
 
 export default function EventBanner({
@@ -33,6 +35,7 @@ export default function EventBanner({
   forcedScoutFires = [],
   achievements = [],
   statMilestones = [],
+  callups = [],
 }: Props) {
   const totalEvents =
     birthdays.length +
@@ -41,7 +44,8 @@ export default function EventBanner({
     facilityEvents.length +
     forcedScoutFires.length +
     achievements.length +
-    statMilestones.length;
+    statMilestones.length +
+    callups.length;
   if (totalEvents === 0) return null;
   return (
     <div className="border-b border-hairline bg-bg-elev">
@@ -118,6 +122,13 @@ export default function EventBanner({
               </span>
             );
           })}
+          {callups.map((c) => (
+            <span key={`cu-${c.playerId}`} className="flex items-center gap-2">
+              <Chip tone="accent">england {c.callupType}</Chip>
+              <span className="text-ink">{c.playerName}</span>
+              <span className="text-accent-bright">+{Math.round(c.bonusPct * 100)}% mv</span>
+            </span>
+          ))}
         </div>
       </div>
     </div>

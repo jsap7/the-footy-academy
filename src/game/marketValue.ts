@@ -40,6 +40,13 @@ function avgCurrent(player: Player): number {
 // who is still raw at the same ceiling. ratingBoost ranges 0.6 (untapped) to
 // 1.2 (fully developed); combined with the steeper baseValue and the new
 // generational premium this puts top sales in the €30M+ range.
+//
+// FOOTY-82 layer: callupMultiplier compounds across youth international
+// call-ups (capped at 2.0 by the action that grants it). Defaults to 1.0
+// for legacy players that predate the field.
+// FOOTY-83 layer: veteran multiplier (1.15× when player has been on roster
+// 24+ months). Applied here so the +15% reflects on every offer the engine
+// ever computes.
 export function computeMarketValue(player: Player): number {
   const pot = avgPotential(player);
   const cur = avgCurrent(player);
@@ -47,7 +54,11 @@ export function computeMarketValue(player: Player): number {
   const ratingBoost = 0.6 + (cur / pot) * 0.6;
   const ageFactor = computeAgeFactor(player.age);
   const tierPremium = TIER_PREMIUM[player.qualityTier];
-  return Math.round(baseValue * ratingBoost * ageFactor * tierPremium);
+  const callupMult = player.callupMultiplier ?? 1;
+  const veteranMult = (player.monthsOnRoster ?? 0) >= 24 ? 1.15 : 1;
+  return Math.round(
+    baseValue * ratingBoost * ageFactor * tierPremium * callupMult * veteranMult,
+  );
 }
 
 // What a specific club thinks the player is worth — adds ±10% noise to the
