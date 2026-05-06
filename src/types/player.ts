@@ -43,6 +43,7 @@ export type Player = {
   firstName: string;
   lastName: string;
   age: number;
+  birthMonth: number; // 1-12
   nationality: string;
   position: Position;
   stats: {

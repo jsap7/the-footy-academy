@@ -106,6 +106,7 @@ export function generatePlayer(opts?: { forceTier?: QualityTier }): Player {
   const qualityTier = opts?.forceTier ?? rollQualityTier();
   const position = pickRandom(OUTFIELD_POSITIONS);
   const age = randInt(12, 19);
+  const birthMonth = randInt(1, 12);
   const { firstName, lastName } = generateEnglishName();
   const rawPotential = generatePotential(qualityTier, position);
   const rawCurrent = rollCurrentFromPotential(rawPotential, age);
@@ -122,6 +123,7 @@ export function generatePlayer(opts?: { forceTier?: QualityTier }): Player {
     firstName,
     lastName,
     age,
+    birthMonth,
     nationality: 'England',
     position,
     stats: { current, potential },
