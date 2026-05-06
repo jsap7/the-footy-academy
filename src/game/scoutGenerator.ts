@@ -2,11 +2,11 @@ import { generateEnglishName } from './nameGenerator';
 import type { Scout, ScoutLevel } from '../types/scout';
 
 export const SCOUT_SALARIES: Record<ScoutLevel, number> = {
-  1: 2_000,
-  2: 8_000,
-  3: 30_000,
-  4: 80_000,
-  5: 200_000,
+  1: 5_000,
+  2: 20_000,
+  3: 75_000,
+  4: 200_000,
+  5: 400_000,
 };
 
 // Most market scouts are mediocre. Sums to 1.0.
