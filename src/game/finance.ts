@@ -1,9 +1,17 @@
 import { calculateStipend } from './stipends';
 import type { GameState } from '../types';
 
-// Flat monthly income in phase 2a. Cup bonuses, sponsors, and sell-on payouts
-// arrive in later phases.
-export const MONTHLY_BASE_INCOME = 50_000;
+// Phase 4 economy: trickle of base income (€5k) against a fixed €20k operating
+// floor — net -€15k/month idle, so the user has to start selling almost
+// immediately. Cup bonuses, sponsors, and sell-on payouts arrive in later phases.
+export const MONTHLY_BASE_INCOME = 5_000;
+export const MONTHLY_OPERATING_COSTS_BASE = 20_000;
+
+// Hook for FOOTY-66: inflation will scale operating costs with the year.
+// Until that lands this is just the flat base.
+export function currentOperatingCosts(_state: GameState): number {
+  return MONTHLY_OPERATING_COSTS_BASE;
+}
 
 export function totalMonthlyStipends(state: GameState): number {
   let total = 0;
@@ -18,7 +26,11 @@ export function totalMonthlyScoutSalaries(state: GameState): number {
 }
 
 export function monthlyBurn(state: GameState): number {
-  return totalMonthlyStipends(state) + totalMonthlyScoutSalaries(state);
+  return (
+    currentOperatingCosts(state) +
+    totalMonthlyStipends(state) +
+    totalMonthlyScoutSalaries(state)
+  );
 }
 
 export function monthlyNet(state: GameState): number {

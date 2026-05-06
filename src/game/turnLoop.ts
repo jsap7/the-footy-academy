@@ -1,6 +1,6 @@
 import { processBirthdays, processReleases } from './aging';
 import { developPlayer } from './development';
-import { MONTHLY_BASE_INCOME } from './finance';
+import { MONTHLY_BASE_INCOME, currentOperatingCosts } from './finance';
 import {
   executeAcceptedOffers,
   generateOffersForTurn,
@@ -36,8 +36,9 @@ export function advanceMonth(state: GameState): GameState {
     (player) => developPlayer(player, computeDevRateMultiplier).updated,
   );
 
-  // 3. Add monthly base income.
+  // 3. Add monthly base income, deduct operating cost floor.
   let cash = state.cash + MONTHLY_BASE_INCOME;
+  cash -= currentOperatingCosts(stateAfterCalendar);
 
   // 4. Each hired scout finds 1 player → goes to shortlist (BEFORE tick).
   const findsState: GameState = { ...stateAfterCalendar, roster: rosterAfterDevelopment };
