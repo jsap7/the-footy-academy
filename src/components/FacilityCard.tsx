@@ -59,7 +59,7 @@ export default function FacilityCard({ state, onUpgrade, onDowngrade }: Props) {
   };
 
   return (
-    <Card className="col-span-12 md:col-span-12 flex flex-col gap-5">
+    <Card className="flex h-full flex-col gap-5">
       <div className="flex items-baseline justify-between">
         <span className="text-[11px] uppercase tracking-[0.14em] text-ink-dim">facility</span>
         <Chip tone="muted">tier {current.tier}/5</Chip>

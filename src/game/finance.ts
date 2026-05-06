@@ -40,6 +40,26 @@ export function monthlyBurn(state: GameState): number {
   );
 }
 
+export type ExpenseBreakdown = {
+  operating: number;
+  facility: number;
+  stipends: number;
+  scouts: number;
+  total: number;
+  income: number;
+  net: number;
+};
+
+export function getExpenseBreakdown(state: GameState): ExpenseBreakdown {
+  const operating = currentOperatingCosts(state);
+  const facility = totalMonthlyFacilityCost(state);
+  const stipends = totalMonthlyStipends(state);
+  const scouts = totalMonthlyScoutSalaries(state);
+  const total = operating + facility + stipends + scouts;
+  const income = MONTHLY_BASE_INCOME;
+  return { operating, facility, stipends, scouts, total, income, net: income - total };
+}
+
 export function monthlyNet(state: GameState): number {
   return MONTHLY_BASE_INCOME - monthlyBurn(state);
 }

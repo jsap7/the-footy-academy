@@ -7,6 +7,7 @@ import Button from '../ui/Button';
 import Card from '../ui/Card';
 import Chip from '../ui/Chip';
 import FacilityCard from './FacilityCard';
+import MonthlyBurnCard from './MonthlyBurnCard';
 import Sparkline from './Sparkline';
 
 type Props = {
@@ -275,13 +276,16 @@ export default function Dashboard({
         </Card>
       </div>
 
-      {/* Facility */}
+      {/* Burn breakdown + facility */}
       <div className="mt-10 grid grid-cols-12 gap-6">
-        <FacilityCard
-          state={state}
-          onUpgrade={onUpgradeFacility}
-          onDowngrade={onDowngradeFacility}
-        />
+        <MonthlyBurnCard state={state} />
+        <div className="col-span-12 lg:col-span-8">
+          <FacilityCard
+            state={state}
+            onUpgrade={onUpgradeFacility}
+            onDowngrade={onDowngradeFacility}
+          />
+        </div>
       </div>
 
       {/* Recent activity */}
