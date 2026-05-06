@@ -68,6 +68,36 @@ export function counterOffer(state: GameState, offerId: string, counter: number)
   };
 }
 
+export function setPlayerAvailable(
+  state: GameState,
+  playerId: string,
+  available: boolean,
+): GameState {
+  return {
+    ...state,
+    roster: state.roster.map((p) =>
+      p.id === playerId ? { ...p, availableForSale: available } : p,
+    ),
+  };
+}
+
+const MIN_ASKING_PRICE = 1_000;
+
+export function listPlayer(state: GameState, playerId: string, askingPrice: number): GameState {
+  const clamped = Math.max(MIN_ASKING_PRICE, Math.round(askingPrice));
+  return {
+    ...state,
+    roster: state.roster.map((p) => (p.id === playerId ? { ...p, askingPrice: clamped } : p)),
+  };
+}
+
+export function unlistPlayer(state: GameState, playerId: string): GameState {
+  return {
+    ...state,
+    roster: state.roster.map((p) => (p.id === playerId ? { ...p, askingPrice: null } : p)),
+  };
+}
+
 export function rejectOffer(state: GameState, offerId: string): GameState {
   const offer = state.pendingOffers.find((o) => o.id === offerId);
   if (!offer) return state;

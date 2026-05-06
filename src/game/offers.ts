@@ -83,28 +83,38 @@ export function generateOffersForTurn(state: GameState): Offer[] {
     if (!club) continue;
 
     const perceived = computeBuyerPerceivedValue(player, club);
+    let amount = perceived;
+    let status: 'pending' | 'accepted' = 'pending';
+
+    if (player.askingPrice != null) {
+      const ask = player.askingPrice;
+      if (ask <= perceived * 0.95) {
+        // Asking is a steal — club accepts at asking, no negotiation.
+        amount = ask;
+        status = 'accepted';
+      } else if (ask <= perceived * 1.1) {
+        // Reasonable — club bids their perceived value.
+        amount = perceived;
+      } else if (ask <= perceived * 1.3) {
+        // Pricey but tempted — club stretches a little above their read.
+        amount = Math.round(perceived * 1.05);
+      } else {
+        // Too expensive — club doesn't bid this turn.
+        continue;
+      }
+    }
+
     const offer: Offer = {
       id: crypto.randomUUID(),
       playerId: player.id,
       clubId: club.id,
-      amount: perceived,
-      status: 'pending',
+      amount,
+      status,
       turnsRemaining: OFFER_LIFESPAN_TURNS,
       createdMonth: state.currentMonth,
       createdYear: state.currentYear,
       buyerPerceivedValue: perceived,
     };
-
-    // If the player is listed and the club's perceived value is well above
-    // the asking price, the club just accepts at asking with no negotiation.
-    if (player.askingPrice != null && player.askingPrice <= perceived * 0.95) {
-      offer.amount = player.askingPrice;
-      offer.status = 'accepted';
-    } else if (player.askingPrice != null && player.askingPrice > perceived * 1.3) {
-      // Listed but well above what this club will pay → don't even bid.
-      continue;
-    }
-
     newOffers.push(offer);
   }
   return newOffers;

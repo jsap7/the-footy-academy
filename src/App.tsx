@@ -8,6 +8,7 @@ import PlayerList from './components/PlayerList';
 import ScoutsPage from './components/ScoutsPage';
 import ShortlistPage from './components/ShortlistPage';
 import TopBar from './components/TopBar';
+import { listPlayer, setPlayerAvailable, unlistPlayer } from './game/gameActions';
 import { monthlyBurn } from './game/finance';
 import { advanceMonth } from './game/turnLoop';
 import Button from './ui/Button';
@@ -160,7 +161,25 @@ export default function App() {
         </section>
         {selectedPlayer && (
           <aside className="w-[480px] shrink-0">
-            <PlayerDetail player={selectedPlayer} onClose={handleClose} />
+            <PlayerDetail
+              player={selectedPlayer}
+              onClose={handleClose}
+              onSetAvailable={
+                state.roster.some((p) => p.id === selectedPlayer.id)
+                  ? (id, available) => setState((prev) => setPlayerAvailable(prev, id, available))
+                  : undefined
+              }
+              onList={
+                state.roster.some((p) => p.id === selectedPlayer.id)
+                  ? (id, price) => setState((prev) => listPlayer(prev, id, price))
+                  : undefined
+              }
+              onUnlist={
+                state.roster.some((p) => p.id === selectedPlayer.id)
+                  ? (id) => setState((prev) => unlistPlayer(prev, id))
+                  : undefined
+              }
+            />
           </aside>
         )}
       </main>
