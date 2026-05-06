@@ -76,7 +76,9 @@ export function setPlayerAvailable(
   return {
     ...state,
     roster: state.roster.map((p) =>
-      p.id === playerId ? { ...p, availableForSale: available } : p,
+      p.id === playerId
+        ? { ...p, availableForSale: available, blockOffers: available ? false : p.blockOffers }
+        : p,
     ),
   };
 }
@@ -87,7 +89,9 @@ export function listPlayer(state: GameState, playerId: string, askingPrice: numb
   const clamped = Math.max(MIN_ASKING_PRICE, Math.round(askingPrice));
   return {
     ...state,
-    roster: state.roster.map((p) => (p.id === playerId ? { ...p, askingPrice: clamped } : p)),
+    roster: state.roster.map((p) =>
+      p.id === playerId ? { ...p, askingPrice: clamped, blockOffers: false } : p,
+    ),
   };
 }
 
@@ -95,6 +99,26 @@ export function unlistPlayer(state: GameState, playerId: string): GameState {
   return {
     ...state,
     roster: state.roster.map((p) => (p.id === playerId ? { ...p, askingPrice: null } : p)),
+  };
+}
+
+// Toggle the per-player block-offers flag. When turning ON, also clear
+// availableForSale + askingPrice — they're mutually exclusive UI states.
+// Existing pending offers stay so the user can resolve them manually.
+export function setPlayerBlockOffers(
+  state: GameState,
+  playerId: string,
+  blocked: boolean,
+): GameState {
+  return {
+    ...state,
+    roster: state.roster.map((p) =>
+      p.id === playerId
+        ? blocked
+          ? { ...p, blockOffers: true, availableForSale: false, askingPrice: null }
+          : { ...p, blockOffers: false }
+        : p,
+    ),
   };
 }
 

@@ -228,6 +228,8 @@ export default function PlayerList({ players, pendingOffers, selectedPlayerId, o
                   <Chip tone="accent">listed</Chip>
                 ) : player.availableForSale ? (
                   <Chip tone="muted">available</Chip>
+                ) : player.blockOffers ? (
+                  <Chip tone="danger">offers blocked</Chip>
                 ) : null}
               </span>
               <span className="tabular-nums text-ink-mid">{player.age}</span>

@@ -13,6 +13,7 @@ type Props = {
   onSetAvailable?: (playerId: string, available: boolean) => void;
   onList?: (playerId: string, price: number) => void;
   onUnlist?: (playerId: string) => void;
+  onSetBlockOffers?: (playerId: string, blocked: boolean) => void;
 };
 
 const GROUP_ORDER: readonly StatGroup[] = ['physical', 'technical', 'mental'];
@@ -50,6 +51,7 @@ export default function PlayerDetailDrawer({
   onSetAvailable,
   onList,
   onUnlist,
+  onSetBlockOffers,
 }: Props) {
   // Escape closes when the drawer is open.
   useEffect(() => {
@@ -133,6 +135,7 @@ export default function PlayerDetailDrawer({
                   onSetAvailable={onSetAvailable}
                   onList={onList}
                   onUnlist={onUnlist}
+                  onSetBlockOffers={onSetBlockOffers}
                 />
               </section>
             )}

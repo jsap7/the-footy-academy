@@ -9,12 +9,20 @@ type Props = {
   onSetAvailable: (playerId: string, available: boolean) => void;
   onList: (playerId: string, price: number) => void;
   onUnlist: (playerId: string) => void;
+  onSetBlockOffers?: (playerId: string, blocked: boolean) => void;
 };
 
-export default function SellingControls({ player, onSetAvailable, onList, onUnlist }: Props) {
+export default function SellingControls({
+  player,
+  onSetAvailable,
+  onList,
+  onUnlist,
+  onSetBlockOffers,
+}: Props) {
   const trueValue = computeMarketValue(player);
   const [composing, setComposing] = useState(false);
   const [price, setPrice] = useState(() => Math.round(trueValue));
+  const blocked = player.blockOffers;
 
   const presets = [
     { label: '×0.8', value: Math.round(trueValue * 0.8) },
@@ -25,7 +33,7 @@ export default function SellingControls({ player, onSetAvailable, onList, onUnli
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
+      <div className={`flex items-center justify-between gap-3 ${blocked ? 'opacity-40' : ''}`}>
         <div>
           <span className="text-[12px] text-ink">available for sale</span>
           <p className="mt-1 text-[11px] text-ink-dim font-body">
@@ -34,13 +42,14 @@ export default function SellingControls({ player, onSetAvailable, onList, onUnli
         </div>
         <Button
           variant={player.availableForSale ? 'primary' : 'default'}
+          disabled={blocked}
           onClick={() => onSetAvailable(player.id, !player.availableForSale)}
         >
           {player.availableForSale ? 'on' : 'off'}
         </Button>
       </div>
 
-      <div className="border-t border-hairline pt-4">
+      <div className={`border-t border-hairline pt-4 ${blocked ? 'opacity-40' : ''}`}>
         {player.askingPrice != null ? (
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -54,7 +63,7 @@ export default function SellingControls({ player, onSetAvailable, onList, onUnli
             </div>
             <Button onClick={() => onUnlist(player.id)}>unlist</Button>
           </div>
-        ) : composing ? (
+        ) : composing && !blocked ? (
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <input
@@ -102,10 +111,29 @@ export default function SellingControls({ player, onSetAvailable, onList, onUnli
                 set an asking price to nudge clubs into bidding.
               </p>
             </div>
-            <Button onClick={() => setComposing(true)}>list for sale</Button>
+            <Button disabled={blocked} onClick={() => setComposing(true)}>
+              list for sale
+            </Button>
           </div>
         )}
       </div>
+
+      {onSetBlockOffers && (
+        <div className="flex items-center justify-between gap-3 border-t border-hairline pt-4">
+          <div>
+            <span className="text-[12px] text-ink">block offers</span>
+            <p className="mt-1 text-[11px] text-ink-dim font-body">
+              clubs stop sending unsolicited bids. existing offers stay until resolved.
+            </p>
+          </div>
+          <Button
+            variant={blocked ? 'danger' : 'default'}
+            onClick={() => onSetBlockOffers(player.id, !blocked)}
+          >
+            {blocked ? 'on' : 'off'}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
