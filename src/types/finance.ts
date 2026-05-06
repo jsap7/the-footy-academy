@@ -1,6 +1,7 @@
 export type TransactionType =
   | 'sale'
   | 'signing'
+  | 'release'
   | 'scout_hire'
   | 'scout_fire'
   | 'facility_upgrade'

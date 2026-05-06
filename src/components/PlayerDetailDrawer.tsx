@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { STAT_GROUPS, STAT_GROUP_LABELS, STAT_LABELS, type Player, type StatGroup } from '../types';
 import { averageCurrent, averagePotential } from '../game/playerStats';
 import Button from '../ui/Button';
@@ -14,6 +14,7 @@ type Props = {
   onList?: (playerId: string, price: number) => void;
   onUnlist?: (playerId: string) => void;
   onSetBlockOffers?: (playerId: string, blocked: boolean) => void;
+  onRelease?: (playerId: string) => void;
 };
 
 const GROUP_ORDER: readonly StatGroup[] = ['physical', 'technical', 'mental'];
@@ -52,7 +53,9 @@ export default function PlayerDetailDrawer({
   onList,
   onUnlist,
   onSetBlockOffers,
+  onRelease,
 }: Props) {
+  const [confirmingRelease, setConfirmingRelease] = useState(false);
   // Escape closes when the drawer is open.
   useEffect(() => {
     if (!player) return;
@@ -137,6 +140,53 @@ export default function PlayerDetailDrawer({
                   onUnlist={onUnlist}
                   onSetBlockOffers={onSetBlockOffers}
                 />
+              </section>
+            )}
+
+            {onRelease && (
+              <section className="border-b border-hairline px-8 py-6">
+                <h3 className="mb-3 text-[11px] uppercase tracking-[0.14em] text-ink-dim">
+                  release
+                </h3>
+                {confirmingRelease ? (
+                  <div className="flex flex-col gap-3">
+                    <p className="text-[12px] text-ink">
+                      release{' '}
+                      <span className="text-warn">
+                        {player.firstName} {player.lastName}
+                      </span>
+                      ?
+                    </p>
+                    <p className="text-[11px] text-ink-dim font-body">
+                      they leave the academy immediately. no severance, no return on signing fee.
+                      any pending offers walk.
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="danger"
+                        onClick={() => {
+                          onRelease(player.id);
+                          setConfirmingRelease(false);
+                        }}
+                      >
+                        confirm release
+                      </Button>
+                      <Button variant="ghost" onClick={() => setConfirmingRelease(false)}>
+                        cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="text-[11px] text-ink-dim font-body">
+                      drop them from the academy. no return on signing fee — useful when a kid isn't
+                      drawing offers and the stipend is bleeding you.
+                    </p>
+                    <Button variant="ghost" size="sm" onClick={() => setConfirmingRelease(true)}>
+                      release
+                    </Button>
+                  </div>
+                )}
               </section>
             )}
 

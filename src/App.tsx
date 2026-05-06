@@ -12,6 +12,7 @@ import TopBar from './components/TopBar';
 import {
   downgradeFacility,
   listPlayer,
+  releasePlayer,
   setPlayerAvailable,
   setPlayerBlockOffers,
   unlistPlayer,
@@ -164,6 +165,14 @@ export default function App() {
         onSetBlockOffers={
           onRoster && selectedPlayer
             ? (id, blocked) => setState((prev) => setPlayerBlockOffers(prev, id, blocked))
+            : undefined
+        }
+        onRelease={
+          onRoster && selectedPlayer
+            ? (id) => {
+                setState((prev) => releasePlayer(prev, id));
+                setSelectedPlayerId(null);
+              }
             : undefined
         }
       />
