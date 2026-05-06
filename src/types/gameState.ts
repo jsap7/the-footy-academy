@@ -2,6 +2,7 @@ import { CLUB_LIBRARY } from '../data/clubs/library';
 import { generateScoutMarket } from '../game/scoutMarket';
 import type { BirthdayEvent, ReleaseEvent } from './aging';
 import type { Club } from './club';
+import type { FacilityTier } from './facility';
 import type { Offer, SaleEvent } from './offer';
 import type { Player } from './player';
 import type { Scout } from './scout';
@@ -21,6 +22,12 @@ export type GameState = {
 
   pendingOffers: Offer[];
   completedSales: Offer[];
+
+  // FOOTY-62: facility progression. Auto-downgrade (FOOTY-65) uses the grace
+  // counter to give the user a couple of months to make payroll before
+  // demoting them.
+  facilityTier: FacilityTier;
+  facilityGraceMonthsRemaining: number;
 
   // End-of-month cash for the trailing 12 months — used by the dashboard
   // sparkline. Pushed on every advanceMonth tick.
@@ -43,6 +50,8 @@ export const INITIAL_GAME_STATE: GameState = {
   clubs: CLUB_LIBRARY,
   pendingOffers: [],
   completedSales: [],
+  facilityTier: 1,
+  facilityGraceMonthsRemaining: 0,
   cashHistory: [50_000],
   recentBirthdays: [],
   recentReleases: [],
