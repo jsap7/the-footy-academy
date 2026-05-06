@@ -1,4 +1,5 @@
 import type { PlayerStats } from './stats';
+import type { QualityTier } from './tier';
 import type { TraitId } from './trait';
 
 export type Position =
@@ -49,5 +50,6 @@ export type Player = {
     potential: PlayerStats;
   };
   traits: TraitId[];
+  qualityTier: QualityTier;
   createdAt: number;
 };

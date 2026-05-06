@@ -1,23 +1,23 @@
 import { generateEnglishName } from './nameGenerator';
-import { applyBaseEffects, getAllTraits, TRAIT_COUNT_WEIGHTS } from './traits';
+import {
+  rollQualityTier,
+  TIER_POTENTIAL_BANDS,
+  TIER_TRAIT_COUNT_WEIGHTS,
+} from './qualityTier';
+import { applyBaseEffects, getAllTraits } from './traits';
 import {
   ALL_STAT_KEYS,
   OUTFIELD_POSITIONS,
   type OutfieldPosition,
   type Player,
   type PlayerStats,
+  type QualityTier,
   type StatKey,
   type TraitId,
 } from '../types';
 
-const POTENTIAL_MEAN = 60;
-const POTENTIAL_STDDEV = 12;
-const POTENTIAL_MIN = 20;
-const POTENTIAL_MAX = 95;
-
-// Position-relevant stats get a flat bonus on potential. Cap above the base
-// max so position-relevant stats can edge into the 80s-90s for above-average
-// kids without ever pinning at 100 in phase 0 (no generational tier yet).
+// Position-relevant stats get a flat potential bonus. FOOTY-21 will replace
+// this map and bump the bonus to +20.
 const POSITION_BONUS = 10;
 const POTENTIAL_BONUS_CAP = 99;
 
@@ -64,21 +64,18 @@ function buildStats(producer: (key: StatKey) => number): PlayerStats {
   return Object.fromEntries(entries) as PlayerStats;
 }
 
-function generatePotential(position: OutfieldPosition): PlayerStats {
+function generatePotential(tier: QualityTier, position: OutfieldPosition): PlayerStats {
+  const band = TIER_POTENTIAL_BANDS[tier];
   const bonusKeys = new Set<StatKey>(POSITION_BONUSES[position]);
   return buildStats((key) => {
-    const base = clamp(
-      Math.round(normalSample(POTENTIAL_MEAN, POTENTIAL_STDDEV)),
-      POTENTIAL_MIN,
-      POTENTIAL_MAX,
-    );
+    const base = clamp(Math.round(normalSample(band.center, band.stddev)), band.min, band.max);
     return bonusKeys.has(key) ? Math.min(base + POSITION_BONUS, POTENTIAL_BONUS_CAP) : base;
   });
 }
 
 function generateCurrent(potential: PlayerStats, age: number): PlayerStats {
-  // Age-weighted ratio of current to potential. 14yo lands ~65-85% of the cap,
-  // 17yo lands ~72-92%. Phase-0 placeholder formula — will get tuned.
+  // Age-weighted ratio of current to potential. FOOTY-22 will rewrite this
+  // formula to decouple age from potential.
   const ageFactor = 0.4 + age * 0.025;
   return buildStats((key) => {
     const cap = potential[key];
@@ -87,11 +84,12 @@ function generateCurrent(potential: PlayerStats, age: number): PlayerStats {
   });
 }
 
-function pickTraitCount(): number {
+function pickTraitCount(tier: QualityTier): number {
+  const weights = TIER_TRAIT_COUNT_WEIGHTS[tier];
   const r = Math.random();
   let cumulative = 0;
   let lastCount = 1;
-  for (const [count, weight] of Object.entries(TRAIT_COUNT_WEIGHTS)) {
+  for (const [count, weight] of Object.entries(weights)) {
     cumulative += weight;
     lastCount = Number(count);
     if (r < cumulative) return lastCount;
@@ -121,13 +119,14 @@ function clampCurrentToPotential(current: PlayerStats, potential: PlayerStats): 
 }
 
 export function generatePlayer(): Player {
+  const qualityTier = rollQualityTier();
   const position = pickRandom(OUTFIELD_POSITIONS);
   const age = randInt(14, 17);
   const { firstName, lastName } = generateEnglishName();
-  const rawPotential = generatePotential(position);
+  const rawPotential = generatePotential(qualityTier, position);
   const rawCurrent = generateCurrent(rawPotential, age);
 
-  const traits = pickTraitIds(pickTraitCount());
+  const traits = pickTraitIds(pickTraitCount(qualityTier));
   const potential = applyBaseEffects(rawPotential, traits);
   const current = clampCurrentToPotential(applyBaseEffects(rawCurrent, traits), potential);
 
@@ -140,6 +139,7 @@ export function generatePlayer(): Player {
     position,
     stats: { current, potential },
     traits,
+    qualityTier,
     createdAt: Date.now(),
   };
 }

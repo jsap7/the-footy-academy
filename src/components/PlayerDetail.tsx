@@ -29,6 +29,9 @@ export default function PlayerDetail({ player, onClose }: Props) {
             <span className="mx-1.5 text-neutral-700">·</span>
             <span>{player.nationality}</span>
           </p>
+          <p className="mt-1 font-mono text-[0.65rem] uppercase tracking-wider text-neutral-600">
+            [debug: {player.qualityTier}]
+          </p>
         </div>
         <button
           type="button"
