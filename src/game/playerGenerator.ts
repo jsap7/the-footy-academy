@@ -99,6 +99,7 @@ export function generatePlayer(): Player {
     nationality: 'England',
     position,
     stats: { current, potential },
+    traits: [],
     createdAt: Date.now(),
   };
 }

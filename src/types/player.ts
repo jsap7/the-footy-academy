@@ -1,4 +1,5 @@
 import type { PlayerStats } from './stats';
+import type { TraitId } from './trait';
 
 export type Position =
   | 'GK'
@@ -47,5 +48,6 @@ export type Player = {
     current: PlayerStats;
     potential: PlayerStats;
   };
+  traits: TraitId[];
   createdAt: number;
 };
