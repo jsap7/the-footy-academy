@@ -120,7 +120,9 @@ export default function OfferRow({
       {actionable && countering ? (
         <div className="mt-4 border-t border-hairline pt-4">
           <CounterOfferInput
-            initialAmount={offer.amount}
+            offerAmount={offer.amount}
+            marketValue={marketValue ?? null}
+            maxAllowed={club ? Math.round(club.wealthCeiling * 1.5) : null}
             onSend={(amt) => {
               onCounter(offer.id, amt);
               setCountering(false);
