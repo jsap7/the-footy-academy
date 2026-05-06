@@ -10,6 +10,7 @@ type Props = {
 const TYPE_LABEL: Record<TransactionType, string> = {
   sale: 'sale',
   signing: 'signed',
+  release: 'released',
   scout_hire: 'hired',
   scout_fire: 'fired',
   facility_upgrade: 'upgrade',
@@ -20,6 +21,7 @@ const TYPE_LABEL: Record<TransactionType, string> = {
 const TYPE_TONE: Record<TransactionType, 'accent' | 'muted' | 'danger' | 'neutral'> = {
   sale: 'accent',
   signing: 'muted',
+  release: 'danger',
   scout_hire: 'muted',
   scout_fire: 'danger',
   facility_upgrade: 'accent',

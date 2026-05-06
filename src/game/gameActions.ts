@@ -163,6 +163,39 @@ export function setPlayerBlockOffers(
   };
 }
 
+// Manually release a player from the roster. No severance, no refund of the
+// signing fee. Walks any pending/countered offers for the player so they
+// don't linger in the offers tab. Adds a release event so the post-turn
+// banner shows it alongside auto-releases at age 22.
+export function releasePlayer(state: GameState, playerId: string): GameState {
+  const player = state.roster.find((p) => p.id === playerId);
+  if (!player) return state;
+  const transactions = appendTransaction(state, {
+    type: 'release',
+    description: `Released ${player.firstName} ${player.lastName}`,
+    amount: 0,
+  });
+  const pendingOffers = state.pendingOffers.map((o) =>
+    o.playerId === playerId && (o.status === 'pending' || o.status === 'countered')
+      ? { ...o, status: 'walked' as const }
+      : o,
+  );
+  return {
+    ...state,
+    roster: state.roster.filter((p) => p.id !== playerId),
+    pendingOffers,
+    transactions,
+    recentReleases: [
+      ...state.recentReleases,
+      {
+        playerId: player.id,
+        playerName: `${player.firstName} ${player.lastName}`,
+        finalAge: player.age,
+      },
+    ],
+  };
+}
+
 // Drop a shortlist entry. Used when a scout's find isn't worth a signing
 // slot — clears the row so it doesn't keep showing up against the cap.
 export function rejectShortlistEntry(state: GameState, entryId: string): GameState {

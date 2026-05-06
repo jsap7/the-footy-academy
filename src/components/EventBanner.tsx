@@ -57,7 +57,9 @@ export default function EventBanner({
             <span key={`r-${r.playerId}`} className="flex items-center gap-2">
               <Chip tone="danger">released</Chip>
               <span className="text-ink">{r.playerName}</span>
-              <span className="text-ink-mid">aged out at {r.finalAge}</span>
+              <span className="text-ink-mid">
+                {r.finalAge >= 22 ? 'aged out' : 'released'} at {r.finalAge}
+              </span>
             </span>
           ))}
           {facilityEvents.map((e, i) =>
