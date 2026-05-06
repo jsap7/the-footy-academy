@@ -14,3 +14,5 @@ export { INITIAL_GAME_STATE } from './gameState';
 export type { Scout, ScoutLevel } from './scout';
 
 export type { ShortlistEntry } from './shortlist';
+
+export type { BirthdayEvent, ReleaseEvent } from './aging';

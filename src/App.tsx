@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import EmptyState from './components/EmptyState';
+import EventBanner from './components/EventBanner';
 import NavStrip from './components/NavStrip';
 import PlayerDetail from './components/PlayerDetail';
 import PlayerList from './components/PlayerList';
@@ -83,6 +84,7 @@ export default function App() {
         rightSlot={headerActions}
       />
       <NavStrip tabs={navTabs} active={activeTab} onChange={(key) => setActiveTab(key as TabKey)} />
+      <EventBanner birthdays={state.recentBirthdays} releases={state.recentReleases} />
       <main className="flex min-h-0 flex-1">
         <section className="flex w-full min-w-0 flex-1 flex-col border-r border-hairline">
           {activeTab === 'roster' && (
