@@ -47,6 +47,24 @@ Open the URL printed by Vite (defaults to <http://localhost:5173>).
 | `npm run format`       | Format the codebase with Prettier         |
 | `npm run format:check` | Check formatting without writing changes  |
 
-## Status
+## Phase 0 — what's here now
 
-Phase 0 in progress. Player generation and detail view are being added now.
+- `Player` data model: 38 outfield stats, current and potential values
+- English name generator (193 first names + 311 last names, multicultural mix)
+- Player generator: 14-17yo English outfielders with normal-distributed stats and position-relevant bonuses
+- "Generate Player" button in the top bar adds a player to the list
+- List shows name, age, position, average potential
+- Click a row to open the side panel with the full stat sheet — three groups (Physical / Technical / Mental), per-stat bars showing current vs potential
+- `g` to generate, `Escape` to close detail
+
+What's intentionally **not** here yet (those land in later phases): scouts, visibility ranges, traits, money, signing, the turn loop, save/load, goalkeepers, regions other than England.
+
+## Generator tuning
+
+`scripts/sample-players.ts` is a handy dev script for eyeballing the generator's spread:
+
+```sh
+npx tsx scripts/sample-players.ts 100
+```
+
+Prints name / age / position / avg current / avg potential / gap, then a summary block (means, ranges, position counts, age distribution).

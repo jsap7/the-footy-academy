@@ -25,13 +25,23 @@ export default function App() {
   const handleClose = () => setSelectedPlayerId(null);
 
   useEffect(() => {
-    if (!selectedPlayerId) return;
+    const isTypingTarget = (target: EventTarget | null) =>
+      target instanceof HTMLElement &&
+      (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setSelectedPlayerId(null);
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (isTypingTarget(e.target)) return;
+      if (e.key === 'Escape') {
+        setSelectedPlayerId(null);
+        return;
+      }
+      if (e.key === 'g' || e.key === 'G') {
+        setPlayers((prev) => [generatePlayer(), ...prev]);
+      }
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [selectedPlayerId]);
+  }, []);
 
   return (
     <div className="flex h-full flex-col">

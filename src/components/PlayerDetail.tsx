@@ -1,10 +1,4 @@
-import {
-  STAT_GROUPS,
-  STAT_GROUP_LABELS,
-  STAT_LABELS,
-  type Player,
-  type StatGroup,
-} from '../types';
+import { STAT_GROUPS, STAT_GROUP_LABELS, STAT_LABELS, type Player, type StatGroup } from '../types';
 import { averageCurrent, averagePotential } from '../game/playerStats';
 import StatRow from './StatRow';
 
@@ -74,15 +68,7 @@ export default function PlayerDetail({ player, onClose }: Props) {
   );
 }
 
-function Summary({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: number;
-  tone: 'bright' | 'dim';
-}) {
+function Summary({ label, value, tone }: { label: string; value: number; tone: 'bright' | 'dim' }) {
   return (
     <div>
       <div className="text-[0.65rem] uppercase tracking-wider text-neutral-500">{label}</div>
