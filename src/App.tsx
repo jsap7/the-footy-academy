@@ -7,7 +7,6 @@ import ScoutsPage from './components/ScoutsPage';
 import ShortlistPage from './components/ShortlistPage';
 import TopBar from './components/TopBar';
 import { monthlyBurn } from './game/finance';
-import { generatePlayer } from './game/playerGenerator';
 import { advanceMonth } from './game/turnLoop';
 import Button from './ui/Button';
 import SectionHead from './ui/SectionHead';
@@ -29,15 +28,13 @@ export default function App() {
     return onShortlist?.player ?? null;
   }, [state.roster, state.shortlist, selectedPlayerId]);
 
-  const handleGenerate = () => {
-    setState((prev) => ({ ...prev, roster: [generatePlayer(), ...prev.roster] }));
-  };
-
   const handleSelect = (id: string) => {
     setSelectedPlayerId((prev) => (prev === id ? null : id));
   };
 
   const handleClose = () => setSelectedPlayerId(null);
+
+  const handleAdvanceMonth = () => setState((prev) => advanceMonth(prev));
 
   useEffect(() => {
     const isTypingTarget = (target: EventTarget | null) =>
@@ -50,10 +47,6 @@ export default function App() {
         setSelectedPlayerId(null);
         return;
       }
-      if (e.key === 'g' || e.key === 'G') {
-        setState((prev) => ({ ...prev, roster: [generatePlayer(), ...prev.roster] }));
-        return;
-      }
       if (e.key === 'n' || e.key === 'N') {
         setState((prev) => advanceMonth(prev));
       }
@@ -62,17 +55,10 @@ export default function App() {
     return () => document.removeEventListener('keydown', onKey);
   }, []);
 
-  const handleAdvanceMonth = () => setState((prev) => advanceMonth(prev));
-
   const headerActions = (
-    <div className="flex items-center gap-3">
-      <Button onClick={handleGenerate} hint="G">
-        + generate
-      </Button>
-      <Button variant="primary" onClick={handleAdvanceMonth} hint="N">
-        next month →
-      </Button>
-    </div>
+    <Button variant="primary" onClick={handleAdvanceMonth} hint="N">
+      next month →
+    </Button>
   );
 
   const navTabs = [
@@ -96,18 +82,17 @@ export default function App() {
         burn={monthlyBurn(state)}
         rightSlot={headerActions}
       />
-      <NavStrip
-        tabs={navTabs}
-        active={activeTab}
-        onChange={(key) => setActiveTab(key as TabKey)}
-      />
+      <NavStrip tabs={navTabs} active={activeTab} onChange={(key) => setActiveTab(key as TabKey)} />
       <main className="flex min-h-0 flex-1">
         <section className="flex w-full min-w-0 flex-1 flex-col border-r border-hairline">
           {activeTab === 'roster' && (
             <>
               <SectionHead label="academy roster" count={state.roster.length} />
               {state.roster.length === 0 ? (
-                <EmptyState onGenerate={handleGenerate} />
+                <EmptyState
+                  hasScouts={state.scouts.length > 0}
+                  onGoToScouts={() => setActiveTab('scouts')}
+                />
               ) : (
                 <PlayerList
                   players={state.roster}
@@ -145,11 +130,7 @@ export default function App() {
         )}
       </main>
       <StatusBar
-        hints={
-          selectedPlayer
-            ? '[N] next month · [G] generate · [ESC] close'
-            : '[N] next month · [G] generate'
-        }
+        hints={selectedPlayer ? '[N] next month · [ESC] close' : '[N] next month · [↑/↓] navigate'}
       />
     </div>
   );

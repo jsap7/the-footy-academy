@@ -13,8 +13,7 @@ type Props = {
 const DOTTED_TRACK =
   'repeating-linear-gradient(to right, var(--color-ink-faint) 0 2px, transparent 2px 4px)';
 
-const COLS =
-  'grid-cols-[24px_minmax(0,1.6fr)_28px_56px_44px_minmax(0,1.3fr)_36px_64px]';
+const COLS = 'grid-cols-[24px_minmax(0,1.6fr)_28px_56px_44px_minmax(0,1.3fr)_36px_64px]';
 
 function PotBar({ current, potential }: { current: number; potential: number }) {
   const maxed = current >= potential;

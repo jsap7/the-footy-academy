@@ -22,8 +22,8 @@ export default function ShortlistPage({ state, selectedPlayerId, onSelect, onCha
               your scouts haven&apos;t found anyone yet
             </p>
             <p className="mt-3 max-w-md">
-              you don&apos;t have any scouts. hire one from the scouts tab to start
-              surfacing players.
+              you don&apos;t have any scouts. hire one from the scouts tab to start surfacing
+              players.
             </p>
           </>
         ) : (
@@ -32,8 +32,8 @@ export default function ShortlistPage({ state, selectedPlayerId, onSelect, onCha
               your scouts haven&apos;t found anyone yet
             </p>
             <p className="mt-3 max-w-md">
-              {state.scouts.length === 1 ? 'your scout will' : 'your scouts will'} surface
-              kids on the next month-end.
+              {state.scouts.length === 1 ? 'your scout will' : 'your scouts will'} surface kids on
+              the next month-end.
             </p>
           </>
         )}
