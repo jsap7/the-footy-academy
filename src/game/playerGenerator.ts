@@ -115,8 +115,11 @@ export function generatePlayer(): Player {
   const rawCurrent = rollCurrentFromPotential(rawPotential, age);
 
   const traits = pickTraitIds(pickTraitCount(qualityTier));
-  const potential = applyBaseEffects(rawPotential, traits);
-  const current = clampCurrentToPotential(applyBaseEffects(rawCurrent, traits), potential);
+  const potential = applyBaseEffects(rawPotential, traits, 'potential');
+  const current = clampCurrentToPotential(
+    applyBaseEffects(rawCurrent, traits, 'current'),
+    potential,
+  );
 
   return {
     id: crypto.randomUUID(),
