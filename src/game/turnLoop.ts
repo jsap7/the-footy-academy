@@ -13,6 +13,7 @@ import {
 } from './offers';
 import { generateScoutMarket } from './scoutMarket';
 import { runScoutFinds, tickShortlist } from './shortlist';
+import { detectStatMilestones, type StatMilestoneEvent } from './statMilestones';
 import { calculateStipend } from './stipends';
 import { computeDevRateMultiplier } from './traits';
 import { appendTransaction } from './transactions';
@@ -49,13 +50,18 @@ export function advanceMonth(state: GameState): GameState {
   // applies a flat multiplier to every gain (1.0× at Backyard Pitch up to
   // 1.5× at World-Class). After development, each player's MV history gets
   // a fresh entry (FOOTY-74) — capped at 12 trailing months for the chart.
+  // FOOTY-81: also detect stat milestones (70/80/90 crossings) and surface
+  // them in the event banner.
   const facility = getCurrentFacility(stateAfterCalendar);
+  const recentStatMilestones: StatMilestoneEvent[] = [];
   const rosterAfterDevelopment = rosterAfterReleases.map((player) => {
     const developed = developPlayer(
       player,
       computeDevRateMultiplier,
       facility.developmentMultiplier,
     ).updated;
+    const milestone = detectStatMilestones(developed, player.stats.current, developed.stats.current);
+    if (milestone) recentStatMilestones.push(milestone);
     const mvEntry = { month: currentMonth, year: currentYear, mv: computeMarketValue(developed) };
     const mvHistory = [...(developed.mvHistory ?? []), mvEntry].slice(-12);
     return { ...developed, mvHistory };
@@ -232,5 +238,6 @@ export function advanceMonth(state: GameState): GameState {
     recentFacilityEvents,
     recentForcedScoutFires,
     recentAchievements: newlyUnlocked,
+    recentStatMilestones,
   };
 }

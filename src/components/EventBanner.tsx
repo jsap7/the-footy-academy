@@ -9,6 +9,7 @@ import {
   type ReleaseEvent,
   type SaleEvent,
 } from '../types';
+import type { StatMilestoneEvent } from '../game/statMilestones';
 
 const ACHIEVEMENT_TITLE = new Map(ACHIEVEMENT_DEFINITIONS.map((d) => [d.id, d.title]));
 import { formatCash } from '../util/format';
@@ -21,6 +22,7 @@ type Props = {
   facilityEvents?: readonly (FacilityWarningEvent | FacilityDowngradeEvent)[];
   forcedScoutFires?: readonly FacilityScoutFiredEvent[];
   achievements?: readonly AchievementId[];
+  statMilestones?: readonly StatMilestoneEvent[];
 };
 
 export default function EventBanner({
@@ -30,6 +32,7 @@ export default function EventBanner({
   facilityEvents = [],
   forcedScoutFires = [],
   achievements = [],
+  statMilestones = [],
 }: Props) {
   const totalEvents =
     birthdays.length +
@@ -37,7 +40,8 @@ export default function EventBanner({
     sales.length +
     facilityEvents.length +
     forcedScoutFires.length +
-    achievements.length;
+    achievements.length +
+    statMilestones.length;
   if (totalEvents === 0) return null;
   return (
     <div className="border-b border-hairline bg-bg-elev">
@@ -102,6 +106,18 @@ export default function EventBanner({
               <span className="text-ink">{ACHIEVEMENT_TITLE.get(id) ?? id}</span>
             </span>
           ))}
+          {statMilestones.map((m) => {
+            const top = m.thresholds.reduce((mx, t) => (t.threshold > mx ? t.threshold : mx), 0);
+            const tone = top >= 90 ? 'accent' : 'muted';
+            const summary = m.thresholds.map((t) => t.statLabel).join(', ');
+            return (
+              <span key={`m-${m.playerId}`} className="flex items-center gap-2">
+                <Chip tone={tone}>milestone {top}</Chip>
+                <span className="text-ink">{m.playerName}</span>
+                <span className="text-ink-mid">→ {summary}</span>
+              </span>
+            );
+          })}
         </div>
       </div>
     </div>
