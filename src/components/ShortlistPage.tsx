@@ -1,4 +1,4 @@
-import { signPlayer } from '../game/gameActions';
+import { rejectShortlistEntry, signPlayer } from '../game/gameActions';
 import type { GameState } from '../types';
 import ShortlistItem from './ShortlistItem';
 
@@ -10,10 +10,11 @@ type Props = {
 };
 
 const HEADER_COLS =
-  'grid-cols-[minmax(0,1.4fr)_56px_72px_60px_36px_minmax(0,1fr)_72px_120px_104px]';
+  'grid-cols-[minmax(0,1.4fr)_56px_72px_60px_36px_minmax(0,1fr)_72px_120px_160px]';
 
 export default function ShortlistPage({ state, selectedPlayerId, onSelect, onChange }: Props) {
   const handleSign = (entryId: string) => onChange(signPlayer(state, entryId));
+  const handleReject = (entryId: string) => onChange(rejectShortlistEntry(state, entryId));
 
   if (state.shortlist.length === 0) {
     const noScouts = state.scouts.length === 0;
@@ -61,6 +62,7 @@ export default function ShortlistPage({ state, selectedPlayerId, onSelect, onCha
               selected={entry.player.id === selectedPlayerId}
               onSelect={() => onSelect(entry.player.id)}
               onSign={handleSign}
+              onReject={handleReject}
             />
           );
         })}

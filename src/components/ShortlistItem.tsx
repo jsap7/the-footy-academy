@@ -11,9 +11,10 @@ type Props = {
   selected: boolean;
   onSelect: (entryId: string) => void;
   onSign: (entryId: string) => void;
+  onReject: (entryId: string) => void;
 };
 
-const COLS = 'grid-cols-[minmax(0,1.4fr)_56px_72px_60px_36px_minmax(0,1fr)_72px_120px_104px]';
+const COLS = 'grid-cols-[minmax(0,1.4fr)_56px_72px_60px_36px_minmax(0,1fr)_72px_120px_160px]';
 
 export default function ShortlistItem({
   entry,
@@ -22,6 +23,7 @@ export default function ShortlistItem({
   selected,
   onSelect,
   onSign,
+  onReject,
 }: Props) {
   const player = entry.player;
   const cantAfford = cash < entry.signingFee;
@@ -57,7 +59,10 @@ export default function ShortlistItem({
         {entry.monthsRemaining}mo left
       </span>
       <span className="text-right tabular-nums text-ink">{formatCash(entry.signingFee)}</span>
-      <span className="flex justify-end">
+      <span className="flex justify-end gap-1.5">
+        <Button variant="ghost" size="sm" onClick={() => onReject(entry.id)}>
+          reject
+        </Button>
         <Button variant="primary" disabled={cantAfford} onClick={() => onSign(entry.id)}>
           sign
         </Button>

@@ -122,6 +122,17 @@ export function setPlayerBlockOffers(
   };
 }
 
+// Drop a shortlist entry. Used when a scout's find isn't worth a signing
+// slot — clears the row so it doesn't keep showing up against the cap.
+export function rejectShortlistEntry(state: GameState, entryId: string): GameState {
+  const entry = state.shortlist.find((e) => e.id === entryId);
+  if (!entry) return state;
+  return {
+    ...state,
+    shortlist: state.shortlist.filter((e) => e.id !== entryId),
+  };
+}
+
 export function rejectOffer(state: GameState, offerId: string): GameState {
   const offer = state.pendingOffers.find((o) => o.id === offerId);
   if (!offer) return state;
