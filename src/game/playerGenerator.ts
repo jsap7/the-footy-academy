@@ -1,10 +1,6 @@
 import { generateEnglishName } from './nameGenerator';
 import { POSITION_RELEVANT_STATS } from './positionStats';
-import {
-  rollQualityTier,
-  TIER_POTENTIAL_BANDS,
-  TIER_TRAIT_COUNT_WEIGHTS,
-} from './qualityTier';
+import { rollQualityTier, TIER_POTENTIAL_BANDS, TIER_TRAIT_COUNT_WEIGHTS } from './qualityTier';
 import { applyBaseEffects, getAllTraits } from './traits';
 import {
   ALL_STAT_KEYS,

@@ -13,7 +13,15 @@ export const POSITION_RELEVANT_STATS: Record<Position, readonly StatKey[]> = {
   LWB: ['pace', 'stamina', 'crossing', 'dribbling', 'workRate', 'tackling'],
   RWB: ['pace', 'stamina', 'crossing', 'dribbling', 'workRate', 'tackling'],
 
-  CDM: ['stamina', 'tackling', 'positioning', 'decisions', 'passingShort', 'workRate', 'aggression'],
+  CDM: [
+    'stamina',
+    'tackling',
+    'positioning',
+    'decisions',
+    'passingShort',
+    'workRate',
+    'aggression',
+  ],
   CM: ['passingShort', 'passingLong', 'vision', 'stamina', 'workRate', 'decisions', 'technique'],
   CAM: ['vision', 'technique', 'passingShort', 'dribbling', 'firstTouch', 'composure', 'longShots'],
 
@@ -22,6 +30,22 @@ export const POSITION_RELEVANT_STATS: Record<Position, readonly StatKey[]> = {
   LW: ['pace', 'acceleration', 'dribbling', 'technique', 'finishing', 'firstTouch', 'crossing'],
   RW: ['pace', 'acceleration', 'dribbling', 'technique', 'finishing', 'firstTouch', 'crossing'],
 
-  CF: ['finishing', 'composure', 'anticipation', 'firstTouch', 'dribbling', 'technique', 'longShots'],
-  ST: ['finishing', 'composure', 'anticipation', 'heading', 'positioning', 'jumpingReach', 'strength'],
+  CF: [
+    'finishing',
+    'composure',
+    'anticipation',
+    'firstTouch',
+    'dribbling',
+    'technique',
+    'longShots',
+  ],
+  ST: [
+    'finishing',
+    'composure',
+    'anticipation',
+    'heading',
+    'positioning',
+    'jumpingReach',
+    'strength',
+  ],
 };
