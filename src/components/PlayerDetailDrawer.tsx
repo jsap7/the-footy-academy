@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { STAT_GROUPS, STAT_GROUP_LABELS, STAT_LABELS, type Player, type StatGroup } from '../types';
 import { computeMarketValue } from '../game/marketValue';
 import { averageCurrent, averagePotential } from '../game/playerStats';
+import { projectMVAtAges } from '../game/projection';
 import { formatCash } from '../util/format';
 import Button from '../ui/Button';
 import Chip from '../ui/Chip';
@@ -13,6 +14,7 @@ import TraitList from './TraitList';
 type Props = {
   player: Player | null;
   onClose: () => void;
+  developmentMultiplier?: number;
   onSetAvailable?: (playerId: string, available: boolean) => void;
   onList?: (playerId: string, price: number) => void;
   onUnlist?: (playerId: string) => void;
@@ -52,6 +54,7 @@ function HeroNumber({
 export default function PlayerDetailDrawer({
   player,
   onClose,
+  developmentMultiplier = 1.0,
   onSetAvailable,
   onList,
   onUnlist,
@@ -144,6 +147,60 @@ export default function PlayerDetailDrawer({
                 history={player.mvHistory ?? []}
                 currentMV={computeMarketValue(player)}
               />
+              {(() => {
+                const currentMV = computeMarketValue(player);
+                const projections = projectMVAtAges(player, [17, 18, 19], developmentMultiplier);
+                if (projections.length === 0) {
+                  return (
+                    <p className="mt-4 text-[11px] uppercase tracking-[0.10em] text-ink-faint">
+                      no further appreciation expected
+                    </p>
+                  );
+                }
+                return (
+                  <div className="mt-5 border-t border-hairline pt-4">
+                    <div className="mb-2 flex items-baseline justify-between">
+                      <span className="text-[10px] uppercase tracking-[0.12em] text-ink-dim">
+                        projected value
+                      </span>
+                      <span className="text-[10px] uppercase tracking-[0.10em] text-ink-faint">
+                        deterministic estimate
+                      </span>
+                    </div>
+                    <div className="space-y-1.5">
+                      {projections.map((p) => {
+                        const pct = currentMV > 0 ? Math.round((p.mv / currentMV - 1) * 100) : 0;
+                        const tone =
+                          p.mv > currentMV
+                            ? 'text-accent-bright'
+                            : p.mv < currentMV
+                              ? 'text-warn'
+                              : 'text-ink-mid';
+                        return (
+                          <div
+                            key={p.age}
+                            className="grid grid-cols-[80px_minmax(0,1fr)_72px] items-baseline gap-3 text-[12px]"
+                          >
+                            <span className="uppercase tracking-[0.10em] text-ink-mid">
+                              at age {p.age}
+                            </span>
+                            <span className="text-[11px] text-ink-faint font-body">
+                              {p.monthsForward} mo forward
+                            </span>
+                            <span className="text-right">
+                              <span className="tabular-nums text-ink">{formatCash(p.mv)}</span>
+                              <span className={`ml-2 text-[10px] tabular-nums ${tone}`}>
+                                {pct >= 0 ? '+' : ''}
+                                {pct}%
+                              </span>
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
             </section>
 
             {onSetAvailable && onList && onUnlist && (

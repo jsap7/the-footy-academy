@@ -9,6 +9,7 @@ import PlayerList from './components/PlayerList';
 import ScoutsPage from './components/ScoutsPage';
 import ShortlistPage from './components/ShortlistPage';
 import TopBar from './components/TopBar';
+import { getCurrentFacility } from './game/facilities';
 import {
   downgradeFacility,
   listPlayer,
@@ -147,6 +148,7 @@ export default function App() {
       <PlayerDetailDrawer
         player={selectedPlayer}
         onClose={handleClose}
+        developmentMultiplier={getCurrentFacility(state).developmentMultiplier}
         onSetAvailable={
           onRoster && selectedPlayer
             ? (id, available) => setState((prev) => setPlayerAvailable(prev, id, available))
