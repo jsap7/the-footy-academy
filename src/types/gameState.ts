@@ -1,5 +1,6 @@
 import { CLUB_LIBRARY } from '../data/clubs/library';
 import { generateScoutMarket } from '../game/scoutMarket';
+import { generateStartingRoster } from '../game/startingRoster';
 import type { BirthdayEvent, ReleaseEvent } from './aging';
 import type { Club } from './club';
 import type { FacilityTier } from './facility';
@@ -59,7 +60,7 @@ export const INITIAL_GAME_STATE: GameState = {
   scouts: [],
   scoutMarket: generateScoutMarket(),
   shortlist: [],
-  roster: [],
+  roster: generateStartingRoster(),
   clubs: CLUB_LIBRARY,
   pendingOffers: [],
   completedSales: [],
