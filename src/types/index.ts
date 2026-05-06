@@ -23,4 +23,10 @@ export { TIER_WEALTH } from './club';
 export type { FacilityTier, FacilityDefinition } from './facility';
 export { FACILITY_DEFINITIONS, FACILITY_TIERS } from './facility';
 
+export type {
+  FacilityWarningEvent,
+  FacilityDowngradeEvent,
+  FacilityScoutFiredEvent,
+} from './facilityEvents';
+
 export type { Offer, OfferStatus, SaleEvent } from './offer';

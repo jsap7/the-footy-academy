@@ -87,6 +87,8 @@ export default function App() {
         birthdays={state.recentBirthdays}
         releases={state.recentReleases}
         sales={state.recentSales}
+        facilityEvents={state.recentFacilityEvents}
+        forcedScoutFires={state.recentForcedScoutFires}
       />
       <main className="min-h-0 flex-1 overflow-y-auto">
         {activeTab === 'dashboard' && (

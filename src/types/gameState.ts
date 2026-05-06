@@ -3,6 +3,11 @@ import { generateScoutMarket } from '../game/scoutMarket';
 import type { BirthdayEvent, ReleaseEvent } from './aging';
 import type { Club } from './club';
 import type { FacilityTier } from './facility';
+import type {
+  FacilityDowngradeEvent,
+  FacilityScoutFiredEvent,
+  FacilityWarningEvent,
+} from './facilityEvents';
 import type { Offer, SaleEvent } from './offer';
 import type { Player } from './player';
 import type { Scout } from './scout';
@@ -37,6 +42,8 @@ export type GameState = {
   recentBirthdays: BirthdayEvent[];
   recentReleases: ReleaseEvent[];
   recentSales: SaleEvent[];
+  recentFacilityEvents: (FacilityWarningEvent | FacilityDowngradeEvent)[];
+  recentForcedScoutFires: FacilityScoutFiredEvent[];
 };
 
 export const INITIAL_GAME_STATE: GameState = {
@@ -56,4 +63,6 @@ export const INITIAL_GAME_STATE: GameState = {
   recentBirthdays: [],
   recentReleases: [],
   recentSales: [],
+  recentFacilityEvents: [],
+  recentForcedScoutFires: [],
 };

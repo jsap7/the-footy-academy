@@ -1,6 +1,10 @@
 import { processBirthdays, processReleases } from './aging';
 import { developPlayer } from './development';
-import { getCurrentFacility } from './facilities';
+import {
+  allowedScoutLevelsForTier,
+  getCurrentFacility,
+  getPrevFacilityTier,
+} from './facilities';
 import { MONTHLY_BASE_INCOME, currentOperatingCosts } from './finance';
 import {
   executeAcceptedOffers,
@@ -12,7 +16,15 @@ import { generateScoutMarket } from './scoutMarket';
 import { runScoutFinds, tickShortlist } from './shortlist';
 import { calculateStipend } from './stipends';
 import { computeDevRateMultiplier } from './traits';
-import type { GameState } from '../types';
+import type {
+  FacilityDowngradeEvent,
+  FacilityScoutFiredEvent,
+  FacilityWarningEvent,
+  GameState,
+  Scout,
+} from '../types';
+
+const GRACE_PERIOD_MONTHS = 2;
 
 // Phase 3 turn loop. Order is locked. Returns a NEW GameState.
 export function advanceMonth(state: GameState): GameState {
@@ -83,19 +95,49 @@ export function advanceMonth(state: GameState): GameState {
   // 9. Deduct player stipends (post-aging, post-sale roster, with 20-21 squeeze).
   for (const player of rosterAfterSales) cash -= calculateStipend(player);
 
-  // 10. Grace counter for FOOTY-65's auto-downgrade. We tick up only when
-  // we're actually in the red AND have somewhere to fall to (tier > 1).
-  // Cleared whenever cash is back above zero.
+  // 10. Grace + auto-downgrade. We tick up only when we're actually in the
+  // red AND have somewhere to fall to. Once the counter hits the threshold
+  // we drop one tier and force-fire any scouts that are no longer valid at
+  // the new tier (auto path ignores the orphan rule that blocks manual
+  // downgrades). Counter resets after the demotion so the user gets another
+  // grace window at the new tier.
+  let facilityTier = stateAfterCalendar.facilityTier;
   let facilityGraceMonthsRemaining = state.facilityGraceMonthsRemaining;
-  if (cash < 0 && stateAfterCalendar.facilityTier > 1) {
+  let scouts: Scout[] = state.scouts;
+  const recentFacilityEvents: (FacilityWarningEvent | FacilityDowngradeEvent)[] = [];
+  const recentForcedScoutFires: FacilityScoutFiredEvent[] = [];
+
+  if (cash < 0 && facilityTier > 1) {
     facilityGraceMonthsRemaining += 1;
+    if (facilityGraceMonthsRemaining >= GRACE_PERIOD_MONTHS) {
+      const prevTier = getPrevFacilityTier(facilityTier);
+      if (prevTier != null) {
+        const fromTier = facilityTier;
+        const allowed = new Set(allowedScoutLevelsForTier(prevTier));
+        const fired = scouts.filter((s) => !allowed.has(s.level));
+        scouts = scouts.filter((s) => allowed.has(s.level));
+        for (const f of fired) {
+          recentForcedScoutFires.push({
+            scoutId: f.id,
+            scoutName: `${f.firstName} ${f.lastName}`,
+            scoutLevel: f.level,
+          });
+        }
+        facilityTier = prevTier;
+        facilityGraceMonthsRemaining = 0;
+        recentFacilityEvents.push({ type: 'auto-downgrade', fromTier, toTier: prevTier });
+      }
+    } else {
+      // First broke month — give the user a heads-up so they can react.
+      recentFacilityEvents.push({ type: 'warning', fromTier: facilityTier });
+    }
   } else {
     facilityGraceMonthsRemaining = 0;
   }
 
   // 11. Refresh scout market — anything you didn't hire is gone. New tier may
   // open higher levels; downgrades close them.
-  const scoutMarket = generateScoutMarket(stateAfterCalendar.facilityTier);
+  const scoutMarket = generateScoutMarket(facilityTier);
 
   // Track end-of-month cash for the dashboard sparkline (trailing 12 months).
   const cashHistory = [...state.cashHistory, cash].slice(-12);
@@ -106,14 +148,18 @@ export function advanceMonth(state: GameState): GameState {
     currentYear,
     cash,
     shortlist,
+    scouts,
     scoutMarket,
     roster: rosterAfterSales,
     pendingOffers,
     completedSales,
     cashHistory,
+    facilityTier,
     facilityGraceMonthsRemaining,
     recentBirthdays: birthdayEvents,
     recentReleases: releaseEvents,
     recentSales: saleResult.saleEvents,
+    recentFacilityEvents,
+    recentForcedScoutFires,
   };
 }
