@@ -82,11 +82,17 @@ export default function MVHistoryChart({ history, currentMV, width = 480, height
       <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.10em] text-ink-faint">
         <span>{formatMonth(history[0].month, history[0].year).toLowerCase()}</span>
         <span className={`tabular-nums ${deltaTone}`}>
-          {history.length === 1 ? '—' : `${deltaSign}${formatCash(delta)} (${deltaSign}${deltaPct.toFixed(0)}%)`}
+          {history.length === 1
+            ? '—'
+            : `${deltaSign}${formatCash(delta)} (${deltaSign}${deltaPct.toFixed(0)}%)`}
         </span>
         <span
           className={
-            trend.tone === 'good' ? 'text-accent-bright' : trend.tone === 'warn' ? 'text-warn' : 'text-ink-mid'
+            trend.tone === 'good'
+              ? 'text-accent-bright'
+              : trend.tone === 'warn'
+                ? 'text-warn'
+                : 'text-ink-mid'
           }
         >
           {trend.text}

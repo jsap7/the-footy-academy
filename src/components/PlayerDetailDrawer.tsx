@@ -259,8 +259,7 @@ export default function PlayerDetailDrawer({
                   return (
                     <div className="space-y-3">
                       <div className={`text-[16px] uppercase tracking-[0.10em] ${headlineClass}`}>
-                        <span className="font-mono">{arrow}</span>{' '}
-                        <span>{rec.headline}</span>
+                        <span className="font-mono">{arrow}</span> <span>{rec.headline}</span>
                       </div>
                       <ul className="space-y-1 text-[11px] text-ink-mid font-body">
                         {rec.reasoning.map((line, idx) => (

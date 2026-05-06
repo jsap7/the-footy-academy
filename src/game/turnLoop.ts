@@ -61,7 +61,11 @@ export function advanceMonth(state: GameState): GameState {
       computeDevRateMultiplier,
       facility.developmentMultiplier,
     ).updated;
-    const milestone = detectStatMilestones(developed, player.stats.current, developed.stats.current);
+    const milestone = detectStatMilestones(
+      developed,
+      player.stats.current,
+      developed.stats.current,
+    );
     if (milestone) recentStatMilestones.push(milestone);
     return developed;
   });

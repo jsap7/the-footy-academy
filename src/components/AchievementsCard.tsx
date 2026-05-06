@@ -16,9 +16,7 @@ export default function AchievementsCard({ state }: Props) {
     .sort((a, b) => {
       if (!a.unlockedAt || !b.unlockedAt) return 0;
       return (
-        b.unlockedAt.year * 12 +
-        b.unlockedAt.month -
-        (a.unlockedAt.year * 12 + a.unlockedAt.month)
+        b.unlockedAt.year * 12 + b.unlockedAt.month - (a.unlockedAt.year * 12 + a.unlockedAt.month)
       );
     })
     .slice(0, 3);

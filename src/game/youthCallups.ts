@@ -48,10 +48,7 @@ export function rollYouthCallups(
     if (Math.random() >= MONTHLY_CALLUP_CHANCE) return next;
     const bonusPct = 0.2 + Math.random() * 0.2; // 0.20 to 0.40
     const callupType = pickType(next.age);
-    const newMultiplier = Math.min(
-      CALLUP_MAX_MULT,
-      (next.callupMultiplier ?? 1) * (1 + bonusPct),
-    );
+    const newMultiplier = Math.min(CALLUP_MAX_MULT, (next.callupMultiplier ?? 1) * (1 + bonusPct));
     events.push({
       playerId: next.id,
       playerName: `${next.firstName} ${next.lastName}`,

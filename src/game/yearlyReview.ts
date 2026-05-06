@@ -29,9 +29,7 @@ export function computeYearlyReview(state: GameState, year: number): YearlyRevie
   const txs = state.transactions ?? [];
   const yearTxs = txs.filter((t) => txInYear(t, year));
   const sales = yearTxs.filter((t) => t.type === 'sale');
-  const spending = yearTxs
-    .filter((t) => t.amount < 0)
-    .reduce((s, t) => s + Math.abs(t.amount), 0);
+  const spending = yearTxs.filter((t) => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
   const totalSalesValue = sales.reduce((s, t) => s + t.amount, 0);
   const netCashChange = yearTxs.reduce((s, t) => s + t.amount, 0);
   const biggestSale = sales.reduce<Transaction | undefined>(

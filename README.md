@@ -47,7 +47,7 @@ Open the URL printed by Vite (defaults to <http://localhost:5173>).
 | `npm run format`       | Format the codebase with Prettier         |
 | `npm run format:check` | Check formatting without writing changes  |
 
-## What's shipped (phases 0 → 4)
+## What's shipped (phases 0 → 5)
 
 **Phase 0 — engine baseline.** `Player` data model (38 outfield stats × current/potential), English name generator, player generator, list + side-panel detail view.
 
@@ -90,6 +90,20 @@ Open the URL printed by Vite (defaults to <http://localhost:5173>).
 - Annual 3% inflation on operating costs, facility monthly + upgrade costs, signing fees, stipends, and new-hire scout salaries. Income deliberately stays flat at €5k so the squeeze tightens by year.
 - Dashboard burn breakdown widget (operating / facility / stipends / scouts with ASCII bars + % of total).
 - New Finances tab with cash hero, monthly net + annual run-rate, 12-month cash chart with peak/trough markers, inflated cost breakdown, and a transaction list (last ~24 months of sales / signings / scout hires + fires / facility moves / monthly burn).
+
+**Phase 5 — make it fun.** Phase 4's squeeze worked too well — playtest hit €1M debt and "I'm just churning to stay afloat, no time to develop or get attached." Phase 5 turns on the cozy + progression pillars without abandoning the gritty one.
+
+- Soften squeeze: monthly base income €5k → €8k, operating €20k → €15k, idle net -€7k (was -€15k).
+- Per-player MV history (12 trailing months) + SVG chart in the drawer with rising / peaking / falling trend label.
+- Forward MV projection at age 17/18/19 — deterministic estimate using expected dev gains, factors in current facility multiplier.
+- Hold / sell / consider recommendation card with 2-4 dynamic reasoning bullets (age, offer-vs-MV %, trend, projected peak).
+- 20-achievement library with mid-turn detection on sign / sell / hire / facility upgrade and end-of-turn detection on the rest. Notification chip on the event banner; dashboard widget shows count, last three unlocks, and a full list with locked items as "???".
+- Academy Reputation (0-100) with seven tier labels (Unknown → Legendary), TopBar HUD pickup, and a dashboard breakdown card.
+- Yearly review modal on Dec → Jan transition: finances / players / achievements unlocked / reputation delta. Computed from transactions + achievement timestamps, no extra state.
+- Long-term goals widget on the dashboard: 5 goals (Tier 5 facility, €50M cash, 5 generational sales, Reputation 80, develop a player to 95% potential), reordered by progress.
+- Stat milestone events (70/80/90 thresholds, batched per-player per turn).
+- Youth international call-ups: ~3% monthly chance per eligible 16-19yo with avg potential ≥ 75; 12-month cooldown; +20 to +40% MV multiplier compounded (cap 2.0); chips on banner + drawer header.
+- Loyalty bonus: 24+ months on roster unlocks the Veteran badge — dev rate +10%, MV ×1.15, "★ veteran" chip on roster row + drawer.
 
 What's intentionally **not** here yet:
 

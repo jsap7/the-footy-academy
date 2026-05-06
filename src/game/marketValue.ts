@@ -56,9 +56,7 @@ export function computeMarketValue(player: Player): number {
   const tierPremium = TIER_PREMIUM[player.qualityTier];
   const callupMult = player.callupMultiplier ?? 1;
   const veteranMult = (player.monthsOnRoster ?? 0) >= 24 ? 1.15 : 1;
-  return Math.round(
-    baseValue * ratingBoost * ageFactor * tierPremium * callupMult * veteranMult,
-  );
+  return Math.round(baseValue * ratingBoost * ageFactor * tierPremium * callupMult * veteranMult);
 }
 
 // What a specific club thinks the player is worth — adds ±10% noise to the

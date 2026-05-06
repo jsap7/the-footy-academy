@@ -3,10 +3,10 @@ import {
   ALL_ACHIEVEMENT_IDS,
   type Achievement,
   type AchievementId,
-  type GameState,
-  type Player,
-  type Transaction,
-} from '../types';
+} from '../types/achievement';
+import type { Transaction } from '../types/finance';
+import type { GameState } from '../types/gameState';
+import type { Player } from '../types/player';
 import { averageCurrent, averagePotential } from './playerStats';
 
 export function buildInitialAchievements(): Record<AchievementId, Achievement> {
@@ -28,8 +28,7 @@ export function detectNewlyUnlocked(state: GameState): AchievementId[] {
   const yearsSinceStart = state.currentYear - 2026;
   const completedSales = state.completedSales ?? [];
   const generationalSignings = (state.transactions ?? []).filter(
-    (t) =>
-      t.type === 'signing' && /generational/i.test(t.description),
+    (t) => t.type === 'signing' && /generational/i.test(t.description),
   );
   const generationalSales = completedSales.filter((sale) => {
     // We don't have player tier on the sale record; approximate: any sale
