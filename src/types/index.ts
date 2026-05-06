@@ -7,3 +7,6 @@ export { STAT_GROUPS, STAT_LABELS, STAT_GROUP_LABELS, ALL_STAT_KEYS } from './st
 export type { Trait, TraitId, TraitCategory, BaseStatEffect, DevRateEffect } from './trait';
 
 export type { QualityTier } from './tier';
+
+export type { GameState } from './gameState';
+export { INITIAL_GAME_STATE } from './gameState';

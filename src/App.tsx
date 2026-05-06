@@ -8,7 +8,7 @@ import { generatePlayer } from './game/playerGenerator';
 import Button from './ui/Button';
 import SectionHead from './ui/SectionHead';
 import StatusBar from './ui/StatusBar';
-import type { Player } from './types';
+import { INITIAL_GAME_STATE, type GameState } from './types';
 
 const NAV_TABS = [
   { key: 'roster', label: 'academy' },
@@ -17,16 +17,19 @@ const NAV_TABS = [
 ] as const;
 
 export default function App() {
-  const [players, setPlayers] = useState<Player[]>([]);
+  const [state, setState] = useState<GameState>(INITIAL_GAME_STATE);
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
 
   const selectedPlayer = useMemo(
-    () => (selectedPlayerId ? (players.find((p) => p.id === selectedPlayerId) ?? null) : null),
-    [players, selectedPlayerId],
+    () =>
+      selectedPlayerId
+        ? (state.roster.find((p) => p.id === selectedPlayerId) ?? null)
+        : null,
+    [state.roster, selectedPlayerId],
   );
 
   const handleGenerate = () => {
-    setPlayers((prev) => [generatePlayer(), ...prev]);
+    setState((prev) => ({ ...prev, roster: [generatePlayer(), ...prev.roster] }));
   };
 
   const handleSelect = (id: string) => {
@@ -47,7 +50,7 @@ export default function App() {
         return;
       }
       if (e.key === 'g' || e.key === 'G') {
-        setPlayers((prev) => [generatePlayer(), ...prev]);
+        setState((prev) => ({ ...prev, roster: [generatePlayer(), ...prev.roster] }));
       }
     };
     document.addEventListener('keydown', onKey);
@@ -62,16 +65,22 @@ export default function App() {
 
   return (
     <div className="flex h-full flex-col bg-bg text-ink">
-      <TopBar squad={players.length} rightSlot={generateButton} />
+      <TopBar
+        cash={state.cash}
+        month={state.currentMonth}
+        year={state.currentYear}
+        squad={state.roster.length}
+        rightSlot={generateButton}
+      />
       <NavStrip tabs={NAV_TABS} active="roster" />
       <main className="flex min-h-0 flex-1">
         <section className="flex w-full min-w-0 flex-1 flex-col border-r border-hairline">
-          <SectionHead label="academy roster" count={players.length} />
-          {players.length === 0 ? (
+          <SectionHead label="academy roster" count={state.roster.length} />
+          {state.roster.length === 0 ? (
             <EmptyState onGenerate={handleGenerate} />
           ) : (
             <PlayerList
-              players={players}
+              players={state.roster}
               selectedPlayerId={selectedPlayerId}
               onSelect={handleSelect}
             />
