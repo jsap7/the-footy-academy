@@ -4,13 +4,15 @@ import EmptyState from './components/EmptyState';
 import EventBanner from './components/EventBanner';
 import FinancesPage from './components/FinancesPage';
 import OffersPage from './components/OffersPage';
+import YearlyReviewModal from './components/YearlyReviewModal';
 import PlayerDetailDrawer from './components/PlayerDetailDrawer';
 import PlayerList from './components/PlayerList';
 import ScoutsPage from './components/ScoutsPage';
 import ShortlistPage from './components/ShortlistPage';
 import TopBar from './components/TopBar';
 import { getCurrentFacility } from './game/facilities';
-import { computeReputation } from './game/reputation';
+import { computeReputationBreakdown, computeReputation } from './game/reputation';
+import { computeYearlyReview, type YearlyReview } from './game/yearlyReview';
 import {
   downgradeFacility,
   listPlayer,
@@ -30,6 +32,7 @@ export default function App() {
   const [state, setState] = useState<GameState>(INITIAL_GAME_STATE);
   const [activeTab, setActiveTab] = useState<TabKey>('dashboard');
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
+  const [yearlyReview, setYearlyReview] = useState<YearlyReview | null>(null);
 
   const selectedPlayer = useMemo(() => {
     if (!selectedPlayerId) return null;
@@ -45,7 +48,17 @@ export default function App() {
 
   const handleClose = () => setSelectedPlayerId(null);
 
-  const handleAdvanceMonth = () => setState((prev) => advanceMonth(prev));
+  const handleAdvanceMonth = () =>
+    setState((prev) => {
+      const next = advanceMonth(prev);
+      // Dec → Jan transition: surface a yearly review for the year that
+      // just ended. The first review fires after 12 turns from the game
+      // start (Aug 2026 → Jan 2027 reviews 2026, etc.).
+      if (prev.currentMonth === 12 && next.currentMonth === 1) {
+        setYearlyReview(computeYearlyReview(next, prev.currentYear));
+      }
+      return next;
+    });
 
   useEffect(() => {
     const isTypingTarget = (target: EventTarget | null) =>
@@ -182,6 +195,13 @@ export default function App() {
             : undefined
         }
       />
+      {yearlyReview ? (
+        <YearlyReviewModal
+          review={yearlyReview}
+          reputationLabel={computeReputationBreakdown(state).label}
+          onClose={() => setYearlyReview(null)}
+        />
+      ) : null}
     </div>
   );
 }
