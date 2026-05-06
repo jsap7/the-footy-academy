@@ -36,10 +36,7 @@ export function getTraitsByCategory(category: TraitCategory): Trait[] {
   return getAllTraits().filter((t) => t.category === category);
 }
 
-export function applyBaseEffects(
-  stats: PlayerStats,
-  traitIds: readonly TraitId[],
-): PlayerStats {
+export function applyBaseEffects(stats: PlayerStats, traitIds: readonly TraitId[]): PlayerStats {
   const result: PlayerStats = { ...stats };
   for (const id of traitIds) {
     const trait = getTrait(id);
@@ -54,21 +51,14 @@ export function applyBaseEffects(
   return result;
 }
 
-export function computeDevRateMultiplier(
-  stat: StatKey,
-  traitIds: readonly TraitId[],
-): number {
+export function computeDevRateMultiplier(stat: StatKey, traitIds: readonly TraitId[]): number {
   const group = STAT_TO_GROUP[stat];
   let multiplier = 1;
   for (const id of traitIds) {
     const trait = getTrait(id);
     if (!trait) continue;
     for (const effect of trait.devRateEffects) {
-      if (
-        effect.target === 'all' ||
-        effect.target === stat ||
-        effect.target === group
-      ) {
+      if (effect.target === 'all' || effect.target === stat || effect.target === group) {
         multiplier *= effect.multiplier;
       }
     }

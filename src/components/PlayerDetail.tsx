@@ -1,6 +1,7 @@
 import { STAT_GROUPS, STAT_GROUP_LABELS, STAT_LABELS, type Player, type StatGroup } from '../types';
 import { averageCurrent, averagePotential } from '../game/playerStats';
 import StatRow from './StatRow';
+import TraitList from './TraitList';
 
 type Props = {
   player: Player;
@@ -44,6 +45,13 @@ export default function PlayerDetail({ player, onClose }: Props) {
         <Summary label="Avg Potential" value={avgPot} tone="dim" />
         <Summary label="Gap" value={gap} tone="dim" />
       </div>
+
+      <section className="border-b border-neutral-800 px-5 py-3">
+        <h3 className="mb-2 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-neutral-500">
+          Traits
+        </h3>
+        <TraitList traits={player.traits} />
+      </section>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-5 py-2">
         {GROUP_ORDER.map((group) => (

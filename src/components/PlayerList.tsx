@@ -24,6 +24,7 @@ export default function PlayerList({ players, selectedPlayerId, onSelect }: Prop
             <th className="border-b border-neutral-800 px-4 py-2 font-medium">Name</th>
             <th className="border-b border-neutral-800 px-4 py-2 font-medium">Age</th>
             <th className="border-b border-neutral-800 px-4 py-2 font-medium">Pos</th>
+            <th className="border-b border-neutral-800 px-4 py-2 font-medium">Tr</th>
             <th className="border-b border-neutral-800 px-4 py-2 text-right font-medium">
               Avg Potential
             </th>
@@ -50,6 +51,9 @@ export default function PlayerList({ players, selectedPlayerId, onSelect }: Prop
                 </td>
                 <td className="border-b border-neutral-900 px-4 py-2 font-mono text-xs uppercase text-neutral-400">
                   {player.position}
+                </td>
+                <td className="border-b border-neutral-900 px-4 py-2 font-mono text-xs tabular-nums text-neutral-500">
+                  [{player.traits.length}]
                 </td>
                 <td className="border-b border-neutral-900 px-4 py-2 text-right tabular-nums">
                   {averagePotential(player)}
