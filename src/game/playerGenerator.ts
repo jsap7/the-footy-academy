@@ -1,4 +1,5 @@
 import { generateEnglishName } from './nameGenerator';
+import { POSITION_RELEVANT_STATS } from './positionStats';
 import {
   rollQualityTier,
   TIER_POTENTIAL_BANDS,
@@ -16,27 +17,8 @@ import {
   type TraitId,
 } from '../types';
 
-// Position-relevant stats get a flat potential bonus. FOOTY-21 will replace
-// this map and bump the bonus to +20.
-const POSITION_BONUS = 10;
+const POSITION_BONUS = 20;
 const POTENTIAL_BONUS_CAP = 99;
-
-const POSITION_BONUSES: Record<OutfieldPosition, readonly StatKey[]> = {
-  CB: ['strength', 'jumpingReach', 'heading', 'tackling', 'positioning'],
-  LB: ['pace', 'stamina', 'crossing', 'tackling'],
-  RB: ['pace', 'stamina', 'crossing', 'tackling'],
-  LWB: ['pace', 'stamina', 'crossing', 'tackling'],
-  RWB: ['pace', 'stamina', 'crossing', 'tackling'],
-  CDM: ['stamina', 'tackling', 'positioning', 'decisions'],
-  CM: ['passingShort', 'passingLong', 'vision', 'stamina'],
-  CAM: ['vision', 'technique', 'passingShort', 'dribbling'],
-  LM: ['pace', 'stamina', 'crossing', 'dribbling'],
-  RM: ['pace', 'stamina', 'crossing', 'dribbling'],
-  LW: ['pace', 'dribbling', 'technique', 'finishing'],
-  RW: ['pace', 'dribbling', 'technique', 'finishing'],
-  CF: ['finishing', 'composure', 'anticipation', 'heading'],
-  ST: ['finishing', 'composure', 'anticipation', 'heading'],
-};
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
@@ -66,7 +48,7 @@ function buildStats(producer: (key: StatKey) => number): PlayerStats {
 
 function generatePotential(tier: QualityTier, position: OutfieldPosition): PlayerStats {
   const band = TIER_POTENTIAL_BANDS[tier];
-  const bonusKeys = new Set<StatKey>(POSITION_BONUSES[position]);
+  const bonusKeys = new Set<StatKey>(POSITION_RELEVANT_STATS[position]);
   return buildStats((key) => {
     const base = clamp(Math.round(normalSample(band.center, band.stddev)), band.min, band.max);
     return bonusKeys.has(key) ? Math.min(base + POSITION_BONUS, POTENTIAL_BONUS_CAP) : base;
