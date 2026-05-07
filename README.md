@@ -7,7 +7,8 @@ A football academy management game. You scout, sign, develop, and sell young pla
 ```
 /
 ├── apps/
-│   └── game/              The game (React + Vite + TS)
+│   ├── game/              The game (React + Vite + TS)
+│   └── landing/           The marketing landing page (React + Vite + TS)
 │       ├── src/
 │       │   ├── components/   React components
 │       │   ├── data/         Static datasets (clubs, traits, name lists)
@@ -29,10 +30,9 @@ A football academy management game. You scout, sign, develop, and sell young pla
 
 ## Planned apps (not yet built)
 
-- `apps/landing/` — marketing site / landing page.
 - `apps/api/` — backend for auth + leaderboards.
 
-When those land, anything they need to share with `apps/game` (player types, score formulas) goes into `packages/shared/`.
+When that lands, anything it needs to share with `apps/game` or `apps/landing` (player types, score formulas) goes into `packages/shared/`.
 
 ## Development setup
 
@@ -45,18 +45,21 @@ pnpm dev
 
 Open the URL printed by Vite (defaults to <http://localhost:5173>).
 
-| Command             | What it does                                        |
-| ------------------- | --------------------------------------------------- |
-| `pnpm dev`          | Start the game's dev server with HMR                |
-| `pnpm build`        | Type-check and produce a production build           |
-| `pnpm lint`         | Run ESLint over the game source                     |
-| `pnpm format`       | Format the codebase with Prettier                   |
-| `pnpm format:check` | Check formatting without writing changes            |
+| Command                | What it does                                        |
+| ---------------------- | --------------------------------------------------- |
+| `pnpm dev`             | Start the game's dev server with HMR                |
+| `pnpm dev:landing`     | Start the landing page's dev server                 |
+| `pnpm build`           | Type-check and produce a production build of the game |
+| `pnpm build:landing`   | Production build of the landing page                |
+| `pnpm lint`            | Run ESLint over the game source                     |
+| `pnpm format`          | Format the codebase with Prettier                   |
+| `pnpm format:check`    | Check formatting without writing changes            |
 
-All commands are routed through the workspace to `apps/game`. To run a script directly in the game package:
+To run a script directly in any package:
 
 ```sh
 pnpm --filter @footy-academy/game <script>
+pnpm --filter @footy-academy/landing <script>
 ```
 
 ### Stack

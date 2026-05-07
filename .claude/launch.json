@@ -10,6 +10,16 @@
       ],
       "port": 5173,
       "autoPort": true
+    },
+    {
+      "name": "landing",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "pnpm --filter @footy-academy/landing exec vite --port $PORT --strictPort"
+      ],
+      "port": 5180,
+      "autoPort": true
     }
   ]
 }
