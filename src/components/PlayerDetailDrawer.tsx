@@ -139,7 +139,7 @@ export default function PlayerDetailDrawer({
                         </Chip>
                       </>
                     ) : null}
-                    {(player.monthsOnRoster ?? 0) >= 24 ? (
+                    {(player.monthsOnRoster ?? 0) >= 96 ? (
                       <>
                         <span className="text-ink-faint">·</span>
                         <Chip tone="accent">veteran</Chip>

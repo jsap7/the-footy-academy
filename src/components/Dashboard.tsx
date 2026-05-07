@@ -2,7 +2,8 @@ import { monthlyBurn, monthlyNet, MONTHLY_BASE_INCOME } from '../game/finance';
 import { averagePotential } from '../game/playerStats';
 import { calculateStipend } from '../game/stipends';
 import type { GameState, Offer } from '../types';
-import { formatCash, formatMonth } from '../util/format';
+import { formatCash, formatWeek } from '../util/format';
+import { useCountUp } from '../util/useCountUp';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
 import Chip from '../ui/Chip';
@@ -88,6 +89,7 @@ export default function Dashboard({
 }: Props) {
   const burn = monthlyBurn(state);
   const net = monthlyNet(state);
+  const animatedCash = useCountUp(state.cash);
   const totalStipends = state.roster.reduce(
     (s, p) => s + calculateStipend(p, state.currentYear),
     0,
@@ -114,15 +116,19 @@ export default function Dashboard({
           <div className="flex items-end justify-between gap-6 px-8 pt-8">
             <HeroNumber
               label="cash on hand"
-              value={formatCash(state.cash)}
+              value={formatCash(Math.round(animatedCash))}
               tone={state.cash <= 0 ? 'warn' : undefined}
             />
             <div className="flex flex-col items-end gap-2 pb-2">
               <span className="text-[11px] uppercase tracking-[0.14em] text-ink-dim">
-                {formatMonth(state.currentMonth, state.currentYear).toLowerCase()}
+                {formatWeek(
+                  state.currentMonth,
+                  state.currentWeek,
+                  state.currentYear,
+                ).toLowerCase()}
               </span>
               <Button variant="hero" size="lg" onClick={onAdvanceMonth} hint="N">
-                next month →
+                next week →
               </Button>
             </div>
           </div>
@@ -151,10 +157,10 @@ export default function Dashboard({
         <Card className="col-span-12 lg:col-span-4 flex flex-col gap-5">
           <div className="flex items-baseline justify-between">
             <span className="text-[11px] uppercase tracking-[0.14em] text-ink-dim">
-              cash · last 12 months
+              cash · last 52 weeks
             </span>
             <span className="text-[11px] tabular-nums text-ink-dim">
-              {state.cashHistory.length} {state.cashHistory.length === 1 ? 'month' : 'months'}
+              {state.cashHistory.length} {state.cashHistory.length === 1 ? 'week' : 'weeks'}
             </span>
           </div>
           <Sparkline
@@ -313,16 +319,20 @@ export default function Dashboard({
       {/* Recent activity */}
       <div className="mt-10">
         <div className="mb-4 flex items-baseline gap-3">
-          <span className="text-[11px] uppercase tracking-[0.14em] text-ink-dim">last month</span>
+          <span className="text-[11px] uppercase tracking-[0.14em] text-ink-dim">last week</span>
           <span className="text-[11px] tabular-nums text-ink-faint">
-            {formatMonth(state.currentMonth, state.currentYear).toLowerCase()}
+            {formatWeek(
+              state.currentMonth,
+              state.currentWeek,
+              state.currentYear,
+            ).toLowerCase()}
           </span>
         </div>
         <Card padded={false}>
           {state.recentSales.length + state.recentBirthdays.length + state.recentReleases.length ===
           0 ? (
             <div className="px-8 py-10 text-center text-[12px] text-ink-dim font-body">
-              nothing happened last month. click next month to advance the calendar.
+              nothing happened last week. click next week to advance the calendar.
             </div>
           ) : (
             <ul className="divide-y divide-hairline">

@@ -27,7 +27,9 @@ export default function ShortlistItem({
 }: Props) {
   const player = entry.player;
   const cantAfford = cash < entry.signingFee;
-  const expiresUrgent = entry.monthsRemaining <= 1;
+  // monthsRemaining ticks per week; the field name is preserved for save
+  // compat. 12 entries ≈ 3 months total shelf life.
+  const expiresUrgent = entry.monthsRemaining <= 4;
 
   return (
     <div
@@ -56,7 +58,7 @@ export default function ShortlistItem({
       <span className="text-right tabular-nums text-ink-dim">{player.traits.length}</span>
       <span className="truncate text-[12px] text-ink-mid">found by {scoutName}</span>
       <span className={`text-right tabular-nums ${expiresUrgent ? 'text-warn' : 'text-ink-mid'}`}>
-        {entry.monthsRemaining}mo left
+        {entry.monthsRemaining}w left
       </span>
       <span className="text-right tabular-nums text-ink">{formatCash(entry.signingFee)}</span>
       <span className="flex justify-end gap-1.5">

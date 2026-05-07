@@ -3,14 +3,15 @@ import type { BirthdayEvent, GameState, Player, ReleaseEvent } from '../types';
 // Auto-release age. Players who hit this age leave the academy for free.
 export const RELEASE_AGE = 22;
 
-// Run after the calendar has advanced. Any roster player whose birthMonth
-// matches the (already-incremented) currentMonth ages up. Returns the new
-// roster + a list of birthday events for the UI banner.
+// Run after the calendar has advanced. Birthdays fire on W1 of the player's
+// birthMonth so each player ages up exactly once per year, regardless of
+// the weekly cadence. Returns the new roster + birthday events.
 export function processBirthdays(state: GameState): {
   updatedRoster: Player[];
   birthdayEvents: BirthdayEvent[];
 } {
   const events: BirthdayEvent[] = [];
+  if (state.currentWeek !== 1) return { updatedRoster: [...state.roster], birthdayEvents: events };
   const updatedRoster = state.roster.map((player) => {
     if (player.birthMonth !== state.currentMonth) return player;
     const newAge = player.age + 1;

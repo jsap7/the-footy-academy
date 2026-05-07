@@ -57,7 +57,8 @@ export function computeMarketValue(player: Player): number {
   const ageFactor = computeAgeFactor(player.age);
   const tierPremium = TIER_PREMIUM[player.qualityTier];
   const teamMult = player.nationalTeam ? NATIONAL_TEAM_MV_MULT[player.nationalTeam] : 1;
-  const veteranMult = (player.monthsOnRoster ?? 0) >= 24 ? 1.15 : 1;
+  // 96 weeks ≈ 24 months — same threshold the dev-rate multiplier uses.
+  const veteranMult = (player.monthsOnRoster ?? 0) >= 96 ? 1.15 : 1;
   return Math.round(baseValue * ratingBoost * ageFactor * tierPremium * teamMult * veteranMult);
 }
 

@@ -1,7 +1,7 @@
 import type { GameState } from '../types';
 
-export const SAVE_KEY = 'footy:save:v1';
-export const SAVE_VERSION = 1;
+export const SAVE_KEY = 'footy:save:v2';
+export const SAVE_VERSION = 2;
 
 export type SavedGame = {
   saveVersion: number;

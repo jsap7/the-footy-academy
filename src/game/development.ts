@@ -1,6 +1,10 @@
 import { ALL_STAT_KEYS, type Player, type PlayerStats, type StatKey } from '../types';
 
-const BASE_RATE = 0.7; // average points per stat per month before modifiers
+// Average points per stat per WEEK before modifiers. Scaled from the
+// monthly 0.7 by /4 so the annual development envelope stays the same.
+// developmentResidual carries sub-1.0 fractional progress between weeks so
+// trait multipliers still compound correctly.
+const BASE_RATE = 0.175;
 
 // Peaks 13-17, drops sharply after 19. 22+ are released so we never see them
 // here, but the curve floors at 0 for safety.
@@ -49,8 +53,8 @@ export function developPlayer(
   updated: Player;
   gainsByStat: Partial<Record<StatKey, number>>;
 } {
-  // FOOTY-83: veterans (24+ months on roster) get a flat +10% dev rate.
-  const veteranDevMult = (player.monthsOnRoster ?? 0) >= 24 ? 1.1 : 1;
+  // FOOTY-83: veterans (96+ weeks on roster, ≈24 months) get +10% dev rate.
+  const veteranDevMult = (player.monthsOnRoster ?? 0) >= 96 ? 1.1 : 1;
   const effectiveFacilityMult = facilityMultiplier * veteranDevMult;
   const newCurrent: PlayerStats = { ...player.stats.current };
   const newResidual: Partial<Record<StatKey, number>> = {};

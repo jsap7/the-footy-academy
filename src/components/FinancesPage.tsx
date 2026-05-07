@@ -98,7 +98,7 @@ export default function FinancesPage({ state }: Props) {
       <Card>
         <div className="mb-4 flex items-baseline justify-between">
           <span className="text-[11px] uppercase tracking-[0.14em] text-ink-dim">
-            cash · last 12 months
+            cash · last 52 weeks
           </span>
           <span className="text-[11px] tabular-nums text-ink-faint">
             {state.cashHistory.length} entr{state.cashHistory.length === 1 ? 'y' : 'ies'}

@@ -21,8 +21,15 @@ import type { ShortlistEntry } from './shortlist';
 
 export type GameState = {
   cash: number;
+  // Weekly cadence — game advances one week per turn. 4 weeks per month flat,
+  // no ISO weeks. W4 → W1 of the next month, Dec W4 → Jan W1 of next year.
+  currentWeek: 1 | 2 | 3 | 4;
   currentMonth: number; // 1-12
   currentYear: number;
+  // Year of the most recent yearly review modal — guards against the modal
+  // re-firing four times during January (since the review now triggers on
+  // Jan W1 only).
+  lastYearlyReviewYear?: number;
 
   scouts: Scout[];
   scoutMarket: Scout[];
@@ -69,7 +76,8 @@ export type GameState = {
 
 export const INITIAL_GAME_STATE: GameState = {
   cash: 100_000,
-  currentMonth: 1, // January — aligns with INFLATION_BASE_YEAR + first review at turn 12
+  currentWeek: 1,
+  currentMonth: 1, // January — aligns with INFLATION_BASE_YEAR; first review fires Jan W1 of next year
   currentYear: 2026,
   scouts: [],
   scoutMarket: generateScoutMarket(),
@@ -80,7 +88,9 @@ export const INITIAL_GAME_STATE: GameState = {
   completedSales: [],
   facilityTier: 1,
   facilityGraceMonthsRemaining: 0,
+  // Seed entry — extended below to 52 trailing weeks each turn.
   cashHistory: [{ month: 1, year: 2026, cash: 100_000 }],
+  lastYearlyReviewYear: undefined,
   transactions: [],
   achievements: buildInitialAchievements(),
   recentBirthdays: [],

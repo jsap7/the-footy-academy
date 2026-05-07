@@ -38,7 +38,7 @@ export default function ScoutsPage({ state, onChange }: Props) {
           count={state.scoutMarket.length}
           right={
             <span className="text-[11px] uppercase tracking-[0.10em] text-ink-dim">
-              refreshes monthly · first salary at month-end
+              refreshes monthly · weekly salary deducted each turn
             </span>
           }
         />

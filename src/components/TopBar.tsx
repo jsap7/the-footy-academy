@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import { formatCash, formatMonth } from '../util/format';
+import { formatCash, formatWeek } from '../util/format';
+import { useCountUp } from '../util/useCountUp';
 import Button from '../ui/Button';
 
 type Tab = {
@@ -10,6 +11,7 @@ type Tab = {
 
 type Props = {
   cash: number;
+  week: number;
   month: number;
   year: number;
   reputation?: number;
@@ -76,6 +78,7 @@ function HudBlock({
 
 export default function TopBar({
   cash,
+  week,
   month,
   year,
   reputation,
@@ -86,6 +89,7 @@ export default function TopBar({
   saveMenu,
 }: Props) {
   const cashTone: 'good' | 'warn' | undefined = cash <= 0 ? 'warn' : undefined;
+  const animatedCash = useCountUp(cash);
   return (
     <header className="flex h-16 shrink-0 items-stretch border-b border-hairline bg-bg px-6">
       <div className="flex shrink-0 items-center gap-8">
@@ -105,8 +109,8 @@ export default function TopBar({
       </nav>
       <div className="ml-auto flex shrink-0 items-center gap-7">
         {reputation != null ? <HudBlock label="Rep" value={reputation} /> : null}
-        <HudBlock label="Cash" value={formatCash(cash)} tone={cashTone} />
-        <HudBlock label="Month" value={formatMonth(month, year).toLowerCase()} />
+        <HudBlock label="Cash" value={formatCash(Math.round(animatedCash))} tone={cashTone} />
+        <HudBlock label="Week" value={formatWeek(month, week, year).toLowerCase()} />
         {saveMenu}
         <Button
           variant="hero"
@@ -115,7 +119,7 @@ export default function TopBar({
           hint="N"
           className="whitespace-nowrap"
         >
-          next month →
+          next week →
         </Button>
       </div>
     </header>

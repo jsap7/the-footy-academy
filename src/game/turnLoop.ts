@@ -2,7 +2,11 @@ import { detectNewlyUnlocked, stampUnlocked } from './achievements';
 import { processBirthdays, processReleases } from './aging';
 import { developPlayer } from './development';
 import { allowedScoutLevelsForTier, getCurrentFacility, getPrevFacilityTier } from './facilities';
-import { MONTHLY_BASE_INCOME, currentOperatingCosts } from './finance';
+import {
+  WEEKLY_BASE_INCOME,
+  WEEKS_PER_MONTH,
+  currentWeeklyOperatingCosts,
+} from './finance';
 import { applyInflation } from './inflation';
 import { computeMarketValue } from './marketValue';
 import {
@@ -32,25 +36,36 @@ import type {
   Scout,
 } from '../types';
 
-const GRACE_PERIOD_MONTHS = 2;
+// 8 weeks = the old 2 months. Auto-downgrade tolerance under the weekly clock.
+const GRACE_PERIOD_WEEKS = 8;
 
-// Phase 3 turn loop. Order is locked. Returns a NEW GameState.
+// Weekly turn loop. Order is locked. Returns a NEW GameState.
 export function advanceMonth(state: GameState): GameState {
-  // 1. Advance calendar
-  let currentMonth = state.currentMonth + 1;
+  // 1. Advance calendar — week first, then month if W4 → W1, then year.
+  let currentWeek = state.currentWeek + 1;
+  let currentMonth = state.currentMonth;
   let currentYear = state.currentYear;
-  if (currentMonth > 12) {
-    currentMonth = 1;
-    currentYear += 1;
+  if (currentWeek > 4) {
+    currentWeek = 1;
+    currentMonth += 1;
+    if (currentMonth > 12) {
+      currentMonth = 1;
+      currentYear += 1;
+    }
   }
+  const isFirstWeekOfMonth = currentWeek === 1;
 
-  // 2a. Birthdays (BEFORE development so a 13yo who turns 14 develops as 14).
-  const stateAfterCalendar: GameState = { ...state, currentMonth, currentYear };
+  // 2a. Birthdays — only fire on W1 of birthMonth so each player ages once
+  // per year regardless of weekly cadence. (BEFORE development so a 13yo who
+  // turns 14 develops as 14.)
+  const stateAfterCalendar: GameState = { ...state, currentWeek, currentMonth, currentYear };
   const { updatedRoster: rosterAfterBirthdays, birthdayEvents } =
     processBirthdays(stateAfterCalendar);
-  // 2b. Releases — anyone who just hit 22 leaves the academy.
-  const { updatedRoster: rosterAfterReleases, releaseEvents } =
-    processReleases(rosterAfterBirthdays);
+  // 2b. Releases — anyone who just hit 22 leaves the academy. Only fires on
+  // W1 of birthMonth via processBirthdays so the release tick aligns.
+  const { updatedRoster: rosterAfterReleases, releaseEvents } = isFirstWeekOfMonth
+    ? processReleases(rosterAfterBirthdays)
+    : { updatedRoster: rosterAfterBirthdays, releaseEvents: [] };
 
   // 2c. Development — every roster player ticks up a little. Facility tier
   // applies a flat multiplier to every gain (1.0× at Backyard Pitch up to
@@ -84,15 +99,15 @@ export function advanceMonth(state: GameState): GameState {
   const recentNationalTeamCallups: NationalTeamCallupEvent[] = nationalTeamResult.callups;
   const recentNationalTeamDrops: NationalTeamDropEvent[] = nationalTeamResult.drops;
 
-  // 2e. Increment monthsOnRoster and detect veteran-threshold crossings.
-  // FOOTY-83: 24+ months unlocks the Veteran badge — applied to dev rate
-  // (development.ts) and MV (marketValue.ts). One-time crossing event
-  // surfaces in the banner.
+  // 2e. Increment weeksOnRoster (stored in `monthsOnRoster` for save compat)
+  // and detect veteran-threshold crossings. 96 weeks ≈ 24 months unlocks the
+  // Veteran badge — applied to dev rate (development.ts) and MV
+  // (marketValue.ts). One-time crossing event surfaces in the banner.
   const recentVeterans: { playerId: string; playerName: string }[] = [];
   const rosterAfterDevelopment = rosterAfterCallups.map((developed) => {
-    const wasVeteran = (developed.monthsOnRoster ?? 0) >= 24;
+    const wasVeteran = (developed.monthsOnRoster ?? 0) >= 96;
     const monthsOnRoster = (developed.monthsOnRoster ?? 0) + 1;
-    const isVeteran = monthsOnRoster >= 24;
+    const isVeteran = monthsOnRoster >= 96;
     if (!wasVeteran && isVeteran) {
       recentVeterans.push({
         playerId: developed.id,
@@ -109,9 +124,9 @@ export function advanceMonth(state: GameState): GameState {
     return { ...withMonths, mvHistory };
   });
 
-  // 3. Add monthly base income, deduct operating cost floor.
-  let cash = state.cash + MONTHLY_BASE_INCOME;
-  cash -= currentOperatingCosts(stateAfterCalendar);
+  // 3. Add weekly base income, deduct weekly operating floor.
+  let cash = state.cash + WEEKLY_BASE_INCOME;
+  cash -= currentWeeklyOperatingCosts(stateAfterCalendar);
 
   // 4. Each hired scout finds 1 player → goes to shortlist (BEFORE tick).
   const findsState: GameState = { ...stateAfterCalendar, roster: rosterAfterDevelopment };
@@ -142,54 +157,55 @@ export function advanceMonth(state: GameState): GameState {
   });
   const pendingOffers = [...offersAfterTick, ...newOffers];
 
-  // 7. Deduct facility monthly cost (inflated, €0 at Backyard up to €1M+ at World-Class).
+  // 7. Deduct facility weekly cost (inflated monthly cost / 4).
   const facilityMonthly = applyInflation(facility.monthlyCost, currentYear);
-  cash -= facilityMonthly;
+  const facilityWeekly = Math.round(facilityMonthly / WEEKS_PER_MONTH);
+  cash -= facilityWeekly;
 
-  // 8. Deduct scout salaries (everyone currently hired). Salaries are stamped
-  // onto the scout at hire time so existing hires are grandfathered.
+  // 8. Deduct weekly scout salaries (everyone currently hired). Salaries are
+  // stamped onto the scout at hire time as a monthly figure; we quarter at
+  // use-time so the per-week deduction stays consistent.
   let scoutSalariesTotal = 0;
   for (const scout of state.scouts) {
-    cash -= scout.monthlySalary;
-    scoutSalariesTotal += scout.monthlySalary;
+    const weekly = Math.round(scout.monthlySalary / WEEKS_PER_MONTH);
+    cash -= weekly;
+    scoutSalariesTotal += weekly;
   }
 
-  // 9. Deduct player stipends (post-aging, post-sale roster, with 20-21 squeeze).
+  // 9. Deduct player stipends — quartered to per-week.
   let stipendsTotal = 0;
   for (const player of rosterAfterSales) {
-    const s = calculateStipend(player, currentYear);
-    cash -= s;
-    stipendsTotal += s;
+    const weekly = Math.round(calculateStipend(player, currentYear) / WEEKS_PER_MONTH);
+    cash -= weekly;
+    stipendsTotal += weekly;
   }
 
-  // 9a. National team sponsorship income — applied AFTER deductions so the
-  // Finances tab shows it landing as a clean inflow rather than netting
-  // against a single line.
+  // 9a. National team sponsorship income (weekly slice).
   const sponsorshipBreakdown: Record<string, number> = {};
   let sponsorshipIncome = 0;
   for (const player of rosterAfterSales) {
     if (!player.nationalTeam) continue;
     const monthly = applyInflation(SPONSORSHIP_BY_TIER[player.nationalTeam], currentYear);
-    sponsorshipIncome += monthly;
+    const weekly = Math.round(monthly / WEEKS_PER_MONTH);
+    sponsorshipIncome += weekly;
     sponsorshipBreakdown[player.nationalTeam] =
       (sponsorshipBreakdown[player.nationalTeam] ?? 0) + 1;
   }
   cash += sponsorshipIncome;
 
-  // 9b. Income credit (the +base income from earlier was already applied; we
-  // record the aggregate burn here as one transaction so the Finances tab
-  // can show "monthly burn -€X" per month rather than four lines).
-  const operatingThisMonth = currentOperatingCosts(stateAfterCalendar);
-  const monthlyBurnAggregate =
-    operatingThisMonth + facilityMonthly + scoutSalariesTotal + stipendsTotal;
+  // 9b. Aggregate weekly burn into a single transaction so the Finances tab
+  // doesn't pile up four lines per week.
+  const operatingThisWeek = currentWeeklyOperatingCosts(stateAfterCalendar);
+  const weeklyBurnAggregate =
+    operatingThisWeek + facilityWeekly + scoutSalariesTotal + stipendsTotal;
   let transactions = state.transactions;
-  if (monthlyBurnAggregate > 0) {
+  if (weeklyBurnAggregate > 0) {
     transactions = appendTransaction(
       { ...stateAfterCalendar, transactions },
       {
         type: 'monthly_burn',
-        description: `Monthly burn (operating ${formatCash(operatingThisMonth)}, facility ${formatCash(facilityMonthly)}, scouts ${formatCash(scoutSalariesTotal)}, stipends ${formatCash(stipendsTotal)})`,
-        amount: -monthlyBurnAggregate,
+        description: `Weekly burn (operating ${formatCash(operatingThisWeek)}, facility ${formatCash(facilityWeekly)}, scouts ${formatCash(scoutSalariesTotal)}, stipends ${formatCash(stipendsTotal)})`,
+        amount: -weeklyBurnAggregate,
       },
     );
   }
@@ -235,7 +251,7 @@ export function advanceMonth(state: GameState): GameState {
 
   if (cash < 0 && facilityTier > 1) {
     facilityGraceMonthsRemaining += 1;
-    if (facilityGraceMonthsRemaining >= GRACE_PERIOD_MONTHS) {
+    if (facilityGraceMonthsRemaining >= GRACE_PERIOD_WEEKS) {
       const prevTier = getPrevFacilityTier(facilityTier);
       if (prevTier != null) {
         const fromTier = facilityTier;
@@ -261,16 +277,18 @@ export function advanceMonth(state: GameState): GameState {
     facilityGraceMonthsRemaining = 0;
   }
 
-  // 11. Refresh scout market — anything you didn't hire is gone. New tier may
-  // open higher levels; downgrades close them. currentYear is threaded
-  // through so 2030 hires book inflated salaries.
-  const scoutMarket = generateScoutMarket(facilityTier, currentYear);
+  // 11. Refresh scout market — only on W1 so the cadence stays "new market
+  // each month" rather than refreshing 4× as fast under weekly turns. New
+  // tier may open higher levels; downgrades close them.
+  const scoutMarket = isFirstWeekOfMonth
+    ? generateScoutMarket(facilityTier, currentYear)
+    : state.scoutMarket;
 
-  // Track end-of-month cash for the dashboard sparkline (trailing 12 months).
+  // Track end-of-week cash for the dashboard sparkline (trailing 52 weeks).
   const cashHistory = [
     ...state.cashHistory,
     { month: currentMonth, year: currentYear, cash },
-  ].slice(-12);
+  ].slice(-52);
 
   // Achievement detection runs against the fully-updated end-of-turn state
   // so all the year/sale/facility/roster signals are in place. Newly-unlocked
@@ -278,6 +296,7 @@ export function advanceMonth(state: GameState): GameState {
   // recentAchievements.
   const provisional: GameState = {
     ...state,
+    currentWeek,
     currentMonth,
     currentYear,
     cash,

@@ -69,11 +69,17 @@ export default function App() {
   const handleAdvanceMonth = () =>
     setState((prev) => {
       const next = advanceMonth(prev);
-      // Dec → Jan transition: surface a yearly review for the year that
-      // just ended. The first review fires after 12 turns from the game
-      // start (Aug 2026 → Jan 2027 reviews 2026, etc.).
-      if (prev.currentMonth === 12 && next.currentMonth === 1) {
-        setYearlyReview(computeYearlyReview(next, prev.currentYear));
+      // Yearly review fires once on Jan W1 of each year — guarded by
+      // lastYearlyReviewYear so the Jan W2/W3/W4 ticks don't re-trigger.
+      const reviewYear = next.currentYear - 1;
+      if (
+        next.currentMonth === 1 &&
+        next.currentWeek === 1 &&
+        next.lastYearlyReviewYear !== reviewYear &&
+        reviewYear >= 2026
+      ) {
+        setYearlyReview(computeYearlyReview(next, reviewYear));
+        return { ...next, lastYearlyReviewYear: reviewYear };
       }
       return next;
     });
@@ -118,6 +124,7 @@ export default function App() {
     <div className="flex h-full flex-col bg-bg text-ink">
       <TopBar
         cash={state.cash}
+        week={state.currentWeek}
         month={state.currentMonth}
         year={state.currentYear}
         reputation={computeReputation(state)}
@@ -187,8 +194,8 @@ export default function App() {
       <StatusBar
         hints={
           selectedPlayer
-            ? '[N] next month · [ESC] close drawer'
-            : '[N] next month · click any player to drill in'
+            ? '[N] next week · [ESC] close drawer'
+            : '[N] next week · click any player to drill in'
         }
       />
       <PlayerDetailDrawer

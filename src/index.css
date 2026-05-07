@@ -104,3 +104,60 @@ table {
 *::-webkit-scrollbar-thumb:hover {
   background: var(--color-ink-faint);
 }
+
+/* Stat-tick animations. Triggered when a stat's gain badge appears or its
+   number changes — re-keying the element on gain restarts the animation
+   each turn. Kept subtle: 300-400ms, ease-out, no rotations. */
+@keyframes stat-gain-pulse {
+  0% {
+    opacity: 0;
+    transform: translateY(2px) scale(0.92);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(0) scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes stat-value-flash {
+  0% {
+    background-color: color-mix(in oklch, var(--color-accent) 35%, transparent);
+    transform: scale(1.08);
+  }
+  100% {
+    background-color: transparent;
+    transform: scale(1);
+  }
+}
+
+.animate-stat-gain {
+  animation: stat-gain-pulse 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.animate-stat-flash {
+  animation: stat-value-flash 360ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Event-banner streaming. Each event's --stagger custom property delays its
+   fade-in so a turn with several events trickles in instead of popping all
+   at once. Cap is enforced in EventBanner; the CSS just animates whatever
+   stagger it's given. */
+@keyframes banner-event-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-banner-event {
+  animation: banner-event-in 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--stagger, 0ms);
+}

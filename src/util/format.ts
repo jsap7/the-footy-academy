@@ -33,3 +33,11 @@ export function formatMonth(month: number, year: number): string {
   const idx = Math.min(Math.max(month, 1), 12) - 1;
   return `${MONTH_NAMES[idx]} ${year}`;
 }
+
+// Weekly calendar format: "Jan W1 2026". Week is 1-4 (4 weeks per month, no
+// real ISO weeks — see weekly-turn rework).
+export function formatWeek(month: number, week: number, year: number): string {
+  const idx = Math.min(Math.max(month, 1), 12) - 1;
+  const w = Math.min(Math.max(week, 1), 4);
+  return `${MONTH_NAMES[idx]} W${w} ${year}`;
+}

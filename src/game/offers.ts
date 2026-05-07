@@ -1,7 +1,13 @@
 import { computeBuyerPerceivedValue } from './marketValue';
 import type { Club, ClubTier, GameState, Offer, Player, QualityTier, SaleEvent } from '../types';
 
-export const OFFER_LIFESPAN_TURNS = 3;
+// 12 turns ≈ 3 months under the weekly cadence. Preserves the same offer
+// shelf-life that monthly turns gave us.
+export const OFFER_LIFESPAN_TURNS = 12;
+
+// Per-week scaling factor on the originally monthly offer-chance constants.
+// Compounds correctly over 4 weeks back toward the old monthly rates.
+const WEEKLY_OFFER_CHANCE_DIV = 4;
 
 // FIFA-style: international transfers locked for under-16s. We surface this
 // as a hard rule in offer generation + the selling UI so the user makes a
@@ -51,7 +57,10 @@ function computeOfferChance(player: Player): number {
   const ageMult = OFFER_AGE_MULTIPLIER[player.age] ?? 0;
   const availMult = player.availableForSale ? AVAILABLE_FOR_SALE_BOOST : 1.0;
   const listedMult = player.askingPrice != null ? ASKING_PRICE_BOOST : 1.0;
-  return Math.min(MAX_OFFER_CHANCE, visible * ageMult * availMult * listedMult);
+  const monthlyChance = Math.min(MAX_OFFER_CHANCE, visible * ageMult * availMult * listedMult);
+  // Scale to per-week. Compounds back to roughly the old monthly rate over
+  // 4 weeks (1 - (1 - p/4)^4 ≈ p for the small p values we deal with here).
+  return monthlyChance / WEEKLY_OFFER_CHANCE_DIV;
 }
 
 function pickClubForPlayer(player: Player, clubs: readonly Club[]): Club | undefined {
