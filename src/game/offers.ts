@@ -1,3 +1,4 @@
+import { runOfferFrequencyMultiplier } from './buffs';
 import { computeBuyerPerceivedValue } from './marketValue';
 import type { Club, ClubTier, GameState, Offer, Player, QualityTier, SaleEvent } from '../types';
 
@@ -81,16 +82,17 @@ function pickClubForPlayer(player: Player, clubs: readonly Club[]): Club | undef
 // offers don't block new ones — multiple clubs can bid in the same window.
 export function generateOffersForTurn(state: GameState): Offer[] {
   const newOffers: Offer[] = [];
+  const offerFreqMult = runOfferFrequencyMultiplier(state);
   for (const player of state.roster) {
     if (player.age < MINIMUM_TRANSFER_AGE) continue;
     if (player.blockOffers) continue;
-    const chance = computeOfferChance(player);
+    const chance = Math.min(MAX_OFFER_CHANCE, computeOfferChance(player) * offerFreqMult);
     if (chance <= 0) continue;
     if (Math.random() >= chance) continue;
     const club = pickClubForPlayer(player, state.clubs);
     if (!club) continue;
 
-    const perceived = computeBuyerPerceivedValue(player, club);
+    const perceived = computeBuyerPerceivedValue(player, club, state);
     let amount = perceived;
     let status: 'pending' | 'accepted' = 'pending';
 

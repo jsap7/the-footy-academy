@@ -1,4 +1,5 @@
 import { countUnlocked } from './achievements';
+import { runReputationBonus } from './buffs';
 import type { GameState } from '../types';
 
 export type ReputationBreakdown = {
@@ -29,7 +30,11 @@ export function computeReputationBreakdown(state: GameState): ReputationBreakdow
   const fromYears = Math.min(20, yearsOperating * 2);
   const fromAchievements = Math.min(30, countUnlocked(state.achievements) * 1.5);
   const fromFacility = (state.facilityTier - 1) * 5;
-  const total = Math.min(100, Math.round(fromSales + fromYears + fromAchievements + fromFacility));
+  const yearlyRepBoost = runReputationBonus(state);
+  const total = Math.min(
+    100,
+    Math.round(fromSales + fromYears + fromAchievements + fromFacility) + yearlyRepBoost,
+  );
   return {
     total,
     fromSales: Math.round(fromSales * 10) / 10,

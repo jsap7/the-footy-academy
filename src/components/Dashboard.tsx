@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { GameState } from '../types';
 import AchievementsPage from './AchievementsPage';
+import ChallengeProgressWidget from './ChallengeProgressWidget';
 import FinancesPage from './FinancesPage';
 import FacilityCard from './FacilityCard';
 import CompactAchievements from './dashboard/CompactAchievements';
@@ -36,7 +37,7 @@ export default function Dashboard({
 
   return (
     <div className="mx-auto flex h-full w-full max-w-[1280px] flex-col gap-3 px-6 py-4">
-      {/* TODO: Phase 6 challenge widget goes here */}
+      {state.currentChallenge ? <ChallengeProgressWidget state={state} /> : null}
 
       <HeroStrip state={state} />
 

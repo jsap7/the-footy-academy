@@ -18,6 +18,13 @@ import type { Offer, SaleEvent } from './offer';
 import type { Player } from './player';
 import type { Scout } from './scout';
 import type { ShortlistEntry } from './shortlist';
+import type {
+  ActiveChallenge,
+  ChallengeTokens,
+  CompletedRun,
+  PermanentBuff,
+  YearlyBuff,
+} from './season';
 
 export type GameState = {
   cash: number;
@@ -72,6 +79,44 @@ export type GameState = {
   // Players that crossed the 24-month threshold this turn — drives a one-
   // time event banner ("Cillian Kareem is now a Veteran of the academy").
   recentVeterans: { playerId: string; playerName: string }[];
+
+  // ----- Phase 6: The Season -----
+  // The active Board Expectation challenge for the current year. Null
+  // before Jan W1 of year 1 (the modal hasn't fired yet) or between a
+  // year-end pass and the next year's draw.
+  currentChallenge: ActiveChallenge | null;
+  // True once the user has picked a challenge for the current calendar
+  // year. Reset to false on Jan W1 transition so the modal fires once
+  // per year. Initialized true once we've stamped year 1's draw.
+  hasPickedChallengeThisYear: boolean;
+  // Buffs from prior reward picks — permanent buffs persist for the run,
+  // yearly buffs reset on the Jan W1 transition.
+  permanentBuffs: PermanentBuff[];
+  yearlyBuffs: YearlyBuff[];
+  // Tokens — currently just challengeSkip. When > 0, year-end challenge
+  // check auto-passes and decrements the count.
+  tokens: ChallengeTokens;
+  // History of finished runs (this run's predecessors). Append-only;
+  // survives a Start New Run reset so the user can see how many runs
+  // they've taken.
+  runHistory: CompletedRun[];
+  // Peak metrics for the current run — used for the Game Over summary.
+  // Updated by the turn loop.
+  runPeakCash: number;
+  runPeakRep: number;
+  runYearStarted: number;
+  // Set when the year-end check fails. Drives the GameOverModal. Cleared
+  // by Start New Run.
+  gameOver: {
+    reason: 'bankruptcy' | 'challenge_failed';
+    failedChallengeTitle?: string;
+  } | null;
+  // When set, the dashboard shows the reward-pick modal. Cleared once
+  // the user picks one.
+  pendingRewardOptions: import('./season').RewardOffer[] | null;
+  // When set, the year-start modal shows these challenge cards for the
+  // user to pick. Cleared on pick.
+  pendingChallengeOptions: ActiveChallenge[] | null;
 };
 
 export const INITIAL_GAME_STATE: GameState = {
@@ -103,4 +148,16 @@ export const INITIAL_GAME_STATE: GameState = {
   recentNationalTeamCallups: [],
   recentNationalTeamDrops: [],
   recentVeterans: [],
+  currentChallenge: null,
+  hasPickedChallengeThisYear: false,
+  permanentBuffs: [],
+  yearlyBuffs: [],
+  tokens: { challengeSkip: 0 },
+  runHistory: [],
+  runPeakCash: 100_000,
+  runPeakRep: 0,
+  runYearStarted: 2026,
+  gameOver: null,
+  pendingRewardOptions: null,
+  pendingChallengeOptions: null,
 };
