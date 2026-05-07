@@ -10,10 +10,7 @@ import {
   type SaleEvent,
 } from '../types';
 import type { StatMilestoneEvent } from '../game/statMilestones';
-import type {
-  NationalTeamCallupEvent,
-  NationalTeamDropEvent,
-} from '../game/nationalTeams';
+import type { NationalTeamCallupEvent, NationalTeamDropEvent } from '../game/nationalTeams';
 
 const ACHIEVEMENT_TITLE = new Map(ACHIEVEMENT_DEFINITIONS.map((d) => [d.id, d.title]));
 import { formatCash } from '../util/format';

@@ -1,9 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import {
-  clearLocalStorage,
-  exportSaveAsJSON,
-  parseImportedSave,
-} from '../game/save';
+import { clearLocalStorage, exportSaveAsJSON, parseImportedSave } from '../game/save';
 import type { GameState } from '../types';
 import Button from '../ui/Button';
 

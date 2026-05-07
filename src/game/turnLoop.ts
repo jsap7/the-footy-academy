@@ -169,10 +169,7 @@ export function advanceMonth(state: GameState): GameState {
   let sponsorshipIncome = 0;
   for (const player of rosterAfterSales) {
     if (!player.nationalTeam) continue;
-    const monthly = applyInflation(
-      SPONSORSHIP_BY_TIER[player.nationalTeam],
-      currentYear,
-    );
+    const monthly = applyInflation(SPONSORSHIP_BY_TIER[player.nationalTeam], currentYear);
     sponsorshipIncome += monthly;
     sponsorshipBreakdown[player.nationalTeam] =
       (sponsorshipBreakdown[player.nationalTeam] ?? 0) + 1;

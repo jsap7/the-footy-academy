@@ -47,7 +47,7 @@ Open the URL printed by Vite (defaults to <http://localhost:5173>).
 | `npm run format`       | Format the codebase with Prettier         |
 | `npm run format:check` | Check formatting without writing changes  |
 
-## What's shipped (phases 0 → 5)
+## What's shipped (phases 0 → 6)
 
 **Phase 0 — engine baseline.** `Player` data model (38 outfield stats × current/potential), English name generator, player generator, list + side-panel detail view.
 
@@ -105,16 +105,22 @@ Open the URL printed by Vite (defaults to <http://localhost:5173>).
 - Youth international call-ups: ~3% monthly chance per eligible 16-19yo with avg potential ≥ 75; 12-month cooldown; +20 to +40% MV multiplier compounded (cap 2.0); chips on banner + drawer header.
 - Loyalty bonus: 24+ months on roster unlocks the Veteran badge — dev rate +10%, MV ×1.15, "★ veteran" chip on roster row + drawer.
 
+**Phase 6 — persistence + internationals.** Sessions are now durable, achievements have a home, and developing a kid into a national team finally generates real revenue.
+
+- Save / load: localStorage auto-save on every state change with a versioned blob (`saveVersion: 1`). Top-bar Save menu with JSON export, import (refuses mismatched versions gracefully), and Reset Game (clears localStorage + reloads).
+- Achievements board: dedicated tab with the 20 achievements grouped by category (Sales / Facility / Talent / Survival / Development / Misc). Locked items show as `???` with a hint line; unlocked entries show title, description, and date. Tab badge tracks the unlock count.
+- National team membership replaces FOOTY-82's one-time callup bonus. Eligibility is gated by **current** avg rating at age (U17 from 65 at age 15-17, U18 from 72 at age 17-18, U21 from 78 at age 18-21, Senior from 84 at age 19+). Promotion is probabilistic each turn; demotion fires after 6 months below threshold. MV multiplier reflects **current** tier only — U17 ×1.10, U18 ×1.15, U21 ×1.25, Senior ×1.40 (no compounding).
+- National team sponsorship: monthly income per called-up player (U17 €2k, U18 €4k, U21 €8k, Senior €15k), inflated at use-time. New "sponsorship" transaction type with a green chip in the Finances list. Dashboard burn widget and Finances breakdown both surface the inflow when > 0.
+
 What's intentionally **not** here yet:
 
-- Multi-region scouts and players (still England only)
+- Multi-region scouts and players (still England only — sponsorship doesn't yet vary by nationality)
 - Hidden scout traits / background checks / scouting trips
 - Player visibility ranges (true stats are still shown)
 - After-sale tracking (no notifications when ex-players resell)
 - Sell-on % clauses (flat fee only)
 - Bankruptcy game over (cash can go negative; just shows red)
-- Save / load
-- Cup competitions, sponsors, dynamic income
+- Cup competitions, dynamic match income
 
 ## Keyboard shortcuts
 

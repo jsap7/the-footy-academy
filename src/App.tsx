@@ -41,9 +41,7 @@ type TabKey =
 export default function App() {
   // Hydrate from localStorage on first render — falls back to a fresh
   // initial state if nothing is saved or the version is mismatched.
-  const [state, setState] = useState<GameState>(
-    () => loadFromLocalStorage() ?? INITIAL_GAME_STATE,
-  );
+  const [state, setState] = useState<GameState>(() => loadFromLocalStorage() ?? INITIAL_GAME_STATE);
   const [activeTab, setActiveTab] = useState<TabKey>('dashboard');
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [yearlyReview, setYearlyReview] = useState<YearlyReview | null>(null);
@@ -99,9 +97,10 @@ export default function App() {
     (o) => o.status === 'pending' || o.status === 'countered',
   ).length;
 
-  const unlockedAchievements = (state.achievements ?? null)
-    ? Object.values(state.achievements).filter((a) => a?.unlockedAt).length
-    : 0;
+  const unlockedAchievements =
+    (state.achievements ?? null)
+      ? Object.values(state.achievements).filter((a) => a?.unlockedAt).length
+      : 0;
 
   const navTabs = [
     { key: 'dashboard', label: 'dashboard' },

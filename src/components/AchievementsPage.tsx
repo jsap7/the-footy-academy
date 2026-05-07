@@ -16,18 +16,16 @@ const HINT_BY_ID: Partial<Record<string, string>> = {
   // Mostly the description doubles as a hint, but a few benefit from a
   // softer reveal so the locked entry doesn't fully spoil the goal.
   first_50m_sale: 'A truly massive sale — keep developing top talent.',
-  sell_to_tier_1_club: 'A move to one of football\'s biggest clubs.',
+  sell_to_tier_1_club: "A move to one of football's biggest clubs.",
   develop_late_bloomer: 'Patience with a specific kind of player pays off.',
   never_went_negative_5_years: 'Stay profitable for half a decade.',
 };
 
 function categoryRows(state: GameState, category: AchievementCategory): Achievement[] {
-  return ACHIEVEMENT_DEFINITIONS.filter((d) => d.category === category).map(
-    (def) => ({
-      ...def,
-      unlockedAt: state.achievements?.[def.id]?.unlockedAt ?? null,
-    }),
-  );
+  return ACHIEVEMENT_DEFINITIONS.filter((d) => d.category === category).map((def) => ({
+    ...def,
+    unlockedAt: state.achievements?.[def.id]?.unlockedAt ?? null,
+  }));
 }
 
 function unlockedCount(rows: readonly Achievement[]): number {
@@ -49,8 +47,8 @@ export default function AchievementsPage({ state }: Props) {
           </span>
         </div>
         <p className="mt-2 text-[12px] text-ink-mid font-body">
-          milestones earned over the life of your academy. locked items are hidden — keep
-          playing to discover them.
+          milestones earned over the life of your academy. locked items are hidden — keep playing to
+          discover them.
         </p>
       </Card>
 
@@ -61,9 +59,7 @@ export default function AchievementsPage({ state }: Props) {
         return (
           <Card key={id}>
             <div className="mb-4 flex items-baseline justify-between border-b border-hairline pb-3">
-              <span className="text-[11px] uppercase tracking-[0.14em] text-ink-dim">
-                {label}
-              </span>
+              <span className="text-[11px] uppercase tracking-[0.14em] text-ink-dim">{label}</span>
               <span className="text-[11px] tabular-nums text-ink-faint">
                 {got} / {rows.length}
               </span>
@@ -87,7 +83,7 @@ export default function AchievementsPage({ state }: Props) {
                       <span className="text-ink">{a.unlockedAt ? a.title : '???'}</span>
                     </div>
                     <p className="mt-1 text-[11px] text-ink-dim font-body">
-                      {a.unlockedAt ? a.description : HINT_BY_ID[a.id] ?? a.description}
+                      {a.unlockedAt ? a.description : (HINT_BY_ID[a.id] ?? a.description)}
                     </p>
                   </div>
                   <span className="text-right text-[10px] uppercase tracking-[0.10em] text-ink-faint">

@@ -20,7 +20,6 @@ export function saveToLocalStorage(state: GameState): void {
   } catch (err) {
     // Quota exceeded or storage disabled — fail silently. The user's session
     // continues; they just won't have a save until next state change.
-    // eslint-disable-next-line no-console
     console.warn('[save] failed to write to localStorage', err);
   }
 }

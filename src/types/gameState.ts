@@ -12,10 +12,7 @@ import type {
   FacilityWarningEvent,
 } from './facilityEvents';
 import type { CashHistoryEntry, Transaction } from './finance';
-import type {
-  NationalTeamCallupEvent,
-  NationalTeamDropEvent,
-} from '../game/nationalTeams';
+import type { NationalTeamCallupEvent, NationalTeamDropEvent } from '../game/nationalTeams';
 import type { StatMilestoneEvent } from '../game/statMilestones';
 import type { Offer, SaleEvent } from './offer';
 import type { Player } from './player';
