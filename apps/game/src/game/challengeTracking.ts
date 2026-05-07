@@ -6,14 +6,7 @@
 // All updates are pure: returns a new ActiveChallenge or the same instance
 // when there's nothing to bump.
 
-import type {
-  ActiveChallenge,
-  Club,
-  GameState,
-  Player,
-  QualityTier,
-  SaleEvent,
-} from '../types';
+import type { ActiveChallenge, Club, GameState, Player, QualityTier, SaleEvent } from '../types';
 import { averageCurrent } from './playerStats';
 import { computeReputation } from './reputation';
 import { calculateStipend } from './stipends';
@@ -108,8 +101,7 @@ export function trackFindForChallenge(
       const findsByQuality = { ...(meta.findsByQuality ?? {}) };
       findsByQuality[k] = (findsByQuality[k] ?? 0) + 1;
       meta.findsByQuality = findsByQuality;
-      const eliteCount =
-        (findsByQuality.elite ?? 0) + (findsByQuality.generational ?? 0);
+      const eliteCount = (findsByQuality.elite ?? 0) + (findsByQuality.generational ?? 0);
       return { ...challenge, progress: eliteCount, meta };
     }
   }
@@ -182,8 +174,7 @@ export function tickChallengePerTurn(state: GameState): ActiveChallenge | null {
     }
     case 'wage_cap': {
       const stipendsW = state.roster.reduce(
-        (s, p) =>
-          s + Math.round(calculateStipend(p, state.currentYear) / WEEKS_PER_MONTH),
+        (s, p) => s + Math.round(calculateStipend(p, state.currentYear) / WEEKS_PER_MONTH),
         0,
       );
       const scoutsW = state.scouts.reduce(

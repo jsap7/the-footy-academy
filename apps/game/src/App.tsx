@@ -53,9 +53,7 @@ function freshGameState(carriedRunHistory: GameState['runHistory'] = []): GameSt
 export default function App() {
   // Hydrate from localStorage on first render — falls back to a fresh
   // initial state if nothing is saved or the version is mismatched.
-  const [state, setState] = useState<GameState>(
-    () => loadFromLocalStorage() ?? freshGameState(),
-  );
+  const [state, setState] = useState<GameState>(() => loadFromLocalStorage() ?? freshGameState());
   const [activeTab, setActiveTab] = useState<TabKey>('dashboard');
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [yearlyReview, setYearlyReview] = useState<YearlyReview | null>(null);
@@ -79,11 +77,11 @@ export default function App() {
     if (state.currentMonth !== 1 || state.currentWeek !== 1) return;
     const rosterByPlayerIdAvgCurrent: Record<string, number> = {};
     for (const p of state.roster) rosterByPlayerIdAvgCurrent[p.id] = averageCurrent(p);
-    const options = drawChallengeOptions(
-      state.currentYear,
-      state.cash,
-      rosterByPlayerIdAvgCurrent,
-    );
+    const options = drawChallengeOptions(state.currentYear, state.cash, rosterByPlayerIdAvgCurrent);
+    // The challenge auto-draw is conditional on calendar state, runs at most
+    // once per year, and pendingChallengeOptions is persisted to localStorage
+    // — useMemo isn't a viable replacement.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setState((prev) => ({ ...prev, pendingChallengeOptions: options }));
   }, [
     state.gameOver,
@@ -186,8 +184,7 @@ export default function App() {
       return { ...applied, pendingRewardOptions: null };
     });
 
-  const handleStartNewRun = () =>
-    setState((prev) => freshGameState(prev.runHistory));
+  const handleStartNewRun = () => setState((prev) => freshGameState(prev.runHistory));
 
   return (
     <div className="flex h-full flex-col bg-bg text-ink">

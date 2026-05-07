@@ -33,9 +33,7 @@ export default function RewardSelectModal({ options, year, onPick }: Props) {
           <span className="text-[11px] uppercase tracking-[0.14em] text-ink-dim">
             season cleared
           </span>
-          <h2 className="mt-1 text-[28px] leading-none text-ink">
-            {year} · pick your reward
-          </h2>
+          <h2 className="mt-1 text-[28px] leading-none text-ink">{year} · pick your reward</h2>
           <p className="mt-3 text-[12px] text-ink-mid font-body">
             three offers from the board. pick one — the others are gone.
           </p>
@@ -71,11 +69,7 @@ export default function RewardSelectModal({ options, year, onPick }: Props) {
           <span className="text-[11px] text-ink-dim font-body">
             {picked ? picked.title.toLowerCase() : 'choose one'}
           </span>
-          <Button
-            variant="hero"
-            disabled={!picked}
-            onClick={() => picked && onPick(picked.id)}
-          >
+          <Button variant="hero" disabled={!picked} onClick={() => picked && onPick(picked.id)}>
             claim →
           </Button>
         </footer>

@@ -1,138 +1,155 @@
 # The Footy Academy
 
-A football academy management game. You scout, sign, develop, and sell young players. Always one bad transfer window from going broke.
+A football academy management game. You scout, sign, develop, and sell young players. Always one bad transfer window from going broke — but every season the board hands you a challenge to clear.
 
-See the v1 Design Doc in Linear for the full vision.
-
-## Stack
-
-- [Vite](https://vite.dev/) + [React 19](https://react.dev/)
-- TypeScript (strict mode)
-- [Tailwind CSS v4](https://tailwindcss.com/) (via the official Vite plugin)
-- ESLint + Prettier
-- [Departure Mono](https://departuremono.com/) (self-hosted, retro-terminal aesthetic)
-
-## Project structure
+## Repository structure (pnpm monorepo)
 
 ```
-src/
-  components/   React components (top bar, lists, detail views, scout/shortlist/offers pages, banners)
-  data/         Static datasets (name lists, trait library, club library)
-  game/         Game logic (generators, finance, turn loop, actions, aging, development, offers, market value)
-  types/        TypeScript types (Player, Scout, Club, Offer, GameState, ...)
-  ui/           Shared UI primitives (Button, Chip, SectionHead, StatusBar)
-  util/         Small helpers (currency / date formatting)
-  App.tsx
-  main.tsx
-  index.css
+/
+├── apps/
+│   └── game/              The game (React + Vite + TS)
+│       ├── src/
+│       │   ├── components/   React components
+│       │   ├── data/         Static datasets (clubs, traits, name lists)
+│       │   ├── game/         Game logic (turn loop, finance, dev, ...)
+│       │   ├── types/        TypeScript types
+│       │   ├── ui/           Shared UI primitives
+│       │   └── util/         Helpers (format, useCountUp)
+│       ├── public/
+│       ├── scripts/          Dev-only helpers (e.g. sample-players)
+│       ├── index.html
+│       └── package.json
+├── packages/
+│   └── shared/            Empty placeholder — will hold types/utils shared
+│                          between game, landing, and api when those land.
+├── package.json           Workspace root scripts (dev / build / lint / format)
+├── pnpm-workspace.yaml
+└── tsconfig.base.json     Shared TS compiler options
 ```
 
-## Setup
+## Planned apps (not yet built)
+
+- `apps/landing/` — marketing site / landing page.
+- `apps/api/` — backend for auth + leaderboards.
+
+When those land, anything they need to share with `apps/game` (player types, score formulas) goes into `packages/shared/`.
+
+## Development setup
+
+Requires Node 20+ and pnpm 10+.
 
 ```sh
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 Open the URL printed by Vite (defaults to <http://localhost:5173>).
 
-## Scripts
+| Command             | What it does                                        |
+| ------------------- | --------------------------------------------------- |
+| `pnpm dev`          | Start the game's dev server with HMR                |
+| `pnpm build`        | Type-check and produce a production build           |
+| `pnpm lint`         | Run ESLint over the game source                     |
+| `pnpm format`       | Format the codebase with Prettier                   |
+| `pnpm format:check` | Check formatting without writing changes            |
 
-| Command                | What it does                              |
-| ---------------------- | ----------------------------------------- |
-| `npm run dev`          | Start the dev server with HMR             |
-| `npm run build`        | Type-check and produce a production build |
-| `npm run preview`      | Serve the production build locally        |
-| `npm run lint`         | Run ESLint over the codebase              |
-| `npm run format`       | Format the codebase with Prettier         |
-| `npm run format:check` | Check formatting without writing changes  |
+All commands are routed through the workspace to `apps/game`. To run a script directly in the game package:
 
-## What's shipped (phases 0 → 6)
+```sh
+pnpm --filter @footy-academy/game <script>
+```
 
-**Phase 0 — engine baseline.** `Player` data model (38 outfield stats × current/potential), English name generator, player generator, list + side-panel detail view.
+### Stack
 
-**Phase 1 — traits.** 12-trait library (5 positive, 4 negative, 3 neutral), weighted roll per player, base-stat effects applied to current and/or potential, color-coded pill UI with hover/click descriptions.
+- [Vite](https://vite.dev/) + [React 19](https://react.dev/)
+- TypeScript (strict mode, shared base config in `tsconfig.base.json`)
+- [Tailwind CSS v4](https://tailwindcss.com/) (via the official Vite plugin)
+- ESLint + Prettier
+- [Departure Mono](https://departuremono.com/) (self-hosted, retro-terminal aesthetic)
 
-**Phase 1.5 — generator overhaul.** Hidden quality tier per player (mid / good / great / elite / generational) drives stat-band rolls and trait-count weights. Position bonuses bumped to +20 on a wider relevant-stats list. Age decoupled from potential. `late_bloomer` patched to current-only so the kid reads as raw without losing his ceiling.
+## How to play
 
-**Phase 2a — bare bones loop.** Game state with cash + calendar. Scout market (5 hireable, refreshes monthly). Each hired scout surfaces 1 player per month into the shortlist, biased toward better tiers at higher scout levels. Shortlist entries expire. Sign → pays the (tier-based) fee, moves player onto the permanent roster. Roster players cost monthly stipends. "Next Month" advances the calendar.
+You run a small football academy in England. Every week you tick the calendar forward, develop your players, juggle bills, and try to sell talent before the squeeze gets you.
 
-**Phase 3 — full loop (aging + development + selling).**
+1. **Hire scouts.** Five candidates refresh in the Scouts tab every month. Higher-level scouts cost more salary but surface better tiers of player. Their level is gated by your facility tier.
+2. **Sign prospects.** Each scout finds 1 player per month — they show up on the Shortlist with a signing fee. Reject the ones you don't want; they expire after a few months otherwise. Signed players go on your permanent roster and start earning monthly stipends.
+3. **Develop them.** Roster players gain stat points every week, biased by their age curve, potential gap, and traits. Better facilities multiply development. After about 2 years on roster they hit Veteran status and develop +10% faster.
+4. **Sell them.** Clubs send unsolicited offers. Accept (instant), counter (their response next turn), or reject. Available-for-Sale doubles offer frequency; Listing with a price filters offers against the asking. Players under 16 can't be sold.
+5. **Clear the season's challenge.** Every Jan W1 the board hands you three options. Pick one and clear it by Dec W4. Clear it AND end the year in the black to pick a permanent or yearly reward; fail and the run might end.
+6. **Don't go broke for too long.** Auto-downgrade kicks in after 8 weeks underwater at any facility above tier 1. Auto-downgrade also fires the scouts your new tier can't support.
+7. **Develop kids into national teams.** Once a roster player crosses the U17/U18/U21/Senior thresholds for current rating + age, they get called up. Each tier adds an MV multiplier and a monthly sponsorship payout — that's where real revenue comes from.
 
-- Players have a `birthMonth` and age up on that month each year. Auto-released at 22. 20-21yo stipends 3×.
-- Per-turn development engine: every roster player gains a small amount on each stat, biased by age curve, potential gap, and trait dev-rate effects (`workaholic`, `lazy`, `late_bloomer`, etc. all fire here for the first time).
-- 20 real-named clubs across 5 tiers (Real Madrid, Liverpool, Aston Villa, Brighton, Leeds, …).
-- Market value engine + buyer-perceived value with ±10% noise and tier wealth ceilings.
-- Each turn, clubs may send unsolicited bids based on player quality, age, and selling state. Offers go into an inbox; you can accept (instant sale), counter (response next turn — accept / counter back / walk), or reject.
-- "Available for Sale" toggle (2× offer frequency) and "List with Price" (clubs respond yes / fair-value bid / pricey-stretch / skip based on asking vs perceived value).
-- Event banner shows birthdays, releases, and sales after each turn.
+### Keyboard shortcuts
 
-**Phase 3.5 — rebalance + QoL.** Five-year playtest surfaced a tuning gap and a bunch of UX papercuts; this phase closes them without adding new systems.
+- `[N]` — next week
+- `[ESC]` — close detail panel / modal
 
-- Market value formula rebalanced: `pot^2.5 × 100`, plus a current/potential rating boost (raw kids price lower than polished ones at the same ceiling). Generational tier premium 2.0 → 4.0 — top sales now land around €37M. Elite premium 1.4 → 1.5.
-- Development base rate 0.5 → 0.7. A 14yo signed at 50/80 reaches potential by ~19, lining up with the resale curve falling off after 19.
-- Scout tier bias overhauled. L1 scouts can never surface elite/generational, L2 caps at great. L5 elite is once every ~20 months, generational once every ~17 years (`SCOUT_LEVEL_TIER_BIAS` in `src/game/scoutFind.ts`).
-- Roster: sortable headers (`age`/`cur`/`pot`/`value`/`stipend`/`offers` with `^v` indicators), Market Value column, Offers column showing count + biggest active bid plus an accent rail on rows with active offers.
-- Per-player Block Offers toggle (kill switch — clubs stop sending bids; mutually exclusive with Available/Listed; existing bids stay so you can resolve them).
-- Shortlist rows get a Reject button alongside Sign.
-- Offers page now groups by player. Group header shows player + position + age + current/potential + market value + count + status summary + best active. Expand to see per-club sub-rows; offers within a group sort by status priority then amount desc.
-- Each offer sub-row shows a `±N% vs MV` line (green / neutral / red).
-- Counter UI rework: their bid + market value at the top, presets for +10/+20/+30/+50% and Match MV, custom field with euro preview, send disabled until the counter is above their bid and below the club's wealth ceiling × 1.5.
+## Major systems
 
-**Phase 4 — economy overhaul.** The Phase 3.5 playtest revealed you could bank €100M by 2029 starting from nothing. Phase 4 redesigns the economy around a single pillar: *the squeeze is the engine*.
+| System                | Source                                            |
+| --------------------- | ------------------------------------------------- |
+| Player generator      | `apps/game/src/game/playerGenerator.ts`           |
+| Traits library        | `apps/game/src/data/traits/library.ts`            |
+| Quality tier rolls    | `apps/game/src/game/qualityTier.ts`               |
+| Scouts (find + tier)  | `apps/game/src/game/scoutFind.ts`, `scoutMarket.ts` |
+| Shortlist             | `apps/game/src/game/shortlist.ts`                 |
+| Signing fees          | `apps/game/src/game/signingFees.ts`               |
+| Aging + auto-release  | `apps/game/src/game/aging.ts`                     |
+| Development           | `apps/game/src/game/development.ts`               |
+| Stipends              | `apps/game/src/game/stipends.ts`                  |
+| Market value + projection | `apps/game/src/game/marketValue.ts`, `projection.ts` |
+| Selling + offers      | `apps/game/src/game/offers.ts`                    |
+| Hold/sell recommendation | `apps/game/src/game/recommendation.ts`         |
+| Facilities + tiers    | `apps/game/src/game/facilities.ts`, `types/facility.ts` |
+| Inflation             | `apps/game/src/game/inflation.ts`                 |
+| Finance + transactions | `apps/game/src/game/finance.ts`, `transactions.ts` |
+| Achievements (~20)    | `apps/game/src/game/achievements.ts`              |
+| Reputation            | `apps/game/src/game/reputation.ts`                |
+| Long-term goals       | `apps/game/src/game/goals.ts`                     |
+| National teams + sponsorship | `apps/game/src/game/nationalTeams.ts`      |
+| Yearly review         | `apps/game/src/game/yearlyReview.ts`              |
+| Stat milestones       | `apps/game/src/game/statMilestones.ts`            |
+| Save / load           | `apps/game/src/game/save.ts`                      |
+| Weekly turn loop      | `apps/game/src/game/turnLoop.ts`                  |
+| Board challenges      | `apps/game/src/game/challenges.ts`, `challengeTracking.ts` |
+| Run rewards + buffs   | `apps/game/src/game/rewards.ts`, `buffs.ts`       |
+| Game over             | `apps/game/src/components/GameOverModal.tsx`      |
 
-- Income crashed from €50k → €5k/mo; new €20k baseline operating cost. Net is -€15k/mo idle, so doing nothing burns through starting cash in 4 turns.
-- Tier premiums on sale value crashed for low tiers and lifted for top tiers (`mid 0.04 / good 0.12 / great 0.5 / elite 2.0 / generational 6.0`). Mid kids now sell for €100–300k (was millions), generational sales hit €35M+ jackpot territory.
-- 16+ rule for sales — under-16 players cannot be sold or listed, with a "locked u16" chip on the roster row. Auto-unlocks at 16th birthday.
-- Scout salaries 2.5–3× across the board (L1 €5k → L5 €400k). Existing scouts grandfathered.
-- Tier-based signing fees: mid €15k → generational €800k (±15% noise, locked at find time on the shortlist entry).
-- Five-tier facility system (Backyard Pitch → World-Class). Each tier sets monthly cost, a development multiplier (1.0× → 1.5×), and which scout levels can surface in the market. Manual upgrades (no refund), manual downgrades (blocked if it would orphan scouts), and auto-downgrade after 2 broke months at any tier > 1 (auto path force-fires scouts above the new tier).
-- Annual 3% inflation on operating costs, facility monthly + upgrade costs, signing fees, stipends, and new-hire scout salaries. Income deliberately stays flat at €5k so the squeeze tightens by year.
-- Dashboard burn breakdown widget (operating / facility / stipends / scouts with ASCII bars + % of total).
-- New Finances tab with cash hero, monthly net + annual run-rate, 12-month cash chart with peak/trough markers, inflated cost breakdown, and a transaction list (last ~24 months of sales / signings / scout hires + fires / facility moves / monthly burn).
+## Phases shipped
 
-**Phase 5 — make it fun.** Phase 4's squeeze worked too well — playtest hit €1M debt and "I'm just churning to stay afloat, no time to develop or get attached." Phase 5 turns on the cozy + progression pillars without abandoning the gritty one.
+- **Phase 0** — engine baseline. Player data model (38 outfield stats × current/potential), name generator, list + side-panel detail view.
+- **Phase 1** — traits library (12 traits, weighted rolls, base-stat effects, color-coded pill UI).
+- **Phase 1.5** — generator overhaul. Hidden quality tier per player drives stat-band rolls and trait counts. Position bonuses, age decoupled from potential.
+- **Phase 2a** — bare-bones loop. Cash + calendar, scout market, hired scouts surface players to the shortlist, sign moves them to the roster, monthly stipends.
+- **Phase 3** — full loop. Birthdays, auto-release at 22, weekly development, 20 named clubs, market-value engine, unsolicited offers (accept / counter / reject), available-for-sale and list-with-price toggles, event banner.
+- **Phase 3.5** — rebalance + QoL. MV formula tuned, scout tier bias overhauled, sortable roster, per-player Block Offers, grouped Offers page, counter UI rework.
+- **Phase 4** — economy overhaul. Income / costs crashed, tier-based signing fees, 5-tier facility system, annual inflation, burn breakdown, Finances tab with cash chart and inflated breakdown.
+- **Phase 5** — make it fun. Per-player MV history + chart, forward projection, hold/sell recommendation, 20 achievements, academy reputation, yearly review modal, long-term goals widget, stat milestones, youth international call-ups, Veteran badge.
+- **Phase 6 — persistence + internationals.** localStorage auto-save with versioned blobs, JSON export/import, Achievements board tab, persistent national-team membership with monthly sponsorship income.
+- **Phase 7 — weekly turns + interactivity polish.** Turn cadence dropped from monthly to weekly. Stipends, scout salaries, operating costs all quartered. Birthdays / aging / national-team review still fire monthly via W1 gating. Cash count-up animation on changes.
+- **Phase 6 (the season).** The roguelike layer: every Jan W1 the board offers three challenges (4 difficulty tiers, scaled by year + cash + roster). Clear the challenge AND stay in the black to pick a permanent or yearly reward. Fail and the run can end (game-over modal, "start new run" preserves run history). Sticky bar shows progress across every tab.
+- **Dashboard + UX revamp.** Tabs cut to 5 (Dashboard / Roster / Shortlist / Offers / Scouts). Dashboard redesigned for density: top shortlist, top offers, hired scouts, interactive cash chart with hover tooltip, compact burn / reputation / goals / achievements. Finances and Achievements moved into modal overlays reachable from the dashboard.
 
-- Soften squeeze: monthly base income €5k → €8k, operating €20k → €15k, idle net -€7k (was -€15k).
-- Per-player MV history (12 trailing months) + SVG chart in the drawer with rising / peaking / falling trend label.
-- Forward MV projection at age 17/18/19 — deterministic estimate using expected dev gains, factors in current facility multiplier.
-- Hold / sell / consider recommendation card with 2-4 dynamic reasoning bullets (age, offer-vs-MV %, trend, projected peak).
-- 20-achievement library with mid-turn detection on sign / sell / hire / facility upgrade and end-of-turn detection on the rest. Notification chip on the event banner; dashboard widget shows count, last three unlocks, and a full list with locked items as "???".
-- Academy Reputation (0-100) with seven tier labels (Unknown → Legendary), TopBar HUD pickup, and a dashboard breakdown card.
-- Yearly review modal on Dec → Jan transition: finances / players / achievements unlocked / reputation delta. Computed from transactions + achievement timestamps, no extra state.
-- Long-term goals widget on the dashboard: 5 goals (Tier 5 facility, €50M cash, 5 generational sales, Reputation 80, develop a player to 95% potential), reordered by progress.
-- Stat milestone events (70/80/90 thresholds, batched per-player per turn).
-- Youth international call-ups: ~3% monthly chance per eligible 16-19yo with avg potential ≥ 75; 12-month cooldown; +20 to +40% MV multiplier compounded (cap 2.0); chips on banner + drawer header.
-- Loyalty bonus: 24+ months on roster unlocks the Veteran badge — dev rate +10%, MV ×1.15, "★ veteran" chip on roster row + drawer.
+## Not built yet
 
-**Phase 6 — persistence + internationals.** Sessions are now durable, achievements have a home, and developing a kid into a national team finally generates real revenue.
-
-- Save / load: localStorage auto-save on every state change with a versioned blob (`saveVersion: 1`). Top-bar Save menu with JSON export, import (refuses mismatched versions gracefully), and Reset Game (clears localStorage + reloads).
-- Achievements board: dedicated tab with the 20 achievements grouped by category (Sales / Facility / Talent / Survival / Development / Misc). Locked items show as `???` with a hint line; unlocked entries show title, description, and date. Tab badge tracks the unlock count.
-- National team membership replaces FOOTY-82's one-time callup bonus. Eligibility is gated by **current** avg rating at age (U17 from 65 at age 15-17, U18 from 72 at age 17-18, U21 from 78 at age 18-21, Senior from 84 at age 19+). Promotion is probabilistic each turn; demotion fires after 6 months below threshold. MV multiplier reflects **current** tier only — U17 ×1.10, U18 ×1.15, U21 ×1.25, Senior ×1.40 (no compounding).
-- National team sponsorship: monthly income per called-up player (U17 €2k, U18 €4k, U21 €8k, Senior €15k), inflated at use-time. New "sponsorship" transaction type with a green chip in the Finances list. Dashboard burn widget and Finances breakdown both surface the inflow when > 0.
-
-What's intentionally **not** here yet:
-
-- Multi-region scouts and players (still England only — sponsorship doesn't yet vary by nationality)
+- Multi-region scouts and players (still England only)
 - Hidden scout traits / background checks / scouting trips
 - Player visibility ranges (true stats are still shown)
 - After-sale tracking (no notifications when ex-players resell)
 - Sell-on % clauses (flat fee only)
-- Bankruptcy game over (cash can go negative; just shows red)
 - Cup competitions, dynamic match income
-
-## Keyboard shortcuts
-
-- `[N]` — next month
-- `[ESC]` — close detail panel
+- Landing page, auth, and leaderboards backend (planned in `apps/landing` and `apps/api`)
 
 ## Generator tuning
 
-`scripts/sample-players.ts` is a dev-only script for eyeballing the player generator's spread:
+`apps/game/scripts/sample-players.ts` eyeballs the player generator's spread:
 
 ```sh
-npx tsx scripts/sample-players.ts 100
+pnpm --filter @footy-academy/game exec tsx scripts/sample-players.ts 100
 ```
 
 Prints name / age / position / avg current / avg potential / gap, then a summary block.
+
+## Notes
+
+This is a personal project — no contribution guidelines.

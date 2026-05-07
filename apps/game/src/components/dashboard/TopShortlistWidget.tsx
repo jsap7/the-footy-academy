@@ -51,8 +51,7 @@ function Row({
         </div>
         <div className="mt-0.5 flex items-center gap-3 text-[10px] uppercase tracking-[0.10em] text-ink-dim">
           <span>
-            pot{' '}
-            <span className="text-ink tabular-nums">{averagePotential(entry.player)}</span>
+            pot <span className="text-ink tabular-nums">{averagePotential(entry.player)}</span>
           </span>
           <span>
             tr <span className="text-ink tabular-nums">{entry.player.traits.length}</span>

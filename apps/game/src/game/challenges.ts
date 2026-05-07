@@ -5,11 +5,7 @@
 // past that minimum so the same "Net Profit €1M" challenge gets harder
 // as the run gets longer.
 
-import type {
-  ActiveChallenge,
-  ChallengeDefinition,
-  ChallengeTier,
-} from '../types/season';
+import type { ActiveChallenge, ChallengeDefinition, ChallengeTier } from '../types/season';
 
 const SCALING_PER_YEAR = 1.15;
 const DRAW_COUNT = 5;

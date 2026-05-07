@@ -44,15 +44,11 @@ export default function GameOverModal({ state, onStartNewRun }: Props) {
                 {formatCash(lastRun?.biggestSale ?? 0)}
               </span>
               <span className="text-ink-mid">achievements</span>
-              <span className="text-right tabular-nums">
-                {lastRun?.achievementsUnlocked ?? 0}
-              </span>
+              <span className="text-right tabular-nums">{lastRun?.achievementsUnlocked ?? 0}</span>
               <span className="text-ink-mid">peak rep</span>
               <span className="text-right tabular-nums">{lastRun?.peakRep ?? 0}</span>
               <span className="text-ink-mid">peak cash</span>
-              <span className="text-right tabular-nums">
-                {formatCash(lastRun?.peakCash ?? 0)}
-              </span>
+              <span className="text-right tabular-nums">{formatCash(lastRun?.peakCash ?? 0)}</span>
               <span className="text-ink-mid">ended</span>
               <span className="text-right tabular-nums">
                 w{lastRun?.endedAt.week} · m{lastRun?.endedAt.month} · {lastRun?.endedAt.year}

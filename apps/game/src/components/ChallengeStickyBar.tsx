@@ -30,8 +30,7 @@ export default function ChallengeStickyBar({ state }: Props) {
   const barColor = complete ? 'bg-accent-bright' : 'bg-accent';
 
   // Weeks remaining inside the year — quick mental check vs. progress.
-  const weeksRemaining =
-    Math.max(0, (12 - state.currentMonth) * 4 + (4 - state.currentWeek));
+  const weeksRemaining = Math.max(0, (12 - state.currentMonth) * 4 + (4 - state.currentWeek));
 
   return (
     <div className="border-b border-hairline bg-bg-elev/60">

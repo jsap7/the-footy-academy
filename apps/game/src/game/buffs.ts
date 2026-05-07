@@ -12,13 +12,7 @@
 //   reputation_plus_20   → reputation.ts (read via runReputationBonus)
 //   token_challenge_skip → year-end check (consumed at Dec W4)
 
-import type {
-  GameState,
-  PermanentBuff,
-  PermanentBuffId,
-  YearlyBuff,
-  YearlyBuffId,
-} from '../types';
+import type { GameState, PermanentBuff, PermanentBuffId, YearlyBuff, YearlyBuffId } from '../types';
 
 // Caps so buffs don't compound to absurdity over many years. Soft, but
 // real — past these, additional stacks are no-ops at the math layer

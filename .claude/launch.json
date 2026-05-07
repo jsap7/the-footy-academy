@@ -4,7 +4,10 @@
     {
       "name": "vite",
       "runtimeExecutable": "sh",
-      "runtimeArgs": ["-c", "npx vite --port $PORT --strictPort"],
+      "runtimeArgs": [
+        "-c",
+        "pnpm --filter @footy-academy/game exec vite --port $PORT --strictPort"
+      ],
       "port": 5173,
       "autoPort": true
     }

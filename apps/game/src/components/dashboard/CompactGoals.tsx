@@ -25,7 +25,9 @@ export default function CompactGoals({ state }: Props) {
   return (
     <Card padded={false} className="flex h-full flex-col">
       <div className="flex items-baseline justify-between border-b border-hairline px-3 py-2">
-        <span className="text-[11px] uppercase tracking-[0.14em] text-ink-dim">long-term goals</span>
+        <span className="text-[11px] uppercase tracking-[0.14em] text-ink-dim">
+          long-term goals
+        </span>
         <span className="text-[10px] tabular-nums text-ink-faint">
           {completed} / {rows.length}
         </span>

@@ -31,8 +31,7 @@ export default function ChallengeProgressWidget({ state }: Props) {
   if (!c) return null;
   const complete = isChallengeComplete(c);
   const pct = progressPct(c);
-  const weeksRemaining =
-    Math.max(0, (12 - state.currentMonth) * 4 + (4 - state.currentWeek));
+  const weeksRemaining = Math.max(0, (12 - state.currentMonth) * 4 + (4 - state.currentWeek));
   return (
     <Card className="col-span-12">
       <div className="flex items-baseline justify-between">
@@ -43,14 +42,14 @@ export default function ChallengeProgressWidget({ state }: Props) {
           <Chip tone={TIER_TONE[c.tier]}>{c.tier}</Chip>
           {complete ? <Chip tone="good">cleared</Chip> : null}
         </div>
-        <span className="text-[11px] tabular-nums text-ink-faint">
-          {weeksRemaining}w to dec w4
-        </span>
+        <span className="text-[11px] tabular-nums text-ink-faint">{weeksRemaining}w to dec w4</span>
       </div>
       <h3 className="mt-3 text-[20px] leading-none text-ink">{c.title}</h3>
       <p className="mt-2 text-[12px] text-ink-mid font-body">{c.description}</p>
       <div className="mt-5 flex items-baseline gap-4">
-        <span className={`text-[28px] tabular-nums leading-none ${complete ? 'text-accent-bright' : 'text-ink'}`}>
+        <span
+          className={`text-[28px] tabular-nums leading-none ${complete ? 'text-accent-bright' : 'text-ink'}`}
+        >
           {formatValue(c, c.progress)}
         </span>
         <span className="text-[12px] uppercase tracking-[0.10em] text-ink-dim">

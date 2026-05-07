@@ -6,13 +6,7 @@
 
 import { addPermanentBuff, addYearlyBuff } from './buffs';
 import { appendTransaction } from './transactions';
-import type {
-  GameState,
-  PermanentBuffId,
-  RewardId,
-  RewardOffer,
-  YearlyBuffId,
-} from '../types';
+import type { GameState, PermanentBuffId, RewardId, RewardOffer, YearlyBuffId } from '../types';
 
 type WeightedReward = {
   reward: RewardOffer;
@@ -68,7 +62,12 @@ const YEARLY_REWARDS: { id: YearlyBuffId; title: string; description: string }[]
 const REWARD_POOL: WeightedReward[] = [
   // Cash rewards — common, scaled.
   {
-    reward: { id: 'cash_500k', title: '€500k Bonus', description: 'A small windfall', flavor: 'cash' },
+    reward: {
+      id: 'cash_500k',
+      title: '€500k Bonus',
+      description: 'A small windfall',
+      flavor: 'cash',
+    },
     weight: 18,
   },
   {
@@ -76,7 +75,12 @@ const REWARD_POOL: WeightedReward[] = [
     weight: 12,
   },
   {
-    reward: { id: 'cash_8m', title: '€8M Bonus', description: 'A serious cash injection', flavor: 'cash' },
+    reward: {
+      id: 'cash_8m',
+      title: '€8M Bonus',
+      description: 'A serious cash injection',
+      flavor: 'cash',
+    },
     weight: 4,
   },
   {

@@ -83,11 +83,7 @@ export default function ChallengeSelectModal({ year, options, onPick }: Props) {
           <span className="text-[11px] text-ink-dim font-body">
             {picked ? picked.title.toLowerCase() : 'pick a challenge to continue'}
           </span>
-          <Button
-            variant="hero"
-            disabled={!picked}
-            onClick={() => picked && onPick(picked)}
-          >
+          <Button variant="hero" disabled={!picked} onClick={() => picked && onPick(picked)}>
             commit to season →
           </Button>
         </footer>

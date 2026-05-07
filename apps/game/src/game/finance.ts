@@ -80,8 +80,7 @@ export function totalWeeklySponsorship(state: GameState): number {
   for (const player of state.roster) {
     if (!player.nationalTeam) continue;
     total += Math.round(
-      applyInflation(SPONSORSHIP_BY_TIER[player.nationalTeam], state.currentYear) /
-        WEEKS_PER_MONTH,
+      applyInflation(SPONSORSHIP_BY_TIER[player.nationalTeam], state.currentYear) / WEEKS_PER_MONTH,
     );
   }
   return total;

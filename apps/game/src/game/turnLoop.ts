@@ -9,11 +9,7 @@ import {
 } from './challengeTracking';
 import { developPlayer } from './development';
 import { allowedScoutLevelsForTier, getCurrentFacility, getPrevFacilityTier } from './facilities';
-import {
-  WEEKLY_BASE_INCOME,
-  WEEKS_PER_MONTH,
-  currentWeeklyOperatingCosts,
-} from './finance';
+import { WEEKLY_BASE_INCOME, WEEKS_PER_MONTH, currentWeeklyOperatingCosts } from './finance';
 import { applyInflation } from './inflation';
 import { computeMarketValue } from './marketValue';
 import { computeReputation } from './reputation';
@@ -52,7 +48,7 @@ const GRACE_PERIOD_WEEKS = 8;
 // Weekly turn loop. Order is locked. Returns a NEW GameState.
 export function advanceMonth(state: GameState): GameState {
   // 1. Advance calendar — week first, then month if W4 → W1, then year.
-  let currentWeek = state.currentWeek + 1;
+  let currentWeek: 1 | 2 | 3 | 4 = (state.currentWeek + 1) as 1 | 2 | 3 | 4;
   let currentMonth = state.currentMonth;
   let currentYear = state.currentYear;
   if (currentWeek > 4) {
@@ -359,13 +355,13 @@ export function advanceMonth(state: GameState): GameState {
   };
 
   let pendingRewardOptions = state.pendingRewardOptions ?? null;
-  let pendingChallengeOptions = state.pendingChallengeOptions ?? null;
+  const pendingChallengeOptions = state.pendingChallengeOptions ?? null;
   let gameOver = state.gameOver ?? null;
   let hasPickedChallengeThisYear = state.hasPickedChallengeThisYear;
   let yearlyBuffsCleared = nextStateForChallenge.yearlyBuffs;
   let runHistory = state.runHistory ?? [];
   let tokens = state.tokens ?? { challengeSkip: 0 };
-  let runPeakCash = Math.max(state.runPeakCash ?? cash, cash);
+  const runPeakCash = Math.max(state.runPeakCash ?? cash, cash);
   let runPeakRep = state.runPeakRep ?? 0;
 
   if (isYearRolledOver) {
@@ -381,9 +377,8 @@ export function advanceMonth(state: GameState): GameState {
           yearsSurvived: Math.max(0, yearJustEnded - (state.runYearStarted ?? 2026)),
           totalSales: (completedSales ?? []).length,
           biggestSale: (completedSales ?? []).reduce((m, s) => Math.max(m, s.amount), 0),
-          achievementsUnlocked: Object.values(state.achievements ?? {}).filter(
-            (a) => a?.unlockedAt,
-          ).length,
+          achievementsUnlocked: Object.values(state.achievements ?? {}).filter((a) => a?.unlockedAt)
+            .length,
           peakRep: runPeakRep,
           peakCash: runPeakCash,
           failureReason: 'bankruptcy',
@@ -403,9 +398,8 @@ export function advanceMonth(state: GameState): GameState {
           yearsSurvived: Math.max(0, yearJustEnded - (state.runYearStarted ?? 2026)),
           totalSales: (completedSales ?? []).length,
           biggestSale: (completedSales ?? []).reduce((m, s) => Math.max(m, s.amount), 0),
-          achievementsUnlocked: Object.values(state.achievements ?? {}).filter(
-            (a) => a?.unlockedAt,
-          ).length,
+          achievementsUnlocked: Object.values(state.achievements ?? {}).filter((a) => a?.unlockedAt)
+            .length,
           peakRep: runPeakRep,
           peakCash: runPeakCash,
           failureReason: 'challenge_failed',
@@ -462,4 +456,3 @@ export function advanceMonth(state: GameState): GameState {
     recentVeterans,
   };
 }
-

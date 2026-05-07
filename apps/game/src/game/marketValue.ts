@@ -69,11 +69,7 @@ export function computeMarketValue(player: Player): number {
 // provided, the run's permanent MV buff stacks on top.
 import { runMVMultiplier } from './buffs';
 
-export function computeBuyerPerceivedValue(
-  player: Player,
-  club: Club,
-  state?: GameState,
-): number {
+export function computeBuyerPerceivedValue(player: Player, club: Club, state?: GameState): number {
   const noise = 0.9 + Math.random() * 0.2; // 0.9 to 1.1
   let perceived = computeMarketValue(player) * noise;
   if (state) perceived *= runMVMultiplier(state);
