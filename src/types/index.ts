@@ -31,7 +31,16 @@ export type {
 
 export type { Transaction, TransactionType, CashHistoryEntry } from './finance';
 
-export type { Achievement, AchievementId, AchievementDefinition } from './achievement';
-export { ACHIEVEMENT_DEFINITIONS, ALL_ACHIEVEMENT_IDS } from './achievement';
+export type {
+  Achievement,
+  AchievementId,
+  AchievementDefinition,
+  AchievementCategory,
+} from './achievement';
+export {
+  ACHIEVEMENT_DEFINITIONS,
+  ALL_ACHIEVEMENT_IDS,
+  ACHIEVEMENT_CATEGORIES,
+} from './achievement';
 
 export type { Offer, OfferStatus, SaleEvent } from './offer';

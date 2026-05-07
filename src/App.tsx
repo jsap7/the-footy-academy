@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Dashboard from './components/Dashboard';
 import EmptyState from './components/EmptyState';
+import AchievementsPage from './components/AchievementsPage';
 import EventBanner from './components/EventBanner';
 import FinancesPage from './components/FinancesPage';
 import OffersPage from './components/OffersPage';
@@ -28,7 +29,14 @@ import { advanceMonth } from './game/turnLoop';
 import StatusBar from './ui/StatusBar';
 import { INITIAL_GAME_STATE, type GameState } from './types';
 
-type TabKey = 'dashboard' | 'roster' | 'shortlist' | 'scouts' | 'offers' | 'finances';
+type TabKey =
+  | 'dashboard'
+  | 'roster'
+  | 'shortlist'
+  | 'scouts'
+  | 'offers'
+  | 'finances'
+  | 'achievements';
 
 export default function App() {
   // Hydrate from localStorage on first render — falls back to a fresh
@@ -91,6 +99,10 @@ export default function App() {
     (o) => o.status === 'pending' || o.status === 'countered',
   ).length;
 
+  const unlockedAchievements = (state.achievements ?? null)
+    ? Object.values(state.achievements).filter((a) => a?.unlockedAt).length
+    : 0;
+
   const navTabs = [
     { key: 'dashboard', label: 'dashboard' },
     { key: 'roster', label: 'roster', badge: state.roster.length },
@@ -98,6 +110,7 @@ export default function App() {
     { key: 'offers', label: 'offers', badge: actionableOffers },
     { key: 'scouts', label: 'scouts' },
     { key: 'finances', label: 'finances' },
+    { key: 'achievements', label: 'achievements', badge: unlockedAchievements },
   ] as const;
 
   const onRoster = selectedPlayer ? state.roster.some((p) => p.id === selectedPlayer.id) : false;
@@ -167,6 +180,7 @@ export default function App() {
               <OffersPage state={state} onChange={setState} onSelectPlayer={handleSelect} />
             )}
             {activeTab === 'finances' && <FinancesPage state={state} />}
+            {activeTab === 'achievements' && <AchievementsPage state={state} />}
           </div>
         )}
       </main>
