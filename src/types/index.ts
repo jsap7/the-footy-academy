@@ -44,3 +44,20 @@ export {
 } from './achievement';
 
 export type { Offer, OfferStatus, SaleEvent } from './offer';
+
+export type {
+  ChallengeTier,
+  ChallengeId,
+  ChallengeDefinition,
+  ActiveChallenge,
+  PermanentBuff,
+  PermanentBuffId,
+  YearlyBuff,
+  YearlyBuffId,
+  RewardId,
+  RewardOffer,
+  CompletedRun,
+  ChallengeTokens,
+  NumericalChallengeKind,
+  CompletionMode,
+} from './season';

@@ -1,4 +1,6 @@
 import { withAchievementCheck } from './achievements';
+import { consumeFreeFacilityUpgrade, hasFreeFacilityUpgrade } from './buffs';
+import { trackSaleForChallenge } from './challengeTracking';
 import {
   canDowngradeFacility,
   canUpgradeFacility,
@@ -11,22 +13,47 @@ import { executeAcceptedOffers } from './offers';
 import { appendTransaction } from './transactions';
 import type { GameState } from '../types';
 
+// Phase 6 — block scout hires when an active challenge says so. "Scout
+// Strike" forbids any hire all year; "Survive the Strike" forbids hires
+// during months 4–9.
+export function isScoutHireBlocked(state: GameState): { blocked: boolean; reason?: string } {
+  const ch = state.currentChallenge;
+  if (!ch) return { blocked: false };
+  if (ch.defId === 'scout_strike') {
+    return { blocked: true, reason: 'Scout Strike challenge — no scout hires this year' };
+  }
+  if (ch.defId === 'survive_strike') {
+    const inWindow = (ch.meta?.strikeWindowMonths ?? []).includes(state.currentMonth);
+    if (inWindow) {
+      return { blocked: true, reason: 'Strike window (Apr–Sep) — no scout hires' };
+    }
+  }
+  return { blocked: false };
+}
+
 export function hireScout(state: GameState, scoutId: string): GameState {
   const scout = state.scoutMarket.find((s) => s.id === scoutId);
   if (!scout) return state;
-  // No up-front cash deduction. The first monthlySalary is taken at the
-  // next month-end via the turn loop. This avoids the double-bill the
-  // spec flagged.
+  if (isScoutHireBlocked(state).blocked) return state;
   const transactions = appendTransaction(state, {
     type: 'scout_hire',
     description: `Hired ${scout.firstName} ${scout.lastName} (lvl ${scout.level})`,
     amount: 0,
   });
+  // Bump the active-challenge tally so "Scout Strike" / "Survive the
+  // Strike" / "Scout Investment" / "no_scout_hires" trackers see this hire.
+  let currentChallenge = state.currentChallenge;
+  if (currentChallenge) {
+    const meta = { ...(currentChallenge.meta ?? {}) };
+    meta.scoutHiresThisYear = (meta.scoutHiresThisYear ?? 0) + 1;
+    currentChallenge = { ...currentChallenge, meta };
+  }
   return withAchievementCheck({
     ...state,
     scoutMarket: state.scoutMarket.filter((s) => s.id !== scoutId),
     scouts: [...state.scouts, scout],
     transactions,
+    currentChallenge,
   });
 }
 
@@ -70,6 +97,11 @@ export function acceptOffer(state: GameState, offerId: string): GameState {
   const offer = state.pendingOffers.find((o) => o.id === offerId);
   if (!offer) return state;
   if (offer.status !== 'pending' && offer.status !== 'countered') return state;
+  // Snapshot the player and club BEFORE we run executeAcceptedOffers — that
+  // call removes the sold player from roster, so we'd have nothing to
+  // hand to the challenge tracker afterwards.
+  const soldPlayer = state.roster.find((p) => p.id === offer.playerId);
+  const soldClub = state.clubs.find((c) => c.id === offer.clubId);
   const flagged: GameState = {
     ...state,
     pendingOffers: state.pendingOffers.map((o) =>
@@ -78,6 +110,7 @@ export function acceptOffer(state: GameState, offerId: string): GameState {
   };
   const result = executeAcceptedOffers(flagged);
   let transactions = result.state.transactions;
+  let currentChallenge = state.currentChallenge;
   for (const sale of result.saleEvents) {
     transactions = appendTransaction(
       { ...result.state, transactions },
@@ -87,11 +120,15 @@ export function acceptOffer(state: GameState, offerId: string): GameState {
         amount: sale.amount,
       },
     );
+    if (soldPlayer) {
+      currentChallenge = trackSaleForChallenge(currentChallenge, sale, soldPlayer, soldClub);
+    }
   }
   return withAchievementCheck({
     ...result.state,
     transactions,
     recentSales: [...state.recentSales, ...result.saleEvents],
+    currentChallenge,
   });
 }
 
@@ -209,23 +246,40 @@ export function rejectShortlistEntry(state: GameState, entryId: string): GameSta
 }
 
 export function upgradeFacility(state: GameState): GameState {
-  const gate = canUpgradeFacility(state);
-  if (!gate.ok) return state;
+  // Phase 6: a "Free Facility Upgrade" yearly buff bypasses the cash gate
+  // and zeroes the cost. Consumed on use.
+  const free = hasFreeFacilityUpgrade(state);
   const next = getNextFacilityTier(state.facilityTier);
   if (next == null) return state;
-  const cost = currentUpgradeCost(state, next);
+  const cost = free ? 0 : currentUpgradeCost(state, next);
+  if (!free) {
+    const gate = canUpgradeFacility(state);
+    if (!gate.ok) return state;
+  }
   const transactions = appendTransaction(state, {
     type: 'facility_upgrade',
-    description: `Upgraded facility to ${getFacility(next).name}`,
+    description: free
+      ? `Upgraded facility to ${getFacility(next).name} (free)`
+      : `Upgraded facility to ${getFacility(next).name}`,
     amount: -cost,
   });
-  return withAchievementCheck({
+  // Bump challenge tally for "Facility Upgrade" trackers.
+  let currentChallenge = state.currentChallenge;
+  if (currentChallenge) {
+    const meta = { ...(currentChallenge.meta ?? {}) };
+    meta.facilityUpgradesThisYear = (meta.facilityUpgradesThisYear ?? 0) + 1;
+    currentChallenge = { ...currentChallenge, meta };
+  }
+  let next$: GameState = withAchievementCheck({
     ...state,
     cash: state.cash - cost,
     facilityTier: next,
     facilityGraceMonthsRemaining: 0,
     transactions,
+    currentChallenge,
   });
+  if (free) next$ = consumeFreeFacilityUpgrade(next$);
+  return next$;
 }
 
 // Manual downgrade — never refunds the upgrade cost. Auto-downgrade

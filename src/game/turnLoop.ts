@@ -1,5 +1,12 @@
 import { detectNewlyUnlocked, stampUnlocked } from './achievements';
 import { processBirthdays, processReleases } from './aging';
+import { runDevMultiplier, runIncomeBonus } from './buffs';
+import { isChallengeComplete } from './challenges';
+import {
+  tickChallengePerTurn,
+  trackFindForChallenge,
+  trackSaleForChallenge,
+} from './challengeTracking';
 import { developPlayer } from './development';
 import { allowedScoutLevelsForTier, getCurrentFacility, getPrevFacilityTier } from './facilities';
 import {
@@ -9,6 +16,8 @@ import {
 } from './finance';
 import { applyInflation } from './inflation';
 import { computeMarketValue } from './marketValue';
+import { computeReputation } from './reputation';
+import { drawRewardOptions } from './rewards';
 import {
   executeAcceptedOffers,
   generateOffersForTurn,
@@ -29,6 +38,7 @@ import { computeDevRateMultiplier } from './traits';
 import { appendTransaction } from './transactions';
 import { formatCash } from '../util/format';
 import type {
+  ActiveChallenge,
   FacilityDowngradeEvent,
   FacilityScoutFiredEvent,
   FacilityWarningEvent,
@@ -74,12 +84,16 @@ export function advanceMonth(state: GameState): GameState {
   // FOOTY-81: also detect stat milestones (70/80/90 crossings) and surface
   // them in the event banner.
   const facility = getCurrentFacility(stateAfterCalendar);
+  // Phase 6: stack the run's permanent dev-rate buff onto the facility
+  // multiplier so "Veteran Coach Hired" rewards actually compound.
+  const devBuffMult = runDevMultiplier(stateAfterCalendar);
+  const effectiveFacilityMult = facility.developmentMultiplier * devBuffMult;
   const recentStatMilestones: StatMilestoneEvent[] = [];
   const rosterAfterDevelopmentRaw = rosterAfterReleases.map((player) => {
     const developed = developPlayer(
       player,
       computeDevRateMultiplier,
-      facility.developmentMultiplier,
+      effectiveFacilityMult,
     ).updated;
     const milestone = detectStatMilestones(
       developed,
@@ -124,14 +138,21 @@ export function advanceMonth(state: GameState): GameState {
     return { ...withMonths, mvHistory };
   });
 
-  // 3. Add weekly base income, deduct weekly operating floor.
-  let cash = state.cash + WEEKLY_BASE_INCOME;
+  // 3. Add weekly base income, deduct weekly operating floor. "Investor
+  // Found" reward bumps the per-week income by a flat €1M per stack.
+  let cash = state.cash + WEEKLY_BASE_INCOME + runIncomeBonus(stateAfterCalendar);
   cash -= currentWeeklyOperatingCosts(stateAfterCalendar);
 
   // 4. Each hired scout finds 1 player → goes to shortlist (BEFORE tick).
+  // Track find-quality challenges (Find a Gem, Generational Find) as the
+  // shortlist grows.
   const findsState: GameState = { ...stateAfterCalendar, roster: rosterAfterDevelopment };
   const newFinds = runScoutFinds(findsState);
   let shortlist = [...state.shortlist, ...newFinds];
+  let currentChallenge: ActiveChallenge | null = state.currentChallenge;
+  for (const f of newFinds) {
+    currentChallenge = trackFindForChallenge(currentChallenge, f.player);
+  }
 
   // 5. Tick shortlist (decrement remaining months, drop expired).
   shortlist = tickShortlist(shortlist);
@@ -225,7 +246,9 @@ export function advanceMonth(state: GameState): GameState {
   // Pull in any sale transactions that executeAcceptedOffers would have
   // wanted to emit. The action layer (acceptOffer) handles user-driven
   // accepts directly; here we only need to log the auto-accepted sales
-  // produced by the offer pipeline this turn.
+  // produced by the offer pipeline this turn. Also track each sale into
+  // the active challenge — the player snapshot lives on the Offer's
+  // sourcing roster (we look it up before sale execution stripped it).
   for (const sale of saleResult.saleEvents) {
     transactions = appendTransaction(
       { ...stateAfterCalendar, transactions },
@@ -235,6 +258,11 @@ export function advanceMonth(state: GameState): GameState {
         amount: sale.amount,
       },
     );
+    const soldPlayer = rosterAfterDevelopment.find((p) => p.id === sale.playerId);
+    const soldClub = state.clubs.find((c) => c.id === sale.clubId);
+    if (soldPlayer) {
+      currentChallenge = trackSaleForChallenge(currentChallenge, sale, soldPlayer, soldClub);
+    }
   }
 
   // 10. Grace + auto-downgrade. We tick up only when we're actually in the
@@ -294,7 +322,17 @@ export function advanceMonth(state: GameState): GameState {
   // so all the year/sale/facility/roster signals are in place. Newly-unlocked
   // ids are stamped with the current month/year and surfaced to the UI via
   // recentAchievements.
-  const provisional: GameState = {
+  // ----- Phase 6: end-of-year transition -----
+  // Detect Dec → Jan rollover. Fires the year-end check on the LAST tick
+  // of the previous year (the one that produced this Jan W1 state). At
+  // this point the live state has currentMonth = 1, currentWeek = 1, so
+  // we know we just rolled the calendar.
+  const isYearRolledOver =
+    state.currentMonth === 12 && state.currentWeek === 4 && currentMonth === 1 && currentWeek === 1;
+
+  // Reset yearly buffs at year roll BEFORE drawing the new challenge —
+  // the new draw shouldn't inherit last year's "free upgrade" etc.
+  let nextStateForChallenge: GameState = {
     ...state,
     currentWeek,
     currentMonth,
@@ -310,16 +348,108 @@ export function advanceMonth(state: GameState): GameState {
     transactions,
     facilityTier,
     facilityGraceMonthsRemaining,
+    currentChallenge,
+  };
+
+  // Run the per-turn ratchet on the (almost final) state so all live
+  // signals — cash, scouts, wages, rep, roster — are up to date.
+  nextStateForChallenge = {
+    ...nextStateForChallenge,
+    currentChallenge: tickChallengePerTurn(nextStateForChallenge),
+  };
+
+  let pendingRewardOptions = state.pendingRewardOptions ?? null;
+  let pendingChallengeOptions = state.pendingChallengeOptions ?? null;
+  let gameOver = state.gameOver ?? null;
+  let hasPickedChallengeThisYear = state.hasPickedChallengeThisYear;
+  let yearlyBuffsCleared = nextStateForChallenge.yearlyBuffs;
+  let runHistory = state.runHistory ?? [];
+  let tokens = state.tokens ?? { challengeSkip: 0 };
+  let runPeakCash = Math.max(state.runPeakCash ?? cash, cash);
+  let runPeakRep = state.runPeakRep ?? 0;
+
+  if (isYearRolledOver) {
+    // Year just ended — run bankruptcy + challenge checks, draw next
+    // year's challenge cards if both pass.
+    const yearJustEnded = currentYear - 1;
+    const ch = nextStateForChallenge.currentChallenge;
+    if (cash < 0) {
+      gameOver = { reason: 'bankruptcy' };
+      runHistory = [
+        ...runHistory,
+        {
+          yearsSurvived: Math.max(0, yearJustEnded - (state.runYearStarted ?? 2026)),
+          totalSales: (completedSales ?? []).length,
+          biggestSale: (completedSales ?? []).reduce((m, s) => Math.max(m, s.amount), 0),
+          achievementsUnlocked: Object.values(state.achievements ?? {}).filter(
+            (a) => a?.unlockedAt,
+          ).length,
+          peakRep: runPeakRep,
+          peakCash: runPeakCash,
+          failureReason: 'bankruptcy',
+          endedAt: { week: currentWeek, month: currentMonth, year: currentYear },
+          failedChallengeTitle: ch?.title,
+        },
+      ];
+    } else if (ch && tokens.challengeSkip > 0) {
+      // Challenge auto-passes — burn the token and offer rewards.
+      tokens = { ...tokens, challengeSkip: tokens.challengeSkip - 1 };
+      pendingRewardOptions = drawRewardOptions();
+    } else if (ch && !isChallengeComplete(ch)) {
+      gameOver = { reason: 'challenge_failed', failedChallengeTitle: ch.title };
+      runHistory = [
+        ...runHistory,
+        {
+          yearsSurvived: Math.max(0, yearJustEnded - (state.runYearStarted ?? 2026)),
+          totalSales: (completedSales ?? []).length,
+          biggestSale: (completedSales ?? []).reduce((m, s) => Math.max(m, s.amount), 0),
+          achievementsUnlocked: Object.values(state.achievements ?? {}).filter(
+            (a) => a?.unlockedAt,
+          ).length,
+          peakRep: runPeakRep,
+          peakCash: runPeakCash,
+          failureReason: 'challenge_failed',
+          endedAt: { week: currentWeek, month: currentMonth, year: currentYear },
+          failedChallengeTitle: ch.title,
+        },
+      ];
+    } else {
+      // Year passed (or no challenge in flight on year 1 — first-year
+      // pick is handled separately at startup). Offer rewards.
+      pendingRewardOptions = drawRewardOptions();
+    }
+
+    // Roll yearly buffs regardless of pass/fail — yearly buffs are tied
+    // to a calendar year, not to a challenge.
+    yearlyBuffsCleared = [];
+    hasPickedChallengeThisYear = false;
+  }
+
+  const provisional: GameState = {
+    ...nextStateForChallenge,
+    yearlyBuffs: yearlyBuffsCleared,
+    runHistory,
+    tokens,
+    pendingRewardOptions,
+    pendingChallengeOptions,
+    gameOver,
+    hasPickedChallengeThisYear,
+    runPeakCash,
+    runPeakRep,
   };
   const newlyUnlocked = detectNewlyUnlocked(provisional);
   const achievements =
     newlyUnlocked.length > 0
       ? stampUnlocked(state.achievements, newlyUnlocked, currentMonth, currentYear)
       : state.achievements;
+  // Update peak rep AFTER achievements roll so the final Game Over summary
+  // captures any year-end unlocks.
+  runPeakRep = Math.max(runPeakRep, computeReputation(provisional));
 
   return {
     ...provisional,
     achievements,
+    runPeakRep,
     recentBirthdays: birthdayEvents,
     recentReleases: releaseEvents,
     recentSales: saleResult.saleEvents,
@@ -332,3 +462,4 @@ export function advanceMonth(state: GameState): GameState {
     recentVeterans,
   };
 }
+

@@ -1,4 +1,4 @@
-import { ALL_STAT_KEYS, type Club, type Player, type QualityTier } from '../types';
+import { ALL_STAT_KEYS, type Club, type GameState, type Player, type QualityTier } from '../types';
 
 const TIER_PREMIUM: Record<QualityTier, number> = {
   mid: 0.1,
@@ -65,9 +65,17 @@ export function computeMarketValue(player: Player): number {
 // What a specific club thinks the player is worth — adds ±10% noise to the
 // true value to simulate imperfect reads, then caps at the club's wealth
 // ceiling so a tier-5 club bidding on a generational kid maxes out at their
-// budget instead of producing absurd numbers.
-export function computeBuyerPerceivedValue(player: Player, club: Club): number {
+// budget instead of producing absurd numbers. Phase 6: when a state is
+// provided, the run's permanent MV buff stacks on top.
+import { runMVMultiplier } from './buffs';
+
+export function computeBuyerPerceivedValue(
+  player: Player,
+  club: Club,
+  state?: GameState,
+): number {
   const noise = 0.9 + Math.random() * 0.2; // 0.9 to 1.1
-  const perceived = computeMarketValue(player) * noise;
+  let perceived = computeMarketValue(player) * noise;
+  if (state) perceived *= runMVMultiplier(state);
   return Math.min(Math.round(perceived), club.wealthCeiling);
 }

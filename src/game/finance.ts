@@ -1,3 +1,4 @@
+import { runIncomeBonus, runOperatingMultiplier } from './buffs';
 import { getCurrentFacility } from './facilities';
 import { applyInflation } from './inflation';
 import { SPONSORSHIP_BY_TIER } from './nationalTeams';
@@ -21,7 +22,10 @@ export const MONTHLY_BASE_INCOME = WEEKLY_BASE_INCOME * WEEKS_PER_MONTH;
 export const MONTHLY_OPERATING_COSTS_BASE = WEEKLY_OPERATING_COSTS_BASE * WEEKS_PER_MONTH;
 
 export function currentWeeklyOperatingCosts(state: GameState): number {
-  return applyInflation(WEEKLY_OPERATING_COSTS_BASE, state.currentYear);
+  // Permanent "Established Brand" buff trims operating costs (capped at -30%).
+  return Math.round(
+    applyInflation(WEEKLY_OPERATING_COSTS_BASE, state.currentYear) * runOperatingMultiplier(state),
+  );
 }
 
 // Legacy alias — equivalent to the weekly cost × 4 so any monthly UI math
@@ -129,7 +133,9 @@ export function getExpenseBreakdown(state: GameState): ExpenseBreakdown {
   const scouts = totalMonthlyScoutSalaries(state);
   const total = operating + facility + stipends + scouts;
   const sponsorship = totalMonthlySponsorship(state);
-  const baseIncome = MONTHLY_BASE_INCOME;
+  // "Investor Found" buff bumps the per-week base income; surface in the
+  // monthly breakdown by ×4.
+  const baseIncome = MONTHLY_BASE_INCOME + runIncomeBonus(state) * WEEKS_PER_MONTH;
   const income = baseIncome + sponsorship;
   return {
     operating,
@@ -145,5 +151,10 @@ export function getExpenseBreakdown(state: GameState): ExpenseBreakdown {
 }
 
 export function monthlyNet(state: GameState): number {
-  return MONTHLY_BASE_INCOME + totalMonthlySponsorship(state) - monthlyBurn(state);
+  return (
+    MONTHLY_BASE_INCOME +
+    runIncomeBonus(state) * WEEKS_PER_MONTH +
+    totalMonthlySponsorship(state) -
+    monthlyBurn(state)
+  );
 }

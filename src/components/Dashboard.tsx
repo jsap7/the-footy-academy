@@ -8,6 +8,7 @@ import Button from '../ui/Button';
 import Card from '../ui/Card';
 import Chip from '../ui/Chip';
 import AchievementsCard from './AchievementsCard';
+import ChallengeProgressWidget from './ChallengeProgressWidget';
 import FacilityCard from './FacilityCard';
 import GoalsCard from './GoalsCard';
 import MonthlyBurnCard from './MonthlyBurnCard';
@@ -110,6 +111,12 @@ export default function Dashboard({
 
   return (
     <div className="mx-auto w-full max-w-[1280px] px-12 py-12">
+      {/* TODO: Phase 6 challenge widget goes here */}
+      {state.currentChallenge ? (
+        <div className="mb-8 grid grid-cols-12 gap-6">
+          <ChallengeProgressWidget state={state} />
+        </div>
+      ) : null}
       {/* Hero */}
       <div className="grid grid-cols-12 gap-8">
         <Card className="col-span-12 lg:col-span-8" elevated padded={false}>
