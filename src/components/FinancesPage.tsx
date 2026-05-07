@@ -135,9 +135,19 @@ export default function FinancesPage({ state }: Props) {
             unit="/mo · grandfathered"
           />
         </div>
+        {breakdown.sponsorship > 0 ? (
+          <div className="mt-4 grid grid-cols-[140px_minmax(0,1fr)_auto] items-baseline gap-3 border-t border-hairline pt-4 text-[12px]">
+            <span className="uppercase tracking-[0.10em] text-ink-mid">sponsorship</span>
+            <span className="text-[11px] text-ink-faint font-body">national-team players</span>
+            <span className="tabular-nums text-accent-bright">
+              +{formatCash(breakdown.sponsorship)}
+              <span className="text-[10px] uppercase tracking-[0.10em] text-ink-faint"> /mo</span>
+            </span>
+          </div>
+        ) : null}
         <p className="mt-4 text-[11px] text-ink-faint font-body">
-          income stays at {formatCash(MONTHLY_BASE_INCOME)} regardless of year — the squeeze
-          tightens by design.
+          base income stays at {formatCash(MONTHLY_BASE_INCOME)} regardless of year — the squeeze
+          tightens by design. develop kids into national teams to bring in real revenue.
         </p>
       </Card>
 

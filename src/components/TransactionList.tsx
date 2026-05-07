@@ -16,9 +16,10 @@ const TYPE_LABEL: Record<TransactionType, string> = {
   facility_upgrade: 'upgrade',
   facility_downgrade: 'downgrade',
   monthly_burn: 'burn',
+  sponsorship: 'sponsor',
 };
 
-const TYPE_TONE: Record<TransactionType, 'accent' | 'muted' | 'danger' | 'neutral'> = {
+const TYPE_TONE: Record<TransactionType, 'accent' | 'muted' | 'danger' | 'neutral' | 'good'> = {
   sale: 'accent',
   signing: 'muted',
   release: 'danger',
@@ -27,6 +28,7 @@ const TYPE_TONE: Record<TransactionType, 'accent' | 'muted' | 'danger' | 'neutra
   facility_upgrade: 'accent',
   facility_downgrade: 'danger',
   monthly_burn: 'neutral',
+  sponsorship: 'good',
 };
 
 export default function TransactionList({ transactions, limit = 60 }: Props) {

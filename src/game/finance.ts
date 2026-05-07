@@ -1,5 +1,6 @@
 import { getCurrentFacility } from './facilities';
 import { applyInflation } from './inflation';
+import { SPONSORSHIP_BY_TIER } from './nationalTeams';
 import { calculateStipend } from './stipends';
 import type { GameState } from '../types';
 
@@ -31,6 +32,17 @@ export function totalMonthlyFacilityCost(state: GameState): number {
   return applyInflation(getCurrentFacility(state).monthlyCost, state.currentYear);
 }
 
+// FOOTY-89: monthly sponsorship from each player currently in a national
+// team. Inflation applied at use-time to match operating-cost behavior.
+export function totalMonthlySponsorship(state: GameState): number {
+  let total = 0;
+  for (const player of state.roster) {
+    if (!player.nationalTeam) continue;
+    total += applyInflation(SPONSORSHIP_BY_TIER[player.nationalTeam], state.currentYear);
+  }
+  return total;
+}
+
 export function monthlyBurn(state: GameState): number {
   return (
     currentOperatingCosts(state) +
@@ -47,6 +59,8 @@ export type ExpenseBreakdown = {
   scouts: number;
   total: number;
   income: number;
+  baseIncome: number;
+  sponsorship: number;
   net: number;
 };
 
@@ -56,10 +70,22 @@ export function getExpenseBreakdown(state: GameState): ExpenseBreakdown {
   const stipends = totalMonthlyStipends(state);
   const scouts = totalMonthlyScoutSalaries(state);
   const total = operating + facility + stipends + scouts;
-  const income = MONTHLY_BASE_INCOME;
-  return { operating, facility, stipends, scouts, total, income, net: income - total };
+  const sponsorship = totalMonthlySponsorship(state);
+  const baseIncome = MONTHLY_BASE_INCOME;
+  const income = baseIncome + sponsorship;
+  return {
+    operating,
+    facility,
+    stipends,
+    scouts,
+    total,
+    income,
+    baseIncome,
+    sponsorship,
+    net: income - total,
+  };
 }
 
 export function monthlyNet(state: GameState): number {
-  return MONTHLY_BASE_INCOME - monthlyBurn(state);
+  return MONTHLY_BASE_INCOME + totalMonthlySponsorship(state) - monthlyBurn(state);
 }

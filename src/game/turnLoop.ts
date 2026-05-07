@@ -15,6 +15,7 @@ import { generateScoutMarket } from './scoutMarket';
 import { runScoutFinds, tickShortlist } from './shortlist';
 import {
   processNationalTeams,
+  SPONSORSHIP_BY_TIER,
   type NationalTeamCallupEvent,
   type NationalTeamDropEvent,
 } from './nationalTeams';
@@ -161,9 +162,26 @@ export function advanceMonth(state: GameState): GameState {
     stipendsTotal += s;
   }
 
-  // 9b. Income credit (the +5k from earlier was already applied; we record
-  // the aggregate burn here as one transaction so the Finances tab can
-  // show "monthly burn -€X" per month rather than four lines).
+  // 9a. National team sponsorship income — applied AFTER deductions so the
+  // Finances tab shows it landing as a clean inflow rather than netting
+  // against a single line.
+  const sponsorshipBreakdown: Record<string, number> = {};
+  let sponsorshipIncome = 0;
+  for (const player of rosterAfterSales) {
+    if (!player.nationalTeam) continue;
+    const monthly = applyInflation(
+      SPONSORSHIP_BY_TIER[player.nationalTeam],
+      currentYear,
+    );
+    sponsorshipIncome += monthly;
+    sponsorshipBreakdown[player.nationalTeam] =
+      (sponsorshipBreakdown[player.nationalTeam] ?? 0) + 1;
+  }
+  cash += sponsorshipIncome;
+
+  // 9b. Income credit (the +base income from earlier was already applied; we
+  // record the aggregate burn here as one transaction so the Finances tab
+  // can show "monthly burn -€X" per month rather than four lines).
   const operatingThisMonth = currentOperatingCosts(stateAfterCalendar);
   const monthlyBurnAggregate =
     operatingThisMonth + facilityMonthly + scoutSalariesTotal + stipendsTotal;
@@ -175,6 +193,19 @@ export function advanceMonth(state: GameState): GameState {
         type: 'monthly_burn',
         description: `Monthly burn (operating ${formatCash(operatingThisMonth)}, facility ${formatCash(facilityMonthly)}, scouts ${formatCash(scoutSalariesTotal)}, stipends ${formatCash(stipendsTotal)})`,
         amount: -monthlyBurnAggregate,
+      },
+    );
+  }
+  if (sponsorshipIncome > 0) {
+    const summary = Object.entries(sponsorshipBreakdown)
+      .map(([tier, n]) => `${n}× ${tier}`)
+      .join(', ');
+    transactions = appendTransaction(
+      { ...stateAfterCalendar, transactions },
+      {
+        type: 'sponsorship',
+        description: `Sponsorship — ${summary}`,
+        amount: sponsorshipIncome,
       },
     );
   }

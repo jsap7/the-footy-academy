@@ -6,7 +6,8 @@ export type TransactionType =
   | 'scout_fire'
   | 'facility_upgrade'
   | 'facility_downgrade'
-  | 'monthly_burn';
+  | 'monthly_burn'
+  | 'sponsorship';
 
 export type Transaction = {
   id: string;
