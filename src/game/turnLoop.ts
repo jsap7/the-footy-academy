@@ -13,9 +13,14 @@ import {
 } from './offers';
 import { generateScoutMarket } from './scoutMarket';
 import { runScoutFinds, tickShortlist } from './shortlist';
+import {
+  processNationalTeams,
+  SPONSORSHIP_BY_TIER,
+  type NationalTeamCallupEvent,
+  type NationalTeamDropEvent,
+} from './nationalTeams';
 import { detectStatMilestones, type StatMilestoneEvent } from './statMilestones';
 import { calculateStipend } from './stipends';
-import { rollYouthCallups, type YouthCallupEvent } from './youthCallups';
 import { computeDevRateMultiplier } from './traits';
 import { appendTransaction } from './transactions';
 import { formatCash } from '../util/format';
@@ -70,13 +75,14 @@ export function advanceMonth(state: GameState): GameState {
     return developed;
   });
 
-  // 2d. Youth international call-ups — random monthly chance for eligible
-  // 16-19yo high-potential kids. Multiplies callupMultiplier (capped 2.0)
-  // and surfaces a YouthCallupEvent. Runs before the MV history snapshot
-  // so the new multiplier shows up immediately on this month's MV chart.
-  const callupResult = rollYouthCallups(rosterAfterDevelopmentRaw, currentMonth, currentYear);
-  const rosterAfterCallups = callupResult.roster;
-  const recentYouthCallups: YouthCallupEvent[] = callupResult.events;
+  // 2d. National teams — promote / demote based on current avg rating at
+  // age. Persistent membership replaces FOOTY-82's one-time callup bonus;
+  // the MV multiplier is now reflected via player.nationalTeam in
+  // computeMarketValue.
+  const nationalTeamResult = processNationalTeams(rosterAfterDevelopmentRaw);
+  const rosterAfterCallups = nationalTeamResult.roster;
+  const recentNationalTeamCallups: NationalTeamCallupEvent[] = nationalTeamResult.callups;
+  const recentNationalTeamDrops: NationalTeamDropEvent[] = nationalTeamResult.drops;
 
   // 2e. Increment monthsOnRoster and detect veteran-threshold crossings.
   // FOOTY-83: 24+ months unlocks the Veteran badge — applied to dev rate
@@ -156,9 +162,23 @@ export function advanceMonth(state: GameState): GameState {
     stipendsTotal += s;
   }
 
-  // 9b. Income credit (the +5k from earlier was already applied; we record
-  // the aggregate burn here as one transaction so the Finances tab can
-  // show "monthly burn -€X" per month rather than four lines).
+  // 9a. National team sponsorship income — applied AFTER deductions so the
+  // Finances tab shows it landing as a clean inflow rather than netting
+  // against a single line.
+  const sponsorshipBreakdown: Record<string, number> = {};
+  let sponsorshipIncome = 0;
+  for (const player of rosterAfterSales) {
+    if (!player.nationalTeam) continue;
+    const monthly = applyInflation(SPONSORSHIP_BY_TIER[player.nationalTeam], currentYear);
+    sponsorshipIncome += monthly;
+    sponsorshipBreakdown[player.nationalTeam] =
+      (sponsorshipBreakdown[player.nationalTeam] ?? 0) + 1;
+  }
+  cash += sponsorshipIncome;
+
+  // 9b. Income credit (the +base income from earlier was already applied; we
+  // record the aggregate burn here as one transaction so the Finances tab
+  // can show "monthly burn -€X" per month rather than four lines).
   const operatingThisMonth = currentOperatingCosts(stateAfterCalendar);
   const monthlyBurnAggregate =
     operatingThisMonth + facilityMonthly + scoutSalariesTotal + stipendsTotal;
@@ -170,6 +190,19 @@ export function advanceMonth(state: GameState): GameState {
         type: 'monthly_burn',
         description: `Monthly burn (operating ${formatCash(operatingThisMonth)}, facility ${formatCash(facilityMonthly)}, scouts ${formatCash(scoutSalariesTotal)}, stipends ${formatCash(stipendsTotal)})`,
         amount: -monthlyBurnAggregate,
+      },
+    );
+  }
+  if (sponsorshipIncome > 0) {
+    const summary = Object.entries(sponsorshipBreakdown)
+      .map(([tier, n]) => `${n}× ${tier}`)
+      .join(', ');
+    transactions = appendTransaction(
+      { ...stateAfterCalendar, transactions },
+      {
+        type: 'sponsorship',
+        description: `Sponsorship — ${summary}`,
+        amount: sponsorshipIncome,
       },
     );
   }
@@ -275,7 +308,8 @@ export function advanceMonth(state: GameState): GameState {
     recentForcedScoutFires,
     recentAchievements: newlyUnlocked,
     recentStatMilestones,
-    recentYouthCallups,
+    recentNationalTeamCallups,
+    recentNationalTeamDrops,
     recentVeterans,
   };
 }

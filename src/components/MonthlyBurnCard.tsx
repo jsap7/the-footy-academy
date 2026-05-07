@@ -56,6 +56,16 @@ export default function MonthlyBurnCard({ state }: Props) {
         <Line label="stipends" amount={b.stipends} total={b.total} />
         <Line label="scouts" amount={b.scouts} total={b.total} />
       </div>
+      {b.sponsorship > 0 ? (
+        <div className="grid grid-cols-[88px_minmax(0,1fr)_72px_36px] items-center gap-3 border-t border-hairline pt-3 text-[12px]">
+          <span className="uppercase tracking-[0.10em] text-ink-mid">sponsors</span>
+          <span className="text-[11px] text-ink-faint font-body">national-team income</span>
+          <span className="text-right tabular-nums text-accent-bright">
+            +{formatCash(b.sponsorship)}
+          </span>
+          <span />
+        </div>
+      ) : null}
       <div className="border-t border-hairline pt-3 grid grid-cols-3 gap-3 text-[12px]">
         <div>
           <div className="text-[10px] uppercase tracking-[0.10em] text-ink-dim">income</div>

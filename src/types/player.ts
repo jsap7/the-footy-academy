@@ -69,14 +69,17 @@ export type Player = {
   // FOOTY-74: trailing 12 entries of monthly market value (pushed by
   // turnLoop after development). Drives the per-player MV chart.
   mvHistory?: { month: number; year: number; mv: number }[];
-  // FOOTY-82: compounding multiplier from youth international call-ups,
-  // capped at 2.0. Factored into computeMarketValue alongside tier premium.
+  // FOOTY-82 / deprecated by FOOTY-88. Kept on the type so old saves
+  // hydrate without dropping the field; computeMarketValue no longer reads
+  // these. nationalTeam (below) is the live signal now.
   callupMultiplier?: number;
-  // FOOTY-82: number of monthly ticks since the player's last call-up,
-  // used for the cooldown so a single kid can't get called up every turn.
   monthsSinceLastCallup?: number;
-  // FOOTY-82: lifetime callup history for the drawer indicator.
   callups?: { type: 'U17' | 'U18' | 'U21'; month: number; year: number; bonus: number }[];
+  // FOOTY-88: persistent national team membership. null = not in any squad.
+  // Promotion probabilistic per turn while qualifying for a higher tier;
+  // demotion after DROP_GRACE_MONTHS below the current tier's threshold.
+  nationalTeam?: 'U17' | 'U18' | 'U21' | 'senior' | null;
+  monthsBelowTeamThreshold?: number;
   // FOOTY-83: months on roster (incremented each turn while on roster).
   // 24+ unlocks the Veteran badge: dev rate +10% and MV ×1.15 on sale.
   monthsOnRoster?: number;

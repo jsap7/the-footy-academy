@@ -17,6 +17,7 @@ type Props = {
   activeTab: string;
   onChangeTab: (key: string) => void;
   onAdvanceMonth: () => void;
+  saveMenu?: ReactNode;
 };
 
 function TabButton({
@@ -82,6 +83,7 @@ export default function TopBar({
   activeTab,
   onChangeTab,
   onAdvanceMonth,
+  saveMenu,
 }: Props) {
   const cashTone: 'good' | 'warn' | undefined = cash <= 0 ? 'warn' : undefined;
   return (
@@ -105,6 +107,7 @@ export default function TopBar({
         {reputation != null ? <HudBlock label="Rep" value={reputation} /> : null}
         <HudBlock label="Cash" value={formatCash(cash)} tone={cashTone} />
         <HudBlock label="Month" value={formatMonth(month, year).toLowerCase()} />
+        {saveMenu}
         <Button
           variant="hero"
           size="lg"

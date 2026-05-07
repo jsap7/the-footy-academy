@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import Dashboard from './components/Dashboard';
 import EmptyState from './components/EmptyState';
+import AchievementsPage from './components/AchievementsPage';
 import EventBanner from './components/EventBanner';
 import FinancesPage from './components/FinancesPage';
 import OffersPage from './components/OffersPage';
+import SaveMenu from './components/SaveMenu';
 import YearlyReviewModal from './components/YearlyReviewModal';
 import PlayerDetailDrawer from './components/PlayerDetailDrawer';
 import PlayerList from './components/PlayerList';
@@ -12,6 +14,7 @@ import ShortlistPage from './components/ShortlistPage';
 import TopBar from './components/TopBar';
 import { getCurrentFacility } from './game/facilities';
 import { computeReputationBreakdown, computeReputation } from './game/reputation';
+import { loadFromLocalStorage, saveToLocalStorage } from './game/save';
 import { computeYearlyReview, type YearlyReview } from './game/yearlyReview';
 import {
   downgradeFacility,
@@ -26,13 +29,28 @@ import { advanceMonth } from './game/turnLoop';
 import StatusBar from './ui/StatusBar';
 import { INITIAL_GAME_STATE, type GameState } from './types';
 
-type TabKey = 'dashboard' | 'roster' | 'shortlist' | 'scouts' | 'offers' | 'finances';
+type TabKey =
+  | 'dashboard'
+  | 'roster'
+  | 'shortlist'
+  | 'scouts'
+  | 'offers'
+  | 'finances'
+  | 'achievements';
 
 export default function App() {
-  const [state, setState] = useState<GameState>(INITIAL_GAME_STATE);
+  // Hydrate from localStorage on first render — falls back to a fresh
+  // initial state if nothing is saved or the version is mismatched.
+  const [state, setState] = useState<GameState>(() => loadFromLocalStorage() ?? INITIAL_GAME_STATE);
   const [activeTab, setActiveTab] = useState<TabKey>('dashboard');
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [yearlyReview, setYearlyReview] = useState<YearlyReview | null>(null);
+
+  // Auto-save to localStorage on every state change. JSON.stringify on the
+  // current state size is cheap (a few KB).
+  useEffect(() => {
+    saveToLocalStorage(state);
+  }, [state]);
 
   const selectedPlayer = useMemo(() => {
     if (!selectedPlayerId) return null;
@@ -79,6 +97,11 @@ export default function App() {
     (o) => o.status === 'pending' || o.status === 'countered',
   ).length;
 
+  const unlockedAchievements =
+    (state.achievements ?? null)
+      ? Object.values(state.achievements).filter((a) => a?.unlockedAt).length
+      : 0;
+
   const navTabs = [
     { key: 'dashboard', label: 'dashboard' },
     { key: 'roster', label: 'roster', badge: state.roster.length },
@@ -86,6 +109,7 @@ export default function App() {
     { key: 'offers', label: 'offers', badge: actionableOffers },
     { key: 'scouts', label: 'scouts' },
     { key: 'finances', label: 'finances' },
+    { key: 'achievements', label: 'achievements', badge: unlockedAchievements },
   ] as const;
 
   const onRoster = selectedPlayer ? state.roster.some((p) => p.id === selectedPlayer.id) : false;
@@ -101,6 +125,7 @@ export default function App() {
         activeTab={activeTab}
         onChangeTab={(key) => setActiveTab(key as TabKey)}
         onAdvanceMonth={handleAdvanceMonth}
+        saveMenu={<SaveMenu state={state} onImport={(s) => setState(s)} />}
       />
       <EventBanner
         birthdays={state.recentBirthdays}
@@ -110,7 +135,8 @@ export default function App() {
         forcedScoutFires={state.recentForcedScoutFires}
         achievements={state.recentAchievements}
         statMilestones={state.recentStatMilestones}
-        callups={state.recentYouthCallups}
+        nationalTeamCallups={state.recentNationalTeamCallups}
+        nationalTeamDrops={state.recentNationalTeamDrops}
         veterans={state.recentVeterans}
       />
       <main className="min-h-0 flex-1 overflow-y-auto">
@@ -154,6 +180,7 @@ export default function App() {
               <OffersPage state={state} onChange={setState} onSelectPlayer={handleSelect} />
             )}
             {activeTab === 'finances' && <FinancesPage state={state} />}
+            {activeTab === 'achievements' && <AchievementsPage state={state} />}
           </div>
         )}
       </main>
