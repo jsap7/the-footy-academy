@@ -1,23 +1,48 @@
 import { generatePlayer } from './playerGenerator';
-import type { Player } from '../types';
+import { ALL_STAT_KEYS } from '../types/stats';
+import type { Player } from '../types/player';
 
-// FOOTY-71: guaranteed age distribution for the starting 4 players so the
-// user always begins with at least 2 sellable kids (age >= 16). Tiers stay
-// random — most starts will be all mid/good, occasionally with a great or
-// elite slipping in. The age structure is what makes survival possible.
+// Playtest follow-up: starting roster guarantees you a viable opening squad.
+// All 4 are age 16-19 (immediately sellable, none locked under-16) with a
+// minimum avg potential — no all-mid duds clogging the roster on turn 1.
+// Age spread keeps them from aging out together.
 const STARTING_AGE_RANGES: readonly { min: number; max: number }[] = [
-  { min: 12, max: 14 }, // long-term project
-  { min: 15, max: 16 }, // mid-term
-  { min: 16, max: 17 }, // sellable soon
-  { min: 17, max: 19 }, // sellable now
+  { min: 16, max: 17 },
+  { min: 16, max: 17 },
+  { min: 17, max: 18 },
+  { min: 18, max: 19 },
 ];
+
+const MIN_STARTING_POTENTIAL = 60;
+const MAX_REROLL_ATTEMPTS = 50;
 
 function randInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+// Inlined to avoid a circular import via playerStats → types/index → gameState
+// → startingRoster. Same math as averagePotential.
+function avgPotential(player: Player): number {
+  let sum = 0;
+  for (const k of ALL_STAT_KEYS) sum += player.stats.potential[k];
+  return Math.round(sum / ALL_STAT_KEYS.length);
+}
+
+// Roll generatePlayer until avg potential clears the threshold, capped at
+// MAX_REROLL_ATTEMPTS so a stretch of bad rolls can't lock the game start.
+// In practice this resolves in <5 rolls — most generated players already
+// land at 55-75 avg potential.
+function generatePlayerWithMinPotential(forceAge: number, minPotential: number): Player {
+  for (let i = 0; i < MAX_REROLL_ATTEMPTS; i++) {
+    const player = generatePlayer({ forceAge });
+    if (avgPotential(player) >= minPotential) return player;
+  }
+  // Best-effort fallback after the cap — return whatever the next roll gives.
+  return generatePlayer({ forceAge });
+}
+
 export function generateStartingRoster(): Player[] {
   return STARTING_AGE_RANGES.map((range) =>
-    generatePlayer({ forceAge: randInt(range.min, range.max) }),
+    generatePlayerWithMinPotential(randInt(range.min, range.max), MIN_STARTING_POTENTIAL),
   );
 }

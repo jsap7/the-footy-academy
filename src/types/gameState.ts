@@ -69,7 +69,7 @@ export type GameState = {
 
 export const INITIAL_GAME_STATE: GameState = {
   cash: 100_000,
-  currentMonth: 8, // August — the football season opener
+  currentMonth: 1, // January — aligns with INFLATION_BASE_YEAR + first review at turn 12
   currentYear: 2026,
   scouts: [],
   scoutMarket: generateScoutMarket(),
@@ -80,7 +80,7 @@ export const INITIAL_GAME_STATE: GameState = {
   completedSales: [],
   facilityTier: 1,
   facilityGraceMonthsRemaining: 0,
-  cashHistory: [{ month: 8, year: 2026, cash: 100_000 }],
+  cashHistory: [{ month: 1, year: 2026, cash: 100_000 }],
   transactions: [],
   achievements: buildInitialAchievements(),
   recentBirthdays: [],
