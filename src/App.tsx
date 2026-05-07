@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Dashboard from './components/Dashboard';
 import EmptyState from './components/EmptyState';
-import AchievementsPage from './components/AchievementsPage';
 import EventBanner from './components/EventBanner';
-import FinancesPage from './components/FinancesPage';
 import OffersPage from './components/OffersPage';
 import SaveMenu from './components/SaveMenu';
 import YearlyReviewModal from './components/YearlyReviewModal';
@@ -29,14 +27,7 @@ import { advanceMonth } from './game/turnLoop';
 import StatusBar from './ui/StatusBar';
 import { INITIAL_GAME_STATE, type GameState } from './types';
 
-type TabKey =
-  | 'dashboard'
-  | 'roster'
-  | 'shortlist'
-  | 'scouts'
-  | 'offers'
-  | 'finances'
-  | 'achievements';
+type TabKey = 'dashboard' | 'roster' | 'shortlist' | 'scouts' | 'offers';
 
 export default function App() {
   // Hydrate from localStorage on first render — falls back to a fresh
@@ -103,19 +94,12 @@ export default function App() {
     (o) => o.status === 'pending' || o.status === 'countered',
   ).length;
 
-  const unlockedAchievements =
-    (state.achievements ?? null)
-      ? Object.values(state.achievements).filter((a) => a?.unlockedAt).length
-      : 0;
-
   const navTabs = [
     { key: 'dashboard', label: 'dashboard' },
     { key: 'roster', label: 'roster', badge: state.roster.length },
     { key: 'shortlist', label: 'shortlist', badge: state.shortlist.length },
     { key: 'offers', label: 'offers', badge: actionableOffers },
     { key: 'scouts', label: 'scouts' },
-    { key: 'finances', label: 'finances' },
-    { key: 'achievements', label: 'achievements', badge: unlockedAchievements },
   ] as const;
 
   const onRoster = selectedPlayer ? state.roster.some((p) => p.id === selectedPlayer.id) : false;
@@ -150,9 +134,8 @@ export default function App() {
         {activeTab === 'dashboard' && (
           <Dashboard
             state={state}
-            onAdvanceMonth={handleAdvanceMonth}
             onJumpTab={(t) => setActiveTab(t as TabKey)}
-            onSelectPlayer={handleSelect}
+            onChange={setState}
             onUpgradeFacility={() => setState((prev) => upgradeFacility(prev))}
             onDowngradeFacility={() => setState((prev) => downgradeFacility(prev))}
           />
@@ -186,8 +169,6 @@ export default function App() {
             {activeTab === 'offers' && (
               <OffersPage state={state} onChange={setState} onSelectPlayer={handleSelect} />
             )}
-            {activeTab === 'finances' && <FinancesPage state={state} />}
-            {activeTab === 'achievements' && <AchievementsPage state={state} />}
           </div>
         )}
       </main>
