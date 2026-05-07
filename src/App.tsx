@@ -4,6 +4,7 @@ import EmptyState from './components/EmptyState';
 import EventBanner from './components/EventBanner';
 import FinancesPage from './components/FinancesPage';
 import OffersPage from './components/OffersPage';
+import SaveMenu from './components/SaveMenu';
 import YearlyReviewModal from './components/YearlyReviewModal';
 import PlayerDetailDrawer from './components/PlayerDetailDrawer';
 import PlayerList from './components/PlayerList';
@@ -12,6 +13,7 @@ import ShortlistPage from './components/ShortlistPage';
 import TopBar from './components/TopBar';
 import { getCurrentFacility } from './game/facilities';
 import { computeReputationBreakdown, computeReputation } from './game/reputation';
+import { loadFromLocalStorage, saveToLocalStorage } from './game/save';
 import { computeYearlyReview, type YearlyReview } from './game/yearlyReview';
 import {
   downgradeFacility,
@@ -29,10 +31,20 @@ import { INITIAL_GAME_STATE, type GameState } from './types';
 type TabKey = 'dashboard' | 'roster' | 'shortlist' | 'scouts' | 'offers' | 'finances';
 
 export default function App() {
-  const [state, setState] = useState<GameState>(INITIAL_GAME_STATE);
+  // Hydrate from localStorage on first render — falls back to a fresh
+  // initial state if nothing is saved or the version is mismatched.
+  const [state, setState] = useState<GameState>(
+    () => loadFromLocalStorage() ?? INITIAL_GAME_STATE,
+  );
   const [activeTab, setActiveTab] = useState<TabKey>('dashboard');
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [yearlyReview, setYearlyReview] = useState<YearlyReview | null>(null);
+
+  // Auto-save to localStorage on every state change. JSON.stringify on the
+  // current state size is cheap (a few KB).
+  useEffect(() => {
+    saveToLocalStorage(state);
+  }, [state]);
 
   const selectedPlayer = useMemo(() => {
     if (!selectedPlayerId) return null;
@@ -101,6 +113,7 @@ export default function App() {
         activeTab={activeTab}
         onChangeTab={(key) => setActiveTab(key as TabKey)}
         onAdvanceMonth={handleAdvanceMonth}
+        saveMenu={<SaveMenu state={state} onImport={(s) => setState(s)} />}
       />
       <EventBanner
         birthdays={state.recentBirthdays}
