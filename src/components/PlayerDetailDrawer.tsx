@@ -125,10 +125,18 @@ export default function PlayerDetailDrawer({
                     <span className="tabular-nums">age {player.age}</span>
                     <span className="text-ink-faint">·</span>
                     <span>{player.nationality}</span>
-                    {player.callups && player.callups.length > 0 ? (
+                    {player.nationalTeam ? (
                       <>
                         <span className="text-ink-faint">·</span>
-                        <Chip tone="accent">{player.callups.length}× call-up</Chip>
+                        <Chip
+                          tone={
+                            player.nationalTeam === 'senior' || player.nationalTeam === 'U21'
+                              ? 'good'
+                              : 'accent'
+                          }
+                        >
+                          england {player.nationalTeam}
+                        </Chip>
                       </>
                     ) : null}
                     {(player.monthsOnRoster ?? 0) >= 24 ? (

@@ -41,12 +41,14 @@ function avgCurrent(player: Player): number {
 // 1.2 (fully developed); combined with the steeper baseValue and the new
 // generational premium this puts top sales in the €30M+ range.
 //
-// FOOTY-82 layer: callupMultiplier compounds across youth international
-// call-ups (capped at 2.0 by the action that grants it). Defaults to 1.0
-// for legacy players that predate the field.
+// FOOTY-88 layer: nationalTeam multiplier — current tier only, no
+// compounding (replaces FOOTY-82's callupMultiplier). U17 1.10, U18 1.15,
+// U21 1.25, senior 1.40. Defaults to 1.0 when not in a national team.
 // FOOTY-83 layer: veteran multiplier (1.15× when player has been on roster
 // 24+ months). Applied here so the +15% reflects on every offer the engine
 // ever computes.
+import { NATIONAL_TEAM_MV_MULT } from './nationalTeams';
+
 export function computeMarketValue(player: Player): number {
   const pot = avgPotential(player);
   const cur = avgCurrent(player);
@@ -54,9 +56,9 @@ export function computeMarketValue(player: Player): number {
   const ratingBoost = 0.6 + (cur / pot) * 0.6;
   const ageFactor = computeAgeFactor(player.age);
   const tierPremium = TIER_PREMIUM[player.qualityTier];
-  const callupMult = player.callupMultiplier ?? 1;
+  const teamMult = player.nationalTeam ? NATIONAL_TEAM_MV_MULT[player.nationalTeam] : 1;
   const veteranMult = (player.monthsOnRoster ?? 0) >= 24 ? 1.15 : 1;
-  return Math.round(baseValue * ratingBoost * ageFactor * tierPremium * callupMult * veteranMult);
+  return Math.round(baseValue * ratingBoost * ageFactor * tierPremium * teamMult * veteranMult);
 }
 
 // What a specific club thinks the player is worth — adds ±10% noise to the

@@ -10,7 +10,10 @@ import {
   type SaleEvent,
 } from '../types';
 import type { StatMilestoneEvent } from '../game/statMilestones';
-import type { YouthCallupEvent } from '../game/youthCallups';
+import type {
+  NationalTeamCallupEvent,
+  NationalTeamDropEvent,
+} from '../game/nationalTeams';
 
 const ACHIEVEMENT_TITLE = new Map(ACHIEVEMENT_DEFINITIONS.map((d) => [d.id, d.title]));
 import { formatCash } from '../util/format';
@@ -24,7 +27,8 @@ type Props = {
   forcedScoutFires?: readonly FacilityScoutFiredEvent[];
   achievements?: readonly AchievementId[];
   statMilestones?: readonly StatMilestoneEvent[];
-  callups?: readonly YouthCallupEvent[];
+  nationalTeamCallups?: readonly NationalTeamCallupEvent[];
+  nationalTeamDrops?: readonly NationalTeamDropEvent[];
   veterans?: readonly { playerId: string; playerName: string }[];
 };
 
@@ -36,7 +40,8 @@ export default function EventBanner({
   forcedScoutFires = [],
   achievements = [],
   statMilestones = [],
-  callups = [],
+  nationalTeamCallups = [],
+  nationalTeamDrops = [],
   veterans = [],
 }: Props) {
   const totalEvents =
@@ -47,7 +52,8 @@ export default function EventBanner({
     forcedScoutFires.length +
     achievements.length +
     statMilestones.length +
-    callups.length +
+    nationalTeamCallups.length +
+    nationalTeamDrops.length +
     veterans.length;
   if (totalEvents === 0) return null;
   return (
@@ -125,11 +131,24 @@ export default function EventBanner({
               </span>
             );
           })}
-          {callups.map((c) => (
-            <span key={`cu-${c.playerId}`} className="flex items-center gap-2">
-              <Chip tone="accent">england {c.callupType}</Chip>
-              <span className="text-ink">{c.playerName}</span>
-              <span className="text-accent-bright">+{Math.round(c.bonusPct * 100)}% mv</span>
+          {nationalTeamCallups.map((c) => {
+            const tone = c.toTier === 'senior' || c.toTier === 'U21' ? 'good' : 'accent';
+            const verb = c.fromTier ? 'promoted to' : 'called up to';
+            return (
+              <span key={`ntc-${c.playerId}`} className="flex items-center gap-2">
+                <Chip tone={tone}>england {c.toTier}</Chip>
+                <span className="text-ink">{c.playerName}</span>
+                <span className="text-ink-mid">{verb} squad</span>
+              </span>
+            );
+          })}
+          {nationalTeamDrops.map((d) => (
+            <span key={`ntd-${d.playerId}`} className="flex items-center gap-2">
+              <Chip tone="danger">dropped</Chip>
+              <span className="text-ink">{d.playerName}</span>
+              <span className="text-ink-mid">
+                {d.toTier ? `↓ england ${d.toTier}` : `out of england ${d.fromTier} squad`}
+              </span>
             </span>
           ))}
           {veterans.map((v) => (

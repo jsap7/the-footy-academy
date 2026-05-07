@@ -249,6 +249,17 @@ export default function PlayerList({
                   <Chip tone="danger">offers blocked</Chip>
                 ) : null}
                 {(player.monthsOnRoster ?? 0) >= 24 ? <Chip tone="accent">veteran</Chip> : null}
+                {player.nationalTeam ? (
+                  <Chip
+                    tone={
+                      player.nationalTeam === 'senior' || player.nationalTeam === 'U21'
+                        ? 'good'
+                        : 'accent'
+                    }
+                  >
+                    {player.nationalTeam}
+                  </Chip>
+                ) : null}
               </span>
               <span className="tabular-nums text-ink-mid">{player.age}</span>
               <span>

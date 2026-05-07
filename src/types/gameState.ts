@@ -12,8 +12,11 @@ import type {
   FacilityWarningEvent,
 } from './facilityEvents';
 import type { CashHistoryEntry, Transaction } from './finance';
+import type {
+  NationalTeamCallupEvent,
+  NationalTeamDropEvent,
+} from '../game/nationalTeams';
 import type { StatMilestoneEvent } from '../game/statMilestones';
-import type { YouthCallupEvent } from '../game/youthCallups';
 import type { Offer, SaleEvent } from './offer';
 import type { Player } from './player';
 import type { Scout } from './scout';
@@ -60,7 +63,8 @@ export type GameState = {
   recentForcedScoutFires: FacilityScoutFiredEvent[];
   recentAchievements: AchievementId[];
   recentStatMilestones: StatMilestoneEvent[];
-  recentYouthCallups: YouthCallupEvent[];
+  recentNationalTeamCallups: NationalTeamCallupEvent[];
+  recentNationalTeamDrops: NationalTeamDropEvent[];
   // Players that crossed the 24-month threshold this turn — drives a one-
   // time event banner ("Cillian Kareem is now a Veteran of the academy").
   recentVeterans: { playerId: string; playerName: string }[];
@@ -89,6 +93,7 @@ export const INITIAL_GAME_STATE: GameState = {
   recentForcedScoutFires: [],
   recentAchievements: [],
   recentStatMilestones: [],
-  recentYouthCallups: [],
+  recentNationalTeamCallups: [],
+  recentNationalTeamDrops: [],
   recentVeterans: [],
 };
