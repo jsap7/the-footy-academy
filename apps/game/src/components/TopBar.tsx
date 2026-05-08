@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { formatCash, formatWeek } from '../util/format';
+import { spaClick } from '../util/router';
 import { useCountUp } from '../util/useCountUp';
 import Button from '../ui/Button';
 
@@ -93,9 +94,14 @@ export default function TopBar({
   return (
     <header className="flex h-16 shrink-0 items-stretch border-b border-hairline bg-bg px-6">
       <div className="flex shrink-0 items-center gap-8">
-        <span className="whitespace-nowrap text-[13px] uppercase tracking-[0.14em] text-ink">
+        <a
+          href="/"
+          onClick={spaClick('/')}
+          className="whitespace-nowrap text-[13px] uppercase tracking-[0.14em] text-ink transition-colors hover:text-accent"
+          title="Back to landing"
+        >
           the footy academy
-        </span>
+        </a>
       </div>
       <nav className="ml-10 flex shrink-0 items-stretch border-b border-transparent">
         {tabs.map((tab) => (

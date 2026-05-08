@@ -8,17 +8,7 @@
         "-c",
         "pnpm --filter @footy-academy/game exec vite --port $PORT --strictPort"
       ],
-      "port": 5173,
-      "autoPort": true
-    },
-    {
-      "name": "landing",
-      "runtimeExecutable": "sh",
-      "runtimeArgs": [
-        "-c",
-        "pnpm --filter @footy-academy/landing exec vite --port $PORT --strictPort"
-      ],
-      "port": 5180,
+      "port": 5190,
       "autoPort": true
     }
   ]

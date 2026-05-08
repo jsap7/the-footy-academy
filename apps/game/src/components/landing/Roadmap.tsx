@@ -134,9 +134,7 @@ export default function Roadmap() {
                     {p.status === 'shipped' ? '✓ shipped' : p.status === 'now' ? '◐ now' : '◯ next'}
                   </span>
                 </div>
-                <h3 className="mt-1 text-[14px] uppercase tracking-[0.06em] text-ink">
-                  {p.title}
-                </h3>
+                <h3 className="mt-1 text-[14px] uppercase tracking-[0.06em] text-ink">{p.title}</h3>
                 <p className="mt-2 text-[12px] leading-[1.6] text-ink-mid font-body">{p.body}</p>
               </div>
             </li>

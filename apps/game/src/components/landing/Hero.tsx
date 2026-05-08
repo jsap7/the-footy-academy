@@ -1,4 +1,5 @@
-import Chip from './Chip';
+import { spaClick } from '../../util/router';
+import Chip from '../../ui/Chip';
 import DashboardMock from './DashboardMock';
 
 export default function Hero() {
@@ -45,6 +46,7 @@ export default function Hero() {
             <div className="mt-10 flex flex-wrap items-center gap-3">
               <a
                 href="/game"
+                onClick={spaClick('/game')}
                 className="cta-glow group inline-flex items-center gap-3 rounded-[5px] border border-accent bg-accent px-5 py-3 text-[13px] uppercase tracking-[0.10em] text-bg transition-colors hover:bg-accent-bright hover:border-accent-bright"
               >
                 <span>play now</span>

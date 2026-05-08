@@ -4,10 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "pnpm --filter @footy-academy/game dev",
-    "dev:landing": "pnpm --filter @footy-academy/landing dev",
     "build": "pnpm --filter @footy-academy/game build",
-    "build:landing": "pnpm --filter @footy-academy/landing build",
-    "build:all": "pnpm -r build",
     "lint": "pnpm --filter @footy-academy/game lint",
     "format": "pnpm --filter @footy-academy/game format",
     "format:check": "pnpm --filter @footy-academy/game format:check"

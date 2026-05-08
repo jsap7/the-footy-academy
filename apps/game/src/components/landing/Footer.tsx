@@ -1,3 +1,5 @@
+import { spaClick } from '../../util/router';
+
 export default function Footer() {
   return (
     <footer className="border-t border-hairline">
@@ -10,6 +12,7 @@ export default function Footer() {
         <div className="flex items-center gap-5">
           <a
             href="/game"
+            onClick={spaClick('/game')}
             className="transition-colors hover:text-accent"
           >
             play
