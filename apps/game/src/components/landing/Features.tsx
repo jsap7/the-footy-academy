@@ -32,7 +32,7 @@ const FEATURES: {
   },
   {
     title: 'Real clubs, real wallets',
-    body: 'Twenty named clubs across five tiers. Their wealth ceiling caps what they\'ll pay. Tier-1 clubs (Real Madrid, Liverpool) bid on your generational kids; Tier-5 won\'t touch them.',
+    body: "Twenty named clubs across five tiers. Their wealth ceiling caps what they'll pay. Tier-1 clubs (Real Madrid, Liverpool) bid on your generational kids; Tier-5 won't touch them.",
     glyph: 'real madrid · liverpool · brighton · leeds',
     badge: '20',
   },
@@ -72,9 +72,9 @@ export default function Features() {
             a deep simulation, not a clicker.
           </h2>
           <p className="max-w-md text-[13px] leading-[1.65] text-ink-mid font-body">
-            The systems are visible. The math is honest. You can see why a player is worth what
-            they are worth. You can see why your facility downgraded itself. You will not be
-            surprised by hidden modifiers.
+            The systems are visible. The math is honest. You can see why a player is worth what they
+            are worth. You can see why your facility downgraded itself. You will not be surprised by
+            hidden modifiers.
           </p>
         </div>
 

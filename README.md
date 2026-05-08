@@ -2,27 +2,40 @@
 
 A football academy management game. You scout, sign, develop, and sell young players. Always one bad transfer window from going broke — but every season the board hands you a challenge to clear.
 
+## Routes
+
+- `/` — landing page (marketing + how it plays).
+- `/game` — the game itself.
+
+The two share a single Vite app and a single bundle. A tiny pathname-based
+router in [apps/game/src/util/router.ts](apps/game/src/util/router.ts)
+swaps between `<Landing />` and `<Game />`. Anchor tags use `spaClick(...)` so
+in-app navigation never reloads.
+
 ## Repository structure (pnpm monorepo)
 
 ```
 /
 ├── apps/
-│   ├── game/              The game (React + Vite + TS)
-│   └── landing/           The marketing landing page (React + Vite + TS)
+│   └── game/              The single web app — landing + game (React + Vite + TS)
 │       ├── src/
-│       │   ├── components/   React components
-│       │   ├── data/         Static datasets (clubs, traits, name lists)
-│       │   ├── game/         Game logic (turn loop, finance, dev, ...)
-│       │   ├── types/        TypeScript types
-│       │   ├── ui/           Shared UI primitives
-│       │   └── util/         Helpers (format, useCountUp)
+│       │   ├── App.tsx          Top-level router (Landing vs. Game)
+│       │   ├── Landing.tsx      Marketing page composition
+│       │   ├── Game.tsx         The game's previous root
+│       │   ├── components/      Game React components
+│       │   │   └── landing/     Landing-only components
+│       │   ├── data/            Static datasets (clubs, traits, names)
+│       │   ├── game/            Game logic (turn loop, finance, dev, ...)
+│       │   ├── types/           TypeScript types
+│       │   ├── ui/              Shared UI primitives
+│       │   └── util/            Helpers (format, router, useCountUp)
 │       ├── public/
-│       ├── scripts/          Dev-only helpers (e.g. sample-players)
+│       ├── scripts/             Dev-only helpers (e.g. sample-players)
 │       ├── index.html
 │       └── package.json
 ├── packages/
 │   └── shared/            Empty placeholder — will hold types/utils shared
-│                          between game, landing, and api when those land.
+│                          with the api when that lands.
 ├── package.json           Workspace root scripts (dev / build / lint / format)
 ├── pnpm-workspace.yaml
 └── tsconfig.base.json     Shared TS compiler options
@@ -32,7 +45,7 @@ A football academy management game. You scout, sign, develop, and sell young pla
 
 - `apps/api/` — backend for auth + leaderboards.
 
-When that lands, anything it needs to share with `apps/game` or `apps/landing` (player types, score formulas) goes into `packages/shared/`.
+When that lands, anything it needs to share with `apps/game` (player types, score formulas) goes into `packages/shared/`.
 
 ## Development setup
 
@@ -45,21 +58,18 @@ pnpm dev
 
 Open the URL printed by Vite (defaults to <http://localhost:5173>).
 
-| Command                | What it does                                        |
-| ---------------------- | --------------------------------------------------- |
-| `pnpm dev`             | Start the game's dev server with HMR                |
-| `pnpm dev:landing`     | Start the landing page's dev server                 |
-| `pnpm build`           | Type-check and produce a production build of the game |
-| `pnpm build:landing`   | Production build of the landing page                |
-| `pnpm lint`            | Run ESLint over the game source                     |
-| `pnpm format`          | Format the codebase with Prettier                   |
-| `pnpm format:check`    | Check formatting without writing changes            |
+| Command             | What it does                                        |
+| ------------------- | --------------------------------------------------- |
+| `pnpm dev`          | Start the dev server with HMR (serves `/` + `/game`) |
+| `pnpm build`        | Type-check and produce a production build           |
+| `pnpm lint`         | Run ESLint over the source                          |
+| `pnpm format`       | Format the codebase with Prettier                   |
+| `pnpm format:check` | Check formatting without writing changes            |
 
-To run a script directly in any package:
+To run a script directly in the package:
 
 ```sh
 pnpm --filter @footy-academy/game <script>
-pnpm --filter @footy-academy/landing <script>
 ```
 
 ### Stack

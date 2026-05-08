@@ -1,3 +1,5 @@
+import { spaClick } from '../../util/router';
+
 export default function CTA() {
   return (
     <section className="border-t border-hairline bg-bg-elev/30">
@@ -30,6 +32,7 @@ export default function CTA() {
             <div className="flex flex-wrap items-center gap-3">
               <a
                 href="/game"
+                onClick={spaClick('/game')}
                 className="cta-glow inline-flex items-center gap-3 rounded-[5px] border border-accent bg-accent px-6 py-4 text-[14px] uppercase tracking-[0.10em] text-bg transition-colors hover:bg-accent-bright hover:border-accent-bright"
               >
                 <span>play now</span>

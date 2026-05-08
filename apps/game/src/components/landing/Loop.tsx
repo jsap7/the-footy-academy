@@ -48,7 +48,9 @@ export default function Loop() {
               className="group relative flex flex-col rounded-md border border-hairline bg-bg-elev p-5 transition-colors hover:border-accent-dim"
             >
               <div className="flex items-baseline justify-between">
-                <span className="font-pixel text-[36px] leading-none text-accent-bright">{s.n}</span>
+                <span className="font-pixel text-[36px] leading-none text-accent-bright">
+                  {s.n}
+                </span>
                 <span className="rounded-[3px] border border-hairline-bright bg-bg px-1.5 py-[1px] text-[9px] uppercase tracking-[0.14em] text-ink-mid">
                   {s.chip}
                 </span>

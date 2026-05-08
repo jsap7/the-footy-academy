@@ -1,4 +1,4 @@
-import Chip from './Chip';
+import Chip from '../../ui/Chip';
 
 function MiniCard({
   label,
@@ -80,8 +80,7 @@ function OfferRow({
           <Chip tone="muted">{pos}</Chip>
         </div>
         <div className="mt-0.5 text-[9px] uppercase tracking-[0.10em] text-ink-dim">
-          {count} · best{' '}
-          <span className="text-accent-bright tabular-nums">{best}</span>
+          {count} · best <span className="text-accent-bright tabular-nums">{best}</span>
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-1">
