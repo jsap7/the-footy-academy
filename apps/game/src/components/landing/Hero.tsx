@@ -13,9 +13,9 @@ export default function Hero() {
           <span className="hidden sm:block">est. 2026 · single-player</span>
         </div>
 
-        <div className="mt-12 flex flex-col items-stretch gap-10 lg:grid lg:grid-cols-12 lg:items-center lg:gap-14">
-          {/* Headline column */}
-          <div className="min-w-0 max-w-full lg:col-span-7 xl:col-span-6">
+        <div className="mt-12 flex flex-col items-stretch gap-12 lg:gap-16">
+          {/* Headline */}
+          <div className="min-w-0 max-w-full">
             <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.14em] text-accent">
               <span className="h-1.5 w-1.5 rounded-full bg-accent-bright" />
               <span>now playable</span>
@@ -83,9 +83,9 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* Mocked dashboard column — hidden on small screens to avoid the
-              fixed-width internals forcing horizontal scroll */}
-          <div className="hidden min-w-0 md:block lg:col-span-5 xl:col-span-6">
+          {/* Dashboard mock — hidden on small screens because its
+              fixed-width internals would force horizontal scroll. */}
+          <div className="hidden min-w-0 md:block">
             <div className="relative">
               <div className="absolute -inset-4 -z-10 rounded-[14px] bg-accent/[0.04] blur-3xl" />
               <DashboardMock />
