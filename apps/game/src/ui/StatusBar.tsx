@@ -6,7 +6,7 @@ export default function StatusBar({ hints }: Props) {
   return (
     <div className="flex h-9 shrink-0 items-center justify-between border-t border-hairline bg-bg px-6 text-[10px] uppercase tracking-[0.12em] text-ink-faint">
       <span>
-        v0.6.0 · phase 6 · <span className="text-accent">● live</span>
+        v1.0 · <span className="text-accent">● live</span>
       </span>
       {hints ? <span>{hints}</span> : null}
     </div>

@@ -13,9 +13,8 @@ import { executeAcceptedOffers } from './offers';
 import { appendTransaction } from './transactions';
 import type { GameState } from '../types';
 
-// Phase 6 — block scout hires when an active challenge says so. "Scout
-// Strike" forbids any hire all year; "Survive the Strike" forbids hires
-// during months 4–9.
+// Block scout hires when an active challenge says so. "Scout Strike" forbids
+// any hire all year; "Survive the Strike" forbids hires during months 4–9.
 export function isScoutHireBlocked(state: GameState): { blocked: boolean; reason?: string } {
   const ch = state.currentChallenge;
   if (!ch) return { blocked: false };
@@ -246,7 +245,7 @@ export function rejectShortlistEntry(state: GameState, entryId: string): GameSta
 }
 
 export function upgradeFacility(state: GameState): GameState {
-  // Phase 6: a "Free Facility Upgrade" yearly buff bypasses the cash gate
+  // A "Free Facility Upgrade" yearly buff bypasses the cash gate
   // and zeroes the cost. Consumed on use.
   const free = hasFreeFacilityUpgrade(state);
   const next = getNextFacilityTier(state.facilityTier);
@@ -282,9 +281,9 @@ export function upgradeFacility(state: GameState): GameState {
   return next$;
 }
 
-// Manual downgrade — never refunds the upgrade cost. Auto-downgrade
-// (FOOTY-65) shares the tier shift but gets to ignore the orphan rule
-// because it fires scouts as part of the demotion.
+// Manual downgrade — never refunds the upgrade cost. Auto-downgrade shares
+// the tier shift but gets to ignore the orphan rule because it fires scouts
+// as part of the demotion.
 export function downgradeFacility(state: GameState): GameState {
   const gate = canDowngradeFacility(state);
   if (!gate.ok) return state;

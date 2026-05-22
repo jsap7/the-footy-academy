@@ -41,7 +41,7 @@ export const NATIONAL_TEAM_MV_MULT: Record<NationalTeamTier, number> = {
   senior: 1.4,
 };
 
-// FOOTY-89: monthly sponsorship per called-up player (inflated at use-time).
+// Monthly sponsorship per called-up player (inflated at use-time).
 // Tunes the squeeze: a senior international = +€15k/mo, two of them = +€30k.
 export const SPONSORSHIP_BY_TIER: Record<NationalTeamTier, number> = {
   U17: 2_000,

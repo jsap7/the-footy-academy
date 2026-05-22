@@ -64,9 +64,9 @@ export default function Game() {
     saveToLocalStorage(state);
   }, [state]);
 
-  // Phase 6 — first-year challenge auto-draw. If the user just landed on
-  // Jan W1 of any year (including game start) and hasn't picked a
-  // challenge yet, surface the modal options. We populate
+  // First-year challenge auto-draw. If the user just landed on Jan W1 of
+  // any year (including game start) and hasn't picked a challenge yet,
+  // surface the modal options. We populate
   // pendingChallengeOptions here rather than inside the turn loop so that
   // the very first launch (before any "next week" click) still triggers
   // the modal.

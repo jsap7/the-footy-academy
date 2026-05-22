@@ -1,4 +1,4 @@
-// Phase 6 — apply event signals to the active challenge's progress + meta.
+// Apply event signals to the active challenge's progress + meta.
 // Called from sale execution, scout hires, facility upgrades, scout finds,
 // and per-week from the turn loop (for ratchet-style trackers like
 // maintain_min_scouts and wage_cap_below).

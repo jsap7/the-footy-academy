@@ -5,10 +5,9 @@ import { SPONSORSHIP_BY_TIER } from './nationalTeams';
 import { calculateStipend } from './stipends';
 import type { GameState } from '../types';
 
-// Weekly economy. All "per month" rates from the original Phase 4 design
-// divide by 4 to land on weekly equivalents — the per-year totals stay the
-// same, just spread across 4× as many ticks. WEEKS_PER_MONTH is exposed so
-// the dashboard / finances tab can reconstruct monthly figures for display.
+// Weekly economy. All "per month" rates divide by 4 to land on weekly
+// equivalents — the per-year totals stay the same, just spread across 4×
+// as many ticks.
 export const WEEKS_PER_MONTH = 4;
 
 // €8k/month → €2k/week. Operating floor €15k/month → €3,750/week.

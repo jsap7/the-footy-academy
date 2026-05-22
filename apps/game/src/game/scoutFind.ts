@@ -2,10 +2,9 @@ import { generatePlayer } from './playerGenerator';
 import type { Player, QualityTier, Scout, ScoutLevel } from '../types';
 
 // Probability that a scout of level L finds a player of each tier.
-// Each row sums to 1.0. The "sliver of hope" version (FOOTY-70) — every
-// level keeps a tiny non-zero chance at every tier so the dream is never
-// fully locked out. Top scouts are still dramatically more capable; L1
-// elite finds are once-per-career miracles.
+// Each row sums to 1.0. Every level keeps a tiny non-zero chance at every
+// tier so the dream is never fully locked out. Top scouts are still
+// dramatically more capable; L1 elite finds are once-per-career miracles.
 export const SCOUT_LEVEL_TIER_BIAS: Record<ScoutLevel, Record<QualityTier, number>> = {
   1: { mid: 0.95, good: 0.037, great: 0.01, elite: 0.002, generational: 0.001 },
   2: { mid: 0.77, good: 0.18, great: 0.044, elite: 0.004, generational: 0.002 },

@@ -48,9 +48,8 @@ export type GameState = {
   pendingOffers: Offer[];
   completedSales: Offer[];
 
-  // FOOTY-62: facility progression. Auto-downgrade (FOOTY-65) uses the grace
-  // counter to give the user a couple of months to make payroll before
-  // demoting them.
+  // Facility progression. Auto-downgrade uses the grace counter to give the
+  // user a couple of months to make payroll before demoting them.
   facilityTier: FacilityTier;
   facilityGraceMonthsRemaining: number;
 
@@ -63,7 +62,7 @@ export type GameState = {
   // hires, facility upgrades, and the per-turn monthly burn aggregate.
   transactions: Transaction[];
 
-  // FOOTY-77: per-achievement state, including the timestamp at unlock.
+  // Per-achievement state, including the timestamp at unlock.
   achievements: Record<AchievementId, Achievement>;
 
   // Ephemeral UI events — populated each turn, cleared at start of next turn.
@@ -80,7 +79,7 @@ export type GameState = {
   // time event banner ("Cillian Kareem is now a Veteran of the academy").
   recentVeterans: { playerId: string; playerName: string }[];
 
-  // ----- Phase 6: The Season -----
+  // ----- The Season (roguelike layer) -----
   // The active Board Expectation challenge for the current year. Null
   // before Jan W1 of year 1 (the modal hasn't fired yet) or between a
   // year-end pass and the next year's draw.

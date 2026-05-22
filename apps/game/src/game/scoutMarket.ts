@@ -18,9 +18,9 @@ export function generateScoutMarket(
   ignoreScoutGate = false,
 ): Scout[] {
   const facility = FACILITY_DEFINITIONS[facilityTier];
-  // Phase 6 buff "All Scout Levels Available": ignore the facility gate
-  // and surface every level for the year. Also lifts the rare-upgrade
-  // chance since the upgrade slot becomes pointless.
+  // "All Scout Levels Available" buff: ignore the facility gate and surface
+  // every level for the year. Also lifts the rare-upgrade chance since the
+  // upgrade slot becomes pointless.
   const allowed: readonly ScoutLevel[] = ignoreScoutGate
     ? ([1, 2, 3, 4, 5] as const)
     : facility.scoutLevelsAvailable.levels;

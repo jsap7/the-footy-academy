@@ -76,12 +76,11 @@ export function advanceMonth(state: GameState): GameState {
   // 2c. Development — every roster player ticks up a little. Facility tier
   // applies a flat multiplier to every gain (1.0× at Backyard Pitch up to
   // 1.5× at World-Class). After development, each player's MV history gets
-  // a fresh entry (FOOTY-74) — capped at 12 trailing months for the chart.
-  // FOOTY-81: also detect stat milestones (70/80/90 crossings) and surface
-  // them in the event banner.
+  // a fresh entry — capped at 12 trailing months for the chart. Also detect
+  // stat milestones (70/80/90 crossings) and surface them in the event banner.
   const facility = getCurrentFacility(stateAfterCalendar);
-  // Phase 6: stack the run's permanent dev-rate buff onto the facility
-  // multiplier so "Veteran Coach Hired" rewards actually compound.
+  // Stack the run's permanent dev-rate buff onto the facility multiplier so
+  // "Veteran Coach Hired" rewards actually compound.
   const devBuffMult = runDevMultiplier(stateAfterCalendar);
   const effectiveFacilityMult = facility.developmentMultiplier * devBuffMult;
   const recentStatMilestones: StatMilestoneEvent[] = [];
@@ -101,9 +100,8 @@ export function advanceMonth(state: GameState): GameState {
   });
 
   // 2d. National teams — promote / demote based on current avg rating at
-  // age. Persistent membership replaces FOOTY-82's one-time callup bonus;
-  // the MV multiplier is now reflected via player.nationalTeam in
-  // computeMarketValue.
+  // age. Persistent membership replaces the old one-time callup bonus; the MV
+  // multiplier is now reflected via player.nationalTeam in computeMarketValue.
   const nationalTeamResult = processNationalTeams(rosterAfterDevelopmentRaw);
   const rosterAfterCallups = nationalTeamResult.roster;
   const recentNationalTeamCallups: NationalTeamCallupEvent[] = nationalTeamResult.callups;
@@ -318,7 +316,7 @@ export function advanceMonth(state: GameState): GameState {
   // so all the year/sale/facility/roster signals are in place. Newly-unlocked
   // ids are stamped with the current month/year and surfaced to the UI via
   // recentAchievements.
-  // ----- Phase 6: end-of-year transition -----
+  // ----- End-of-year transition -----
   // Detect Dec → Jan rollover. Fires the year-end check on the LAST tick
   // of the previous year (the one that produced this Jan W1 state). At
   // this point the live state has currentMonth = 1, currentWeek = 1, so

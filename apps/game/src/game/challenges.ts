@@ -1,4 +1,4 @@
-// Phase 6 — challenge library + draw logic + per-year scaling.
+// Board challenge library + draw logic + per-year scaling.
 //
 // Each challenge has a tier (easy/medium/hard/brutal) and a minimum year
 // at which it becomes drawable. Numerical targets scale 1.15× per year

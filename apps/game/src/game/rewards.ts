@@ -1,4 +1,4 @@
-// Phase 6 — reward draw + application.
+// Reward draw + application.
 //
 // On year-end success the user picks one of three randomly-drawn rewards.
 // Cash + one-year buffs are common; permanent buffs are uncommon; mega

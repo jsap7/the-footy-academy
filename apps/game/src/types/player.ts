@@ -52,7 +52,7 @@ export type Player = {
   };
   traits: TraitId[];
   qualityTier: QualityTier;
-  // Selling state — toggled by the user via FOOTY-42 controls.
+  // Selling state — toggled by the user via selling controls.
   availableForSale: boolean;
   askingPrice: number | null;
   // When true, no new offers are generated for this player. Mutually
@@ -66,21 +66,21 @@ export type Player = {
   // trait dev-rate multipliers (e.g. workaholic ×1.20) actually compound
   // over time instead of being eaten by per-turn Math.round.
   developmentResidual?: Partial<Record<StatKey, number>>;
-  // FOOTY-74: trailing 12 entries of monthly market value (pushed by
-  // turnLoop after development). Drives the per-player MV chart.
+  // Trailing 12 entries of monthly market value (pushed by turnLoop after
+  // development). Drives the per-player MV chart.
   mvHistory?: { month: number; year: number; mv: number }[];
-  // FOOTY-82 / deprecated by FOOTY-88. Kept on the type so old saves
-  // hydrate without dropping the field; computeMarketValue no longer reads
-  // these. nationalTeam (below) is the live signal now.
+  // Deprecated callup fields. Kept on the type so old saves hydrate without
+  // dropping the field; computeMarketValue no longer reads these.
+  // nationalTeam (below) is the live signal now.
   callupMultiplier?: number;
   monthsSinceLastCallup?: number;
   callups?: { type: 'U17' | 'U18' | 'U21'; month: number; year: number; bonus: number }[];
-  // FOOTY-88: persistent national team membership. null = not in any squad.
+  // Persistent national team membership. null = not in any squad.
   // Promotion probabilistic per turn while qualifying for a higher tier;
   // demotion after DROP_GRACE_MONTHS below the current tier's threshold.
   nationalTeam?: 'U17' | 'U18' | 'U21' | 'senior' | null;
   monthsBelowTeamThreshold?: number;
-  // FOOTY-83: months on roster (incremented each turn while on roster).
+  // Months on roster (incremented each turn while on roster).
   // 24+ unlocks the Veteran badge: dev rate +10% and MV ×1.15 on sale.
   monthsOnRoster?: number;
   createdAt: number;

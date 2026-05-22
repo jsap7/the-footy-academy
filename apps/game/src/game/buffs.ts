@@ -1,4 +1,4 @@
-// Phase 6 — buffs system. Permanent buffs persist for the whole run;
+// Buffs system. Permanent buffs persist for the whole run;
 // yearly buffs reset on the Jan W1 transition.
 //
 // Application sites (where each buff plugs in):

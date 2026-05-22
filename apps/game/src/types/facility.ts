@@ -21,8 +21,7 @@ export const FACILITY_DEFINITIONS: Record<FacilityTier, FacilityDefinition> = {
     upgradeCost: 0,
     monthlyCost: 0,
     developmentMultiplier: 1.0,
-    // FOOTY-70: tightened to lvl 1 only. The "sliver of hope" tier-bias
-    // change means even an L1 scout can in theory find an elite, so the
+    // Lvl 1 only. Even an L1 scout can in theory find an elite, so the
     // facility gate is what funnels users toward upgrading.
     scoutLevelsAvailable: { levels: [1] },
   },

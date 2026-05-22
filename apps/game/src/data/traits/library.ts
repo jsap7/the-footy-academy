@@ -91,12 +91,9 @@ export const SLOW_LEARNER: Trait = {
   devRateEffects: [{ target: 'technical', multiplier: 0.85 }],
 };
 
-// All 32 outfield stats at -10, current-only. Phase 1.5 patch (FOOTY-23):
-// targeting current preserves the player's tier-rolled potential ceiling so
-// the +30% dev-rate (inert in phase 1.5, active when the turn loop ships)
-// can close the gap. Hand-listed: every outfield stat must be present.
-// GK stats are not generated for outfielders in phase 1 and are intentionally
-// not listed here.
+// All 32 outfield stats at -10, current-only. Targeting current preserves
+// the player's tier-rolled potential ceiling so the +30% dev-rate can close
+// the gap. Hand-listed: every outfield stat must be present.
 export const LATE_BLOOMER: Trait = {
   id: 'late_bloomer',
   name: 'Late Bloomer',
@@ -168,7 +165,7 @@ export const PHYSICAL_SPECIMEN: Trait = {
   devRateEffects: [],
 };
 
-export const ALL_PHASE_1_TRAITS: readonly Trait[] = [
+export const ALL_TRAITS: readonly Trait[] = [
   TALL,
   WORKAHOLIC,
   TECHNICALLY_GIFTED,

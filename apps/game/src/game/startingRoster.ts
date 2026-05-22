@@ -2,9 +2,8 @@ import { generatePlayer } from './playerGenerator';
 import { ALL_STAT_KEYS } from '../types/stats';
 import type { Player } from '../types/player';
 
-// Playtest follow-up: starting roster guarantees you a viable opening squad.
-// All 4 are age 16-19 (immediately sellable, none locked under-16) with a
-// minimum avg potential — no all-mid duds clogging the roster on turn 1.
+// Starting roster guarantees a viable opening squad. All 4 are age 16-19
+// (immediately sellable, none locked under-16) with a minimum avg potential.
 // Age spread keeps them from aging out together.
 const STARTING_AGE_RANGES: readonly { min: number; max: number }[] = [
   { min: 16, max: 17 },

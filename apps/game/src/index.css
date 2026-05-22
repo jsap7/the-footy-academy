@@ -192,24 +192,6 @@ table {
 }
 
 /* Marquee-style ticker for the rolling stat strip */
-@keyframes ticker {
-  from {
-    transform: translateX(0%);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-.ticker-track {
-  display: inline-flex;
-  white-space: nowrap;
-  animation: ticker 38s linear infinite;
-  will-change: transform;
-}
-.ticker-track:hover {
-  animation-play-state: paused;
-}
-
 /* Soft accent glow under the primary CTA */
 .cta-glow {
   box-shadow:

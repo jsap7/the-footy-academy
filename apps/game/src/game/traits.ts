@@ -1,4 +1,4 @@
-import { ALL_PHASE_1_TRAITS } from '../data/traits/library';
+import { ALL_TRAITS } from '../data/traits/library';
 import {
   ALL_STAT_KEYS,
   STAT_GROUPS,
@@ -11,7 +11,7 @@ import {
 } from '../types';
 
 export const TRAIT_LIBRARY: Record<TraitId, Trait> = Object.fromEntries(
-  ALL_PHASE_1_TRAITS.map((t) => [t.id, t]),
+  ALL_TRAITS.map((t) => [t.id, t]),
 );
 
 // Weighted random for how many traits a player gets at generation time.

@@ -7,7 +7,7 @@ export default function Footer() {
         <div className="flex items-center gap-3">
           <span className="text-ink">the footy academy</span>
           <span className="text-ink-faint">·</span>
-          <span>v0.6 · personal project</span>
+          <span>v1.0</span>
         </div>
         <div className="flex items-center gap-5">
           <a

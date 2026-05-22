@@ -42,7 +42,7 @@ function computeRawGain(
   return rawGain * gapBonus;
 }
 
-// FOOTY-37 plugs in computeDevRateMultiplier from src/game/traits.ts.
+// Uses computeDevRateMultiplier from src/game/traits.ts.
 type TraitMultiplierFn = (stat: StatKey, traitIds: readonly string[]) => number;
 
 export function developPlayer(
@@ -53,7 +53,7 @@ export function developPlayer(
   updated: Player;
   gainsByStat: Partial<Record<StatKey, number>>;
 } {
-  // FOOTY-83: veterans (96+ weeks on roster, ≈24 months) get +10% dev rate.
+  // Veterans (96+ weeks on roster, ≈24 months) get +10% dev rate.
   const veteranDevMult = (player.monthsOnRoster ?? 0) >= 96 ? 1.1 : 1;
   const effectiveFacilityMult = facilityMultiplier * veteranDevMult;
   const newCurrent: PlayerStats = { ...player.stats.current };

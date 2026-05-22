@@ -144,8 +144,7 @@ export function countUnlocked(achievements: Record<AchievementId, Achievement>):
   return n;
 }
 
-// Used by Year-in-Review (FOOTY-79) to surface achievements unlocked during
-// a specific year.
+// Used by Year-in-Review to surface achievements unlocked during a specific year.
 export function achievementsUnlockedInYear(
   achievements: Record<AchievementId, Achievement>,
   year: number,

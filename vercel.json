@@ -1,0 +1,6 @@
+{
+  "installCommand": "pnpm install",
+  "buildCommand": "pnpm --filter @footy-academy/game build",
+  "outputDirectory": "apps/game/dist",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}

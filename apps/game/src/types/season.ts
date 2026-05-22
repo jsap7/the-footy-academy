@@ -1,7 +1,6 @@
-// Phase 6 — "The Season". Turn the sandbox into a roguelike: each year the
-// user picks a Board Expectation, has to clear it by Dec W4 without going
-// broke, and earns a reward on success. Game over on bankruptcy or
-// challenge failure.
+// "The Season" — roguelike layer: each year the user picks a Board
+// Expectation, has to clear it by Dec W4 without going broke, and earns a
+// reward on success. Game over on bankruptcy or challenge failure.
 
 export type ChallengeTier = 'easy' | 'medium' | 'hard' | 'brutal';
 
